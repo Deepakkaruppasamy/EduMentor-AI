@@ -33,6 +33,10 @@ export async function generateResponse(
   context: string,
   temperature = 0.3
 ): Promise<LLMResponse> {
+  if (!config.GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
+  }
+
   const systemMessage: LLMMessage = {
     role: 'system',
     content: `${SYSTEM_PROMPT}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
@@ -66,6 +70,10 @@ export async function generateWithoutContext(
   temperature = 0.5,
   jsonMode = false
 ): Promise<LLMResponse> {
+  if (!config.GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
+  }
+
   const systemMessage: LLMMessage = {
     role: 'system',
     content: systemOverride || SYSTEM_PROMPT,

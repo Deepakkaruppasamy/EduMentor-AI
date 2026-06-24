@@ -38,12 +38,16 @@ Return ONLY a valid JSON object matching this structure:
         conceptMap: parsed.conceptMap || 'Concept map unavailable.',
       };
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to generate summary and concept map:', err);
+    return {
+      summary: `Summary generation failed: ${err.message || 'Unknown error'}. Please verify that the GROQ_API_KEY environment variable is correctly configured in your server dashboard.`,
+      conceptMap: `Concept map generation failed. Please check the server logs and verify your GROQ_API_KEY.`
+    };
   }
 
   return {
-    summary: 'Summary generation failed.',
-    conceptMap: 'Concept map generation failed.',
+    summary: 'Summary generation failed. Please check the server configuration and verify your GROQ_API_KEY.',
+    conceptMap: 'Concept map generation failed. Please check the server configuration and verify your GROQ_API_KEY.',
   };
 }
