@@ -104,7 +104,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
       };
       rec.onerror = (e: any) => {
         console.warn('Speech recognition error:', e.error);
-        toast.error('Voice input error: ' + e.error);
+        if (e.error !== 'no-speech' && e.error !== 'aborted') {
+          toast.error('Voice input error: ' + e.error);
+        }
         setIsListening(false);
       };
       recognitionRef.current = rec;
