@@ -3,19 +3,24 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# Ensure Python output is not buffered so we see logs immediately
+export PYTHONUNBUFFERED=1
+
 echo "Starting ChromaDB..."
-# Create data folder if not exists
-mkdir -p /data/chromadb
+# Create data folder inside app directory (guaranteed writeable)
+mkdir -p /app/chromadb_data
 
 # Start ChromaDB in background and redirect output
-python3 -m chromadb.cli.cli run --host 127.0.0.1 --port 8000 --path /data/chromadb > /tmp/chromadb.log 2>&1 &
+python3 -m chromadb.cli.cli run --host 127.0.0.1 --port 8000 --path /app/chromadb_data > /tmp/chromadb.log 2>&1 &
 CHROMA_PID=$!
 
 # Wait for ChromaDB to be ready, or fail if process died
 echo "Waiting for ChromaDB to start..."
 for i in {1..30}; do
   if ! kill -0 $CHROMA_PID 2>/dev/null; then
-    echo "❌ ChromaDB process died early! Logs:"
+    echo "❌ ChromaDB process died early!"
+    sleep 1
+    echo "Logs from /tmp/chromadb.log:"
     cat /tmp/chromadb.log
     exit 1
   fi
