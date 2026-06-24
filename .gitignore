@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+.npm
+
+# Build output
+dist/
+build/
+
+# Environment files (keep examples, ignore actual)
+.env
+!.env.example
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ChromaDB data
+chroma/
+
+# TypeScript
+*.tsbuildinfo

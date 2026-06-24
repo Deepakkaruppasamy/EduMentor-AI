@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # ChromaDB Vector Database
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: edumentor-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MongoDB (local alternative to Atlas)
+  mongodb:
+    image: mongo:7.0
+    container_name: edumentor-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: edumentor123
+      MONGO_INITDB_DATABASE: edumentor
+    restart: unless-stopped
+
+volumes:
+  chromadb_data:
+  mongodb_data:
