@@ -97,7 +97,7 @@ export const DocumentsPage: React.FC = () => {
                         <span className="text-[10px] text-white/20">·</span>
                         <span className="text-[10px] text-white/30">{doc.totalChunks} chunks</span>
                         <span className="text-[10px] text-white/20">·</span>
-                        <span className="text-[10px]" style={{ color: status.color }}>{status.label}</span>
+                        <span className="text-[10px]" style={{ color: status.color }} title={doc.processingError}>{status.label}</span>
                       </div>
                     </div>
                     {doc.processingStatus === 'completed' && (
