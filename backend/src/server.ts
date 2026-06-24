@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -59,6 +60,17 @@ app.get('/api/health', (_req, res) => {
 // Serve frontend in production
 if (config.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '../../frontend/dist');
+  console.log(`[Frontend Serve] Target directory path: ${distPath}`);
+  try {
+    const exists = fs.existsSync(distPath);
+    console.log(`[Frontend Serve] Directory exists: ${exists}`);
+    if (exists) {
+      console.log(`[Frontend Serve] Files inside:`, fs.readdirSync(distPath));
+    }
+  } catch (err: any) {
+    console.error(`[Frontend Serve] Error checking directory:`, err.message);
+  }
+
   app.use(express.static(distPath));
   app.get('*', (req, res) => {
     if (!req.path.startsWith('/api/')) {

@@ -62,8 +62,13 @@ checkHeartbeat();
 
 function startExpress() {
   console.log("Starting EduMentor Express backend...");
+  
+  // Force NODE_ENV to production
+  const env = { ...process.env, NODE_ENV: 'production' };
+
   const expressProc = spawn('node', ['backend/dist/server.js'], {
-    stdio: 'inherit'
+    stdio: 'inherit',
+    env
   });
 
   expressProc.on('close', (code) => {
