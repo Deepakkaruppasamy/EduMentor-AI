@@ -7,6 +7,7 @@ export const documentService = {
     formData.append('file', file);
     formData.append('courseId', courseId);
     const { data } = await api.post('/document/upload', formData, {
+      headers: { 'Content-Type': undefined },
       onUploadProgress: (evt) => {
         if (evt.total && onProgress) {
           onProgress(Math.round((evt.loaded * 100) / evt.total));
