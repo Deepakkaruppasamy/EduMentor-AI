@@ -40,12 +40,11 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # Copy uploads directory template and startup script
 RUN mkdir -p backend/uploads
-COPY start-production.sh ./
-RUN chmod +x start-production.sh
+COPY start-production.js ./
 
 # Expose ports: Node backend will use PORT env var (usually 10000 on Render)
 ENV NODE_ENV=production
 ENV CHROMA_URL=http://127.0.0.1:8000
 ENV PORT=10000
 
-CMD ["./start-production.sh"]
+CMD ["node", "start-production.js"]
