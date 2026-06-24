@@ -2,7 +2,7 @@
 FROM node:20-bookworm-slim AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 COPY frontend/ ./
 RUN npm run build
 
@@ -10,7 +10,7 @@ RUN npm run build
 FROM node:20-bookworm-slim AS backend-builder
 WORKDIR /app/backend
 COPY backend/package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 COPY backend/ ./
 RUN npm run build
 
@@ -33,7 +33,7 @@ RUN pip3 install --break-system-packages chromadb
 
 # Copy backend dependencies and build
 COPY backend/package*.json ./backend/
-RUN cd backend && npm ci --omit=dev
+RUN cd backend && npm install --omit=dev --legacy-peer-deps
 
 COPY --from=backend-builder /app/backend/dist ./backend/dist
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
