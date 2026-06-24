@@ -10,12 +10,16 @@ if (!fs.existsSync('/app/chromadb_data')) {
 }
 
 // Start ChromaDB process
-const chroma = spawn('python3', [
-  '-m', 'chromadb.cli.cli', 'run',
+const chroma = spawn('chroma', [
+  'run',
   '--host', '127.0.0.1',
   '--port', '8000',
   '--path', '/app/chromadb_data'
 ]);
+
+chroma.on('error', (err) => {
+  console.error(`[ChromaDB Spawn Error] Failed to start process:`, err);
+});
 
 chroma.stdout.on('data', (data) => {
   console.log(`[ChromaDB] ${data.toString().trim()}`);
