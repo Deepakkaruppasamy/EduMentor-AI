@@ -104,7 +104,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
       };
       rec.onerror = (e: any) => {
         console.warn('Speech recognition error:', e.error);
-        if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        if (e.error === 'not-allowed') {
+          toast.error('Microphone access denied. Please enable microphone permission in your browser settings.');
+        } else if (e.error === 'no-speech') {
+          toast.error('No speech detected. Please try speaking again.');
+        } else if (e.error !== 'aborted') {
           toast.error('Voice input error: ' + e.error);
         }
         setIsListening(false);
@@ -118,10 +122,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
       toast.error('Voice input not supported in this browser. Please use Chrome/Edge.');
       return;
     }
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      recognitionRef.current.start();
+    try {
+      if (isListening) {
+        recognitionRef.current.stop();
+      } else {
+        recognitionRef.current.start();
+      }
+    } catch (err: any) {
+      console.error('Speech recognition start error:', err);
+      toast.error('Failed to start speech recognition: ' + err.message);
     }
   };
 
@@ -178,6 +187,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
     if (!question || isLoading) return;
 
     setInput('');
+
+    // Unlock speech synthesis context if voice mode is on
+    if (voiceMode && synthRef.current) {
+      try {
+        const unlockUtterance = new SpeechSynthesisUtterance(' ');
+        unlockUtterance.volume = 0;
+        synthRef.current.speak(unlockUtterance);
+      } catch (e) {
+        console.warn('Failed to pre-unlock TTS:', e);
+      }
+    }
 
     // Add user message
     addMessage({ role: 'user', content: question, timestamp: new Date() });
