@@ -44,8 +44,8 @@ function checkHeartbeat(retries = 30) {
   }
 
   http.get('http://127.0.0.1:8000/api/v1/heartbeat', (res) => {
-    if (res.statusCode === 200) {
-      console.log("ChromaDB is up!");
+    if (res.statusCode === 200 || res.statusCode === 410) {
+      console.log(`ChromaDB is up! (status: ${res.statusCode})`);
       startExpress();
     } else {
       console.log(`[Heartbeat Check] Status code: ${res.statusCode}`);
