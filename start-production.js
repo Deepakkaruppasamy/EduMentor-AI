@@ -48,9 +48,11 @@ function checkHeartbeat(retries = 30) {
       console.log("ChromaDB is up!");
       startExpress();
     } else {
+      console.log(`[Heartbeat Check] Status code: ${res.statusCode}`);
       setTimeout(() => checkHeartbeat(retries - 1), 1000);
     }
-  }).on('error', () => {
+  }).on('error', (err) => {
+    console.log(`[Heartbeat Connection Error]: ${err.message}`);
     setTimeout(() => checkHeartbeat(retries - 1), 1000);
   });
 }
