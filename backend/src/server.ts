@@ -18,6 +18,7 @@ import flashcardRoutes from './routes/flashcard.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { createServer } from 'http';
 import { initSocketServer } from './services/socket.service';
+import { initializeIndices } from './services/rag/index-sync.service';
 
 const app = express();
 
@@ -94,6 +95,10 @@ const PORT = config.PORT || 5000;
 const start = async () => {
   try {
     await connectDatabase();
+    
+    // Re-index completed documents on startup
+    initializeIndices();
+
     const server = createServer(app);
     initSocketServer(server);
     server.listen(PORT, () => {
