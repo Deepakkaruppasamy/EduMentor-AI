@@ -8,7 +8,7 @@ export const config = {
   JWT_SECRET: process.env.JWT_SECRET || 'edumentor-super-secret-jwt-key-2024',
   JWT_EXPIRE: process.env.JWT_EXPIRE || '7d',
   GROQ_API_KEY: process.env.GROQ_API_KEY || '',
-  CHROMA_URL: process.env.CHROMA_URL || 'http://localhost:8000',
+  CHROMA_URL: process.env.CHROMA_URL || 'http://127.0.0.1:8000',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
   HF_API_KEY: process.env.HF_API_KEY || '',
   MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
