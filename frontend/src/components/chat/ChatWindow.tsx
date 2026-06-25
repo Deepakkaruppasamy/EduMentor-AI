@@ -201,42 +201,63 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
 
     // Add user message
     addMessage({ role: 'user', content: question, timestamp: new Date() });
-
+ 
     // Add loading assistant message
     const loadingId = addMessage({ role: 'assistant', content: '', timestamp: new Date(), isLoading: true });
-
+ 
     setLoading(true);
     setIsStreaming(true);
-
-    try {
-      const response = await chatService.query(question, course._id, currentChatId || undefined);
-
-      if (!currentChatId) {
-        setCurrentChatId(response.chatId);
-      }
-
+ 
+    let accumulatedContent = '';
+ 
+    const onToken = (token: string) => {
+      accumulatedContent += token;
       updateMessage(loadingId, {
-        content: response.answer,
-        isLoading: false,
-        trustScore: response.hallucination.trustScore,
-        confidenceScore: response.explainability.overallConfidence,
-        hallucination: response.hallucination as any,
-        explainability: response.explainability as any,
+        content: accumulatedContent,
+        isLoading: true,
       });
-
+    };
+ 
+    const onDone = (doneData: any) => {
+      if (!currentChatId && doneData.chatId) {
+        setCurrentChatId(doneData.chatId);
+      }
+ 
+      updateMessage(loadingId, {
+        content: accumulatedContent,
+        isLoading: false,
+        trustScore: doneData.hallucination.trustScore,
+        confidenceScore: doneData.explainability.overallConfidence,
+        hallucination: doneData.hallucination,
+        explainability: doneData.explainability,
+      });
+ 
       if (voiceMode) {
-        speakResponse(response.answer);
+        speakResponse(accumulatedContent);
       }
-    } catch (err: any) {
-      updateMessage(loadingId, {
-        content: '⚠️ Failed to get a response. Please check your connection and try again.',
-        isLoading: false,
-      });
-      toast.error(err.response?.data?.message || 'Failed to send message');
-    } finally {
+      
       setLoading(false);
       setIsStreaming(false);
-    }
+    };
+ 
+    const onError = (err: any) => {
+      updateMessage(loadingId, {
+        content: accumulatedContent || '⚠️ Failed to get a response. Please check your connection and try again.',
+        isLoading: false,
+      });
+      toast.error(err.message || 'Failed to send message');
+      setLoading(false);
+      setIsStreaming(false);
+    };
+ 
+    await chatService.queryStream(
+      question,
+      course._id,
+      onToken,
+      onDone,
+      onError,
+      currentChatId || undefined
+    );
   }, [input, isLoading, course._id, currentChatId, addMessage, updateMessage, setCurrentChatId, setLoading, voiceMode, speakResponse]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

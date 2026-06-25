@@ -7,6 +7,7 @@ import { Document, Course } from '../types';
 import { ConceptMap } from '../components/documents/ConceptMap';
 import { formatDate, formatFileSize } from '../utils/uuid';
 import toast from 'react-hot-toast';
+import { io } from 'socket.io-client';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: 'Pending', color: '#f6ad55', bg: 'rgba(246,173,85,0.1)' },
@@ -28,6 +29,62 @@ export const DocumentsPage: React.FC = () => {
       .catch(() => toast.error('Failed to load data'))
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (courses.length === 0) return;
+
+    // Connect to websocket server
+    const socket = io(window.location.origin, {
+      withCredentials: true,
+    });
+
+    // Join rooms for all courses
+    courses.forEach(c => {
+      socket.emit('join_course', c._id);
+    });
+
+    // Handle real-time status updates
+    socket.on('document:status', (data: {
+      docId: string;
+      status: 'pending' | 'processing' | 'completed' | 'failed';
+      totalChunks?: number;
+      summary?: string;
+      conceptMap?: string;
+      processingError?: string;
+      document?: any;
+    }) => {
+      setDocuments(prev => prev.map(doc => {
+        if (doc._id === data.docId) {
+          const updated = {
+            ...doc,
+            processingStatus: data.status,
+            totalChunks: data.totalChunks !== undefined ? data.totalChunks : doc.totalChunks,
+            summary: data.summary !== undefined ? data.summary : doc.summary,
+            conceptMap: data.conceptMap !== undefined ? data.conceptMap : doc.conceptMap,
+            processingError: data.processingError !== undefined ? data.processingError : doc.processingError,
+          };
+
+          if (doc.processingStatus !== data.status) {
+            if (data.status === 'completed') {
+              toast.success(`📄 "${doc.originalName}" is ready!`);
+            } else if (data.status === 'failed') {
+              toast.error(`❌ "${doc.originalName}" processing failed.`);
+            }
+          }
+
+          return updated;
+        }
+        return doc;
+      }));
+    });
+
+    return () => {
+      courses.forEach(c => {
+        socket.emit('leave_course', c._id);
+      });
+      socket.disconnect();
+    };
+  }, [courses]);
 
   const handleUploaded = (doc: Document) => {
     setDocuments(prev => [doc, ...prev]);

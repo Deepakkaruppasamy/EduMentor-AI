@@ -5,7 +5,7 @@ import Analytics from '../models/Analytics';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
-import { generateResponse } from '../services/ai/groq.service';
+import { generateResponse, generateResponseStream } from '../services/ai/groq.service';
 import { detectHallucination } from '../services/hallucination/hallucination.service';
 import { buildExplainableResult } from '../services/explainability/explainability.service';
 import { trackStudentQuery } from '../services/recommendations/recommendation.service';
@@ -110,6 +110,128 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
     },
     usage: llmResponse.usage,
   });
+});
+
+export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { question, courseId, chatId } = req.body;
+  const startTime = Date.now();
+
+  if (!question || !courseId) {
+    return res.status(400).json({ success: false, message: 'Question and courseId are required' });
+  }
+
+  const course = await Course.findById(courseId);
+  if (!course) {
+    return res.status(404).json({ success: false, message: 'Course not found' });
+  }
+
+  // 1. Hybrid RAG retrieval
+  const ragResult = await hybridRetrieve(question, course.chromaCollection);
+
+  // 2. Build chat history for context
+  let chat = chatId ? await Chat.findById(chatId) : null;
+  if (!chat) {
+    chat = new Chat({
+      user: req.user?._id,
+      course: courseId,
+      title: question.substring(0, 50),
+      messages: [],
+    });
+  }
+
+  const recentHistory = chat.messages.slice(-6).map((m) => ({
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+  }));
+  recentHistory.push({ role: 'user', content: question });
+
+  // Set SSE Headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  // Stream generated response
+  let fullAnswerText = '';
+  const onToken = (token: string) => {
+    fullAnswerText += token;
+    res.write(`data: ${JSON.stringify({ type: 'token', text: token })}\n\n`);
+  };
+
+  try {
+    await generateResponseStream(recentHistory, ragResult.context, onToken);
+
+    // 4. Hallucination detection
+    const chunkTexts = ragResult.chunks.map((c) => c.text);
+    const hallucinationResult = await detectHallucination(fullAnswerText, chunkTexts);
+
+    // 5. Explainable AI
+    const explainableResult = buildExplainableResult(
+      fullAnswerText,
+      ragResult.chunks,
+      ragResult.retrievalMethod
+    );
+
+    // 6. Save chat messages
+    chat.messages.push({
+      role: 'user',
+      content: question,
+      timestamp: new Date(),
+    });
+    chat.messages.push({
+      role: 'assistant',
+      content: fullAnswerText,
+      sources: ragResult.chunks.map((c) => ({
+        documentId: c.documentId as any,
+        documentName: c.documentName,
+        chunkText: c.text.substring(0, 200),
+        pageNumber: c.pageNumber,
+        score: c.finalScore,
+      })),
+      trustScore: hallucinationResult.trustScore,
+      confidenceScore: explainableResult.overallConfidence,
+      hallucinationFlags: hallucinationResult.hallucinatedSentences,
+      timestamp: new Date(),
+    });
+    chat.totalMessages = chat.messages.length;
+    await chat.save();
+
+    // 7. Track for recommendations
+    const topics = ragResult.chunks
+      .map((c) => c.metadata?.topic || '')
+      .filter(Boolean)
+      .slice(0, 3);
+    await trackStudentQuery(req.user!._id.toString(), courseId, question, topics);
+
+    // 8. Update analytics
+    const responseTime = Date.now() - startTime;
+    await updateDailyAnalytics(hallucinationResult.trustScore, responseTime, courseId);
+
+    // Send final analysis payload
+    const finalPayload = {
+      type: 'done',
+      chatId: chat._id,
+      hallucination: {
+        trustScore: hallucinationResult.trustScore,
+        status: hallucinationResult.status,
+        verdict: hallucinationResult.verdict,
+        flags: hallucinationResult.hallucinatedSentences,
+      },
+      explainability: {
+        sources: explainableResult.sources,
+        overallConfidence: explainableResult.overallConfidence,
+        retrievalMethod: explainableResult.retrievalMethod,
+        explanationSummary: explainableResult.explanationSummary,
+      },
+    };
+
+    res.write(`data: ${JSON.stringify(finalPayload)}\n\n`);
+  } catch (error: any) {
+    console.error('Error during streaming chat query:', error);
+    res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`);
+  } finally {
+    res.end();
+  }
 });
 
 export const getChatHistory = asyncHandler(async (req: AuthRequest, res: Response) => {

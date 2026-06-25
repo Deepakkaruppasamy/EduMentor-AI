@@ -16,6 +16,8 @@ import recommendationRoutes from './routes/recommendation.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import flashcardRoutes from './routes/flashcard.routes';
 import { errorHandler } from './middleware/errorHandler';
+import { createServer } from 'http';
+import { initSocketServer } from './services/socket.service';
 
 const app = express();
 
@@ -92,7 +94,9 @@ const PORT = config.PORT || 5000;
 const start = async () => {
   try {
     await connectDatabase();
-    app.listen(PORT, () => {
+    const server = createServer(app);
+    initSocketServer(server);
+    server.listen(PORT, () => {
       console.log(`🚀 EduMentor AI Server running on port ${PORT}`);
       console.log(`📚 Environment: ${config.NODE_ENV}`);
     });

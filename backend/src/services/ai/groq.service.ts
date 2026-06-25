@@ -99,3 +99,41 @@ export async function generateWithoutContext(
     model: completion.model || LLM_MODEL,
   };
 }
+
+export async function generateResponseStream(
+  messages: LLMMessage[],
+  context: string,
+  onToken: (token: string) => void,
+  temperature = 0.3
+): Promise<{ model: string }> {
+  if (!config.GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
+  }
+
+  const systemMessage: LLMMessage = {
+    role: 'system',
+    content: `${SYSTEM_PROMPT}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
+  };
+
+  const allMessages = [systemMessage, ...messages];
+
+  const stream = await groq.chat.completions.create({
+    model: LLM_MODEL,
+    messages: allMessages as any,
+    temperature,
+    max_tokens: 2048,
+    top_p: 0.9,
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const token = chunk.choices[0]?.delta?.content || '';
+    if (token) {
+      onToken(token);
+    }
+  }
+
+  return {
+    model: LLM_MODEL,
+  };
+}

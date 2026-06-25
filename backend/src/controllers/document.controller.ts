@@ -11,6 +11,7 @@ import { indexDocumentsForBM25 } from '../services/rag/bm25-search.service';
 import { generateEmbeddings } from '../utils/embeddings';
 import { v4 as uuidv4 } from 'uuid';
 import { generateSummaryAndMap } from '../services/ai/summarizer.service';
+import { notifyDocumentStatus } from '../services/socket.service';
 
 export const uploadDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!req.file) {
@@ -41,7 +42,7 @@ export const uploadDocument = asyncHandler(async (req: AuthRequest, res: Respons
   await Course.findByIdAndUpdate(courseId, { $push: { documents: doc._id } });
 
   // Process document asynchronously
-  processDocumentAsync(doc._id.toString(), req.file.path, fileExt, course.chromaCollection, doc.originalName);
+  processDocumentAsync(doc._id.toString(), courseId, req.file.path, fileExt, course.chromaCollection, doc.originalName);
 
   res.status(201).json({
     success: true,
@@ -52,6 +53,7 @@ export const uploadDocument = asyncHandler(async (req: AuthRequest, res: Respons
 
 async function processDocumentAsync(
   docId: string,
+  courseId: string,
   filePath: string,
   fileType: string,
   collectionName: string,
@@ -70,6 +72,7 @@ async function processDocumentAsync(
         processingStatus: 'failed',
         processingError: 'No text could be extracted from document',
       });
+      notifyDocumentStatus(courseId, docId, 'failed', { processingError: 'No text could be extracted from document' });
       return;
     }
 
@@ -114,7 +117,7 @@ async function processDocumentAsync(
     const studyGuide = await generateSummaryAndMap(cleanedText);
 
     // Update document record
-    await Document.findByIdAndUpdate(docId, {
+    const updatedDoc = await Document.findByIdAndUpdate(docId, {
       chunks: chunks.map((c) => ({
         index: c.index,
         text: c.text,
@@ -125,6 +128,13 @@ async function processDocumentAsync(
       summary: studyGuide.summary,
       conceptMap: studyGuide.conceptMap,
       processingStatus: 'completed',
+    }, { new: true });
+
+    notifyDocumentStatus(courseId, docId, 'completed', {
+      totalChunks: chunks.length,
+      summary: studyGuide.summary,
+      conceptMap: studyGuide.conceptMap,
+      document: updatedDoc
     });
 
     console.log(`✅ Document ${docName} processed: ${chunks.length} chunks`);
@@ -134,6 +144,7 @@ async function processDocumentAsync(
       processingStatus: 'failed',
       processingError: error.message,
     });
+    notifyDocumentStatus(courseId, docId, 'failed', { processingError: error.message });
   }
 }
 
