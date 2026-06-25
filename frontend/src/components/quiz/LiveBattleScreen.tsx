@@ -71,6 +71,19 @@ export const LiveBattleScreen: React.FC<LiveBattleScreenProps> = ({ courses, onC
     });
     socketRef.current = socket;
 
+    // Auto-join if joinSession param is present in URL
+    const queryParams = new URLSearchParams(window.location.search);
+    const joinSessionId = queryParams.get('joinSession');
+    if (joinSessionId && !isFaculty) {
+      socket.emit('quiz:join', {
+        sessionId: joinSessionId,
+        studentId: user?.id,
+        name: user?.name,
+      });
+      setSession({ _id: joinSessionId });
+      setGameState('lobby');
+    }
+
     // Listeners
     socket.on('quiz:lobby_created', (data: any) => {
       setSession(data);

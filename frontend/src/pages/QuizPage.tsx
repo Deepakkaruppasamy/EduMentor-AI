@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { QuizGenerator } from '../components/quiz/QuizGenerator';
 import { QuizViewer } from '../components/quiz/QuizViewer';
@@ -25,6 +26,15 @@ export const QuizPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'practice' | 'assigned'>('practice');
   const [showLiveBattle, setShowLiveBattle] = useState(false);
   const [showOralExam, setShowOralExam] = useState(false);
+
+  const [searchParams] = useSearchParams();
+  const joinSession = searchParams.get('joinSession');
+
+  useEffect(() => {
+    if (joinSession) {
+      setShowLiveBattle(true);
+    }
+  }, [joinSession]);
 
   const isFaculty = user?.role === 'faculty' || user?.role === 'admin';
 

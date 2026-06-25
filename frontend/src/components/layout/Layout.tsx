@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/auth.store';
 import { courseService } from '../../services/course.service';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -56,6 +58,27 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>,
         { duration: 8000 }
       );
+    });
+
+    // Listen to real-time live battles hosted by faculty
+    socket.on('quiz:live_announced', (data: { sessionId: string; topic: string; courseCode: string }) => {
+      if (user?.role === 'student') {
+        toast((t) => (
+          <div className="flex flex-col gap-1 text-xs">
+            <p className="font-bold text-white">⚔️ Live Quiz Battle Starting!</p>
+            <p className="text-white/70">Join battle in <strong>{data.courseCode}</strong> on <strong>{data.topic}</strong></p>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                navigate(`/quiz?joinSession=${data.sessionId}`);
+              }}
+              className="btn-primary py-1.5 px-3.5 mt-1.5 text-[10px]"
+            >
+              Join Battle
+            </button>
+          </div>
+        ), { duration: 15000, icon: '⚔️' });
+      }
     });
 
     return () => {
