@@ -18,7 +18,7 @@ export const ChatPage: React.FC = () => {
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { selectedCourse, setSelectedCourse, clearChat, setCurrentChatId, loadMessages, activeCitation, setActiveCitation } = useChatStore();
+  const { selectedCourse, setSelectedCourse, clearChat, currentChatId, setCurrentChatId, loadMessages, activeCitation, setActiveCitation } = useChatStore();
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -40,6 +40,17 @@ export const ChatPage: React.FC = () => {
     };
     loadCourses();
   }, []);
+
+  // Synchronize currentChatId to URL search params
+  useEffect(() => {
+    if (currentChatId) {
+      const activeId = searchParams.get('chatId');
+      if (activeId !== currentChatId) {
+        setSearchParams({ chatId: currentChatId });
+        refreshHistory();
+      }
+    }
+  }, [currentChatId, searchParams, setSearchParams]);
 
   // Load specific chat if chatId param present
   useEffect(() => {
@@ -64,6 +75,29 @@ export const ChatPage: React.FC = () => {
         timestamp: new Date(m.timestamp),
         trustScore: m.trustScore,
         confidenceScore: m.confidenceScore,
+        explainability: m.sources && m.sources.length > 0 ? {
+          sources: m.sources.map((s: any, idx: number) => ({
+            rank: idx + 1,
+            documentName: s.documentName,
+            pageNumber: s.pageNumber,
+            excerpt: s.chunkText,
+            relevanceScore: s.score,
+            confidencePercent: Math.round(s.score * 100),
+          })),
+          overallConfidence: m.confidenceScore || 0,
+          retrievalMethod: 'Hybrid (Vector + BM25)',
+          explanationSummary: 'Source passages cited from course documents.',
+        } : undefined,
+        hallucination: m.trustScore !== undefined ? {
+          trustScore: m.trustScore,
+          status: m.trustScore >= 75 ? 'verified' : m.trustScore >= 45 ? 'partially_verified' : 'hallucinated',
+          verdict: m.trustScore >= 75 
+            ? 'Response is highly consistent with course materials.' 
+            : m.trustScore >= 45 
+            ? 'Response is partially consistent but may contain unverified statements.' 
+            : 'Response contains major inconsistencies with course materials.',
+          flags: m.hallucinationFlags || [],
+        } : undefined,
       }));
       loadMessages(messages);
     } catch (err) {
