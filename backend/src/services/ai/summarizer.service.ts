@@ -33,9 +33,15 @@ Return ONLY a valid JSON object matching this structure:
     const match = response.content.match(/\{[\s\S]*\}/);
     if (match) {
       const parsed = JSON.parse(match[0]);
+      
+      let conceptMapStr = 'Concept map unavailable.';
+      if (parsed.conceptMap) {
+        conceptMapStr = convertConceptMapToString(parsed.conceptMap);
+      }
+
       return {
         summary: parsed.summary || 'Summary unavailable.',
-        conceptMap: parsed.conceptMap || 'Concept map unavailable.',
+        conceptMap: conceptMapStr,
       };
     }
   } catch (err: any) {
@@ -50,4 +56,41 @@ Return ONLY a valid JSON object matching this structure:
     summary: 'Summary generation failed. Please check the server configuration and verify your GROQ_API_KEY.',
     conceptMap: 'Concept map generation failed. Please check the server configuration and verify your GROQ_API_KEY.',
   };
+}
+
+/**
+ * Recursively converts a JSON concept map object/array into an indented text outline
+ */
+function convertConceptMapToString(conceptMap: any, depth = 0): string {
+  if (typeof conceptMap === 'string') {
+    return conceptMap;
+  }
+  
+  if (typeof conceptMap !== 'object' || conceptMap === null) {
+    return String(conceptMap);
+  }
+
+  const indent = '  '.repeat(depth);
+  let result = '';
+
+  if (Array.isArray(conceptMap)) {
+    for (const item of conceptMap) {
+      if (typeof item === 'object' && item !== null) {
+        result += convertConceptMapToString(item, depth);
+      } else {
+        result += `${indent}- ${item}\n`;
+      }
+    }
+  } else {
+    for (const [key, value] of Object.entries(conceptMap)) {
+      if (typeof value === 'object' && value !== null) {
+        result += `${indent}${key}\n`;
+        result += convertConceptMapToString(value, depth + 1);
+      } else {
+        result += `${indent}- ${key}: ${value}\n`;
+      }
+    }
+  }
+
+  return result;
 }
