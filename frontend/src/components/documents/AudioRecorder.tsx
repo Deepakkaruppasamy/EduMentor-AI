@@ -18,7 +18,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ courses, onUploade
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<any>(null);
 
   useEffect(() => {
     return () => {

@@ -460,7 +460,7 @@ export const AIBuddyAvatar: React.FC<AIBuddyAvatarProps> = ({ state, size = 64 }
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeDasharray="2 3"
-                animate={{ strokeDashOffset: [0, -10] }}
+                animate={{ strokeDashoffset: [0, -10] }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
             ) : (

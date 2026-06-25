@@ -14,6 +14,9 @@ interface StudentGrade {
   name: string;
   email: string;
   lastLogin?: string;
+  avatar?: string;
+  bio?: string;
+  department?: string;
   avgQuizScore: number;
   totalQueries: number;
   weakTopics: string[];
