@@ -19,6 +19,7 @@ const FACULTY_LINKS = [
   { to: '/admin', icon: '📈', label: 'Dashboard' },
   { to: '/courses', icon: '📚', label: 'Manage Courses' },
   { to: '/documents', icon: '📁', label: 'Upload Documents' },
+  { to: '/quiz', icon: '⚔️', label: 'Quiz Battle Arena' },
   { to: '/gradebook', icon: '📒', label: 'Gradebook' },
   { to: '/analytics', icon: '📊', label: 'Analytics' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
