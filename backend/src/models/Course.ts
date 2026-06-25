@@ -9,6 +9,7 @@ export interface ICourse extends Document {
   documents: mongoose.Types.ObjectId[];
   isActive: boolean;
   chromaCollection: string;
+  image?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const CourseSchema = new Schema<ICourse>(
     documents: [{ type: Schema.Types.ObjectId, ref: 'Document' }],
     isActive: { type: Boolean, default: true },
     chromaCollection: { type: String, required: true },
+    image: { type: String, default: '' },
   },
   { timestamps: true }
 );

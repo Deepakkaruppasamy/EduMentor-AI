@@ -130,4 +130,23 @@ export const quizService = {
     const { data } = await api.get(`/quiz/${id}`);
     return data.quiz;
   },
+  assign: async (params: {
+    courseId: string;
+    topic: string;
+    questionType: string;
+    difficulty: string;
+    count: number;
+    dueDate?: string;
+  }): Promise<any> => {
+    const { data } = await api.post('/quiz/assign', params);
+    return data;
+  },
+  getAssignedQuizzes: async (): Promise<any[]> => {
+    const { data } = await api.get('/quiz/assignments');
+    return data.assignments;
+  },
+  getAssignmentAnalytics: async (assignmentId: string): Promise<any> => {
+    const { data } = await api.get(`/quiz/assignments/${assignmentId}`);
+    return data.analytics;
+  },
 };

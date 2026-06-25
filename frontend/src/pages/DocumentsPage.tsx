@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { DocumentUploader } from '../components/documents/DocumentUploader';
+import { AudioRecorder } from '../components/documents/AudioRecorder';
 import { documentService } from '../services/document.service';
 import { courseService } from '../services/course.service';
 import { Document, Course } from '../types';
@@ -22,6 +23,8 @@ export const DocumentsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [filterCourse, setFilterCourse] = useState('');
   const [selectedDocForGuide, setSelectedDocForGuide] = useState<Document | null>(null);
+  const [activeUploadTab, setActiveUploadTab] = useState<'upload' | 'record'>('upload');
+  const [activeModalTab, setActiveModalTab] = useState<'summary' | 'transcript'>('summary');
 
   useEffect(() => {
     Promise.all([documentService.getAll(), courseService.getAll()])
@@ -61,6 +64,7 @@ export const DocumentsPage: React.FC = () => {
             totalChunks: data.totalChunks !== undefined ? data.totalChunks : doc.totalChunks,
             summary: data.summary !== undefined ? data.summary : doc.summary,
             conceptMap: data.conceptMap !== undefined ? data.conceptMap : doc.conceptMap,
+            transcript: (data as any).transcript !== undefined ? (data as any).transcript : doc.transcript,
             processingError: data.processingError !== undefined ? data.processingError : doc.processingError,
           };
 
@@ -105,7 +109,17 @@ export const DocumentsPage: React.FC = () => {
     return courseId === filterCourse;
   }) : documents;
 
-  const FILE_ICONS: Record<string, string> = { pdf: '📄', docx: '📝', pptx: '📊', txt: '📃' };
+  const FILE_ICONS: Record<string, string> = {
+    pdf: '📄',
+    docx: '📝',
+    pptx: '📊',
+    txt: '📃',
+    mp3: '🎵',
+    wav: '🎵',
+    m4a: '🎵',
+    webm: '🎵',
+    mpeg: '🎵',
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -115,10 +129,36 @@ export const DocumentsPage: React.FC = () => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Uploader */}
+        {/* Uploader / Recorder Panel */}
         <div className="glass-card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white/80">📤 Upload Documents</h2>
-          <DocumentUploader courses={courses} onUploaded={handleUploaded} />
+          <div className="flex gap-2 border-b border-white/5 pb-2 mb-4">
+            <button
+              onClick={() => setActiveUploadTab('upload')}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+              style={{
+                background: activeUploadTab === 'upload' ? 'rgba(255,255,255,0.05)' : 'transparent',
+                color: activeUploadTab === 'upload' ? '#fff' : 'rgba(255,255,255,0.4)',
+              }}
+            >
+              📤 Upload Files
+            </button>
+            <button
+              onClick={() => setActiveUploadTab('record')}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+              style={{
+                background: activeUploadTab === 'record' ? 'rgba(255,255,255,0.05)' : 'transparent',
+                color: activeUploadTab === 'record' ? '#fff' : 'rgba(255,255,255,0.4)',
+              }}
+            >
+              🎙️ Record Lecture / Audio
+            </button>
+          </div>
+          
+          {activeUploadTab === 'upload' ? (
+            <DocumentUploader courses={courses} onUploaded={handleUploaded} />
+          ) : (
+            <AudioRecorder courses={courses} onUploaded={handleUploaded} />
+          )}
         </div>
 
         {/* Document List */}
@@ -186,24 +226,61 @@ export const DocumentsPage: React.FC = () => {
               <button onClick={() => setSelectedDocForGuide(null)} className="text-white/40 hover:text-white text-lg">✕</button>
             </div>
             
+            {/* Modal Tabs if transcript exists */}
+            {selectedDocForGuide.transcript && (
+              <div className="flex gap-2 border-b border-white/5 pb-1">
+                <button
+                  onClick={() => setActiveModalTab('summary')}
+                  className="px-3 py-1 text-xs font-semibold border-b-2 transition-all"
+                  style={{
+                    color: activeModalTab === 'summary' ? '#fff' : 'rgba(255,255,255,0.4)',
+                    borderColor: activeModalTab === 'summary' ? '#4f63ff' : 'transparent',
+                  }}
+                >
+                  📊 Summary & Mindmap
+                </button>
+                <button
+                  onClick={() => setActiveModalTab('transcript')}
+                  className="px-3 py-1 text-xs font-semibold border-b-2 transition-all"
+                  style={{
+                    color: activeModalTab === 'transcript' ? '#fff' : 'rgba(255,255,255,0.4)',
+                    borderColor: activeModalTab === 'transcript' ? '#4f63ff' : 'transparent',
+                  }}
+                >
+                  🎙️ Structured Notes & Transcript
+                </button>
+              </div>
+            )}
+            
             <div className="flex-1 overflow-y-auto space-y-5 pr-2">
-              <div>
-                <h4 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-2">📋 Summary Description</h4>
-                <p className="text-xs text-white/70 leading-relaxed bg-white/[0.02] border border-white/[0.04] p-4 rounded-xl whitespace-pre-line font-light">
-                  {selectedDocForGuide.summary || 'Summary unavailable. Make sure your Groq API Key is configured.'}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-2">🗺️ Conceptual Mindmap</h4>
-                {selectedDocForGuide.conceptMap ? (
-                  <ConceptMap conceptMapText={selectedDocForGuide.conceptMap} />
-                ) : (
-                  <div className="text-center py-8 rounded-xl border border-dashed border-white/5 text-xs text-white/20">
-                    Concept Mindmap outline unavailable.
+              {activeModalTab === 'summary' || !selectedDocForGuide.transcript ? (
+                <>
+                  <div>
+                    <h4 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-2">📋 Summary Description</h4>
+                    <p className="text-xs text-white/70 leading-relaxed bg-white/[0.02] border border-white/[0.04] p-4 rounded-xl whitespace-pre-line font-light">
+                      {selectedDocForGuide.summary || 'Summary unavailable. Make sure your Groq API Key is configured.'}
+                    </p>
                   </div>
-                )}
-              </div>
+
+                  <div>
+                    <h4 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-2">🗺️ Conceptual Mindmap</h4>
+                    {selectedDocForGuide.conceptMap ? (
+                      <ConceptMap conceptMapText={selectedDocForGuide.conceptMap} />
+                    ) : (
+                      <div className="text-center py-8 rounded-xl border border-dashed border-white/5 text-xs text-white/20">
+                        Concept Mindmap outline unavailable.
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <h4 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-2">🎙️ Formatted Notes & Transcription</h4>
+                  <div className="text-xs text-white/70 leading-relaxed bg-white/[0.02] border border-white/[0.04] p-4 rounded-xl whitespace-pre-line font-light font-mono max-h-[50vh] overflow-y-auto">
+                    {selectedDocForGuide.transcript}
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

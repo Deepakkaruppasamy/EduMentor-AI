@@ -8,6 +8,9 @@ export interface IUser extends Document {
   role: 'student' | 'faculty' | 'admin';
   courses: mongoose.Types.ObjectId[];
   avatar?: string;
+  bio?: string;
+  qualifications?: string;
+  department?: string;
   isActive: boolean;
   lastLogin?: Date;
   createdAt: Date;
@@ -30,6 +33,9 @@ const UserSchema = new Schema<IUser>(
     role: { type: String, enum: ['student', 'faculty', 'admin'], default: 'student' },
     courses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
     avatar: { type: String },
+    bio: { type: String, default: '' },
+    qualifications: { type: String, default: '' },
+    department: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
   },

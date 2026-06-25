@@ -6,6 +6,9 @@ export interface User {
   role: 'student' | 'faculty' | 'admin';
   courses?: Course[];
   avatar?: string;
+  bio?: string;
+  qualifications?: string;
+  department?: string;
 }
 
 export interface AuthState {
@@ -21,11 +24,20 @@ export interface Course {
   title: string;
   code: string;
   description: string;
-  faculty: { name: string; email: string } | string;
+  faculty: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    bio?: string;
+    qualifications?: string;
+    department?: string;
+  } | string;
   students: string[];
   documents: Document[];
   chromaCollection: string;
   isActive: boolean;
+  image?: string;
   createdAt: string;
 }
 
@@ -34,13 +46,14 @@ export interface Document {
   _id: string;
   filename: string;
   originalName: string;
-  fileType: 'pdf' | 'docx' | 'pptx' | 'txt';
+  fileType: 'pdf' | 'docx' | 'pptx' | 'txt' | 'mp3' | 'wav' | 'm4a' | 'webm' | 'mpeg';
   fileSize: number;
   course: string | Course;
   processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
   totalChunks: number;
   summary?: string;
   conceptMap?: string;
+  transcript?: string;
   processingError?: string;
   createdAt: string;
 }
@@ -124,6 +137,9 @@ export interface Quiz {
   maxScore: number;
   status: 'generated' | 'in_progress' | 'completed';
   completedAt?: string;
+  assignedBy?: { _id: string; name: string; email: string } | string;
+  dueDate?: string;
+  assignmentId?: string;
   createdAt: string;
 }
 

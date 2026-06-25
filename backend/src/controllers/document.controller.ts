@@ -12,6 +12,7 @@ import { generateEmbeddings } from '../utils/embeddings';
 import { v4 as uuidv4 } from 'uuid';
 import { generateSummaryAndMap } from '../services/ai/summarizer.service';
 import { notifyDocumentStatus } from '../services/socket.service';
+import { transcribeAudioFile, structureTranscript } from '../services/ai/groq.service';
 
 export const uploadDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!req.file) {
@@ -25,12 +26,14 @@ export const uploadDocument = asyncHandler(async (req: AuthRequest, res: Respons
   }
 
   const fileExt = path.extname(req.file.originalname).replace('.', '').toLowerCase();
+  const AUDIO_EXTENSIONS = ['mp3', 'wav', 'm4a', 'webm', 'mpeg'];
+  const isAudio = AUDIO_EXTENSIONS.includes(fileExt);
 
   // Create document record
   const doc = await Document.create({
     filename: req.file.filename,
     originalName: req.file.originalname,
-    fileType: fileExt,
+    fileType: fileExt as any,
     filePath: req.file.path,
     fileSize: req.file.size,
     course: courseId,
@@ -42,11 +45,15 @@ export const uploadDocument = asyncHandler(async (req: AuthRequest, res: Respons
   await Course.findByIdAndUpdate(courseId, { $push: { documents: doc._id } });
 
   // Process document asynchronously
-  processDocumentAsync(doc._id.toString(), courseId, req.file.path, fileExt, course.chromaCollection, doc.originalName);
+  if (isAudio) {
+    processAudioLectureAsync(doc._id.toString(), courseId, req.file.path, fileExt, course.chromaCollection, doc.originalName);
+  } else {
+    processDocumentAsync(doc._id.toString(), courseId, req.file.path, fileExt, course.chromaCollection, doc.originalName);
+  }
 
   res.status(201).json({
     success: true,
-    message: 'Document uploaded and processing started',
+    message: isAudio ? 'Lecture audio uploaded and transcription started' : 'Document uploaded and processing started',
     document: doc,
   });
 });
@@ -147,6 +154,118 @@ async function processDocumentAsync(
     notifyDocumentStatus(courseId, docId, 'failed', { processingError: error.message });
   }
 }
+
+async function processAudioLectureAsync(
+  docId: string,
+  courseId: string,
+  filePath: string,
+  fileType: string,
+  collectionName: string,
+  docName: string
+): Promise<void> {
+  try {
+    // 1. Transcribe audio using Groq Whisper API
+    const rawTranscript = await transcribeAudioFile(filePath);
+    
+    if (!rawTranscript || rawTranscript.trim().length === 0) {
+      await Document.findByIdAndUpdate(docId, {
+        processingStatus: 'failed',
+        processingError: 'Transcription resulted in empty text',
+      });
+      notifyDocumentStatus(courseId, docId, 'failed', { processingError: 'Transcription resulted in empty text' });
+      return;
+    }
+
+    // 2. Format transcript into beautiful structured markdown notes
+    const structuredMarkdown = await structureTranscript(rawTranscript);
+    const cleanedText = cleanText(structuredMarkdown);
+
+    // 3. Chunk text
+    const chunks = chunkText(cleanedText, 512, 50);
+
+    if (chunks.length === 0) {
+      await Document.findByIdAndUpdate(docId, {
+        processingStatus: 'failed',
+        processingError: 'No text could be structured from audio transcript',
+      });
+      notifyDocumentStatus(courseId, docId, 'failed', { processingError: 'No text could be structured from audio transcript' });
+      return;
+    }
+
+    // 4. Add to ChromaDB for vector retrieval
+    const chromaDocs = chunks.map((chunk) => ({
+      id: `${docId}_chunk_${chunk.index}`,
+      text: chunk.text,
+      metadata: {
+        documentId: docId,
+        documentName: docName,
+        chunkIndex: chunk.index,
+        pageNumber: chunk.pageNumber || 1,
+      },
+    }));
+
+    await addDocumentsToCollection(collectionName, chromaDocs);
+
+    // 5. Update BM25 index
+    const existingDocs = await Document.find({ processingStatus: 'completed' });
+    const allChunks: { id: string; text: string; metadata: Record<string, any> }[] = [];
+    for (const existDoc of existingDocs) {
+      const chunksList = existDoc.chunks || [];
+      for (const chunk of chunksList) {
+        allChunks.push({
+          id: `${existDoc._id}_chunk_${chunk.index}`,
+          text: chunk.text,
+          metadata: { documentId: existDoc._id, documentName: existDoc.originalName, pageNumber: chunk.pageNumber },
+        });
+      }
+    }
+    // Add new chunks
+    for (const chunk of chunks) {
+      allChunks.push({
+        id: `${docId}_chunk_${chunk.index}`,
+        text: chunk.text,
+        metadata: { documentId: docId, documentName: docName, pageNumber: chunk.pageNumber },
+      });
+    }
+    indexDocumentsForBM25(collectionName, allChunks);
+
+    // 6. Generate AI Summary and Concept map
+    const studyGuide = await generateSummaryAndMap(cleanedText);
+
+    // 7. Update document record
+    const updatedDoc = await Document.findByIdAndUpdate(docId, {
+      chunks: chunks.map((c) => ({
+        index: c.index,
+        text: c.text,
+        pageNumber: c.pageNumber,
+        chromaId: `${docId}_chunk_${c.index}`,
+      })),
+      totalChunks: chunks.length,
+      summary: studyGuide.summary,
+      conceptMap: studyGuide.conceptMap,
+      transcript: structuredMarkdown,
+      processingStatus: 'completed',
+    }, { new: true });
+
+    notifyDocumentStatus(courseId, docId, 'completed', {
+      totalChunks: chunks.length,
+      summary: studyGuide.summary,
+      conceptMap: studyGuide.conceptMap,
+      transcript: structuredMarkdown,
+      document: updatedDoc
+    });
+
+    console.log(`✅ Audio Lecture ${docName} processed: ${chunks.length} chunks`);
+  } catch (error: any) {
+    console.error('Audio lecture processing failed:', error);
+    await Document.findByIdAndUpdate(docId, {
+      processingStatus: 'failed',
+      processingError: error.message,
+    });
+    notifyDocumentStatus(courseId, docId, 'failed', { processingError: error.message });
+  }
+}
+
 
 export const getDocuments = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { courseId } = req.query;

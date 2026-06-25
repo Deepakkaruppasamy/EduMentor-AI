@@ -25,6 +25,10 @@ export const courseService = {
     const { data } = await api.post('/course/seed');
     return data.courses;
   },
+  update: async (id: string, courseData: Partial<Course>): Promise<Course> => {
+    const { data } = await api.put(`/course/${id}`, courseData);
+    return data.course;
+  },
   delete: async (id: string): Promise<void> => {
     await api.delete(`/course/${id}`);
   },

@@ -1,5 +1,6 @@
 import Groq from 'groq-sdk';
 import { config } from '../../config/env';
+import fs from 'fs';
 
 const groq = new Groq({ apiKey: config.GROQ_API_KEY });
 const LLM_MODEL = 'llama-3.3-70b-versatile';
@@ -136,4 +137,42 @@ export async function generateResponseStream(
   return {
     model: LLM_MODEL,
   };
+}
+
+export async function transcribeAudioFile(filePath: string): Promise<string> {
+  if (!config.GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
+  }
+
+  const transcription = await groq.audio.transcriptions.create({
+    file: fs.createReadStream(filePath),
+    model: 'whisper-large-v3',
+  });
+
+  return transcription.text || '';
+}
+
+export async function structureTranscript(rawText: string): Promise<string> {
+  const messages: LLMMessage[] = [
+    {
+      role: 'user',
+      content: `The following is a raw lecture transcription. Please structure and format it into a comprehensive, high-quality study guide / lecture notes in Markdown.
+- Add clear headings and subheadings.
+- Organize the concepts logically with bullet points and bold text for key terms.
+- Clean up filler words (like "um", "ah", "you know") and correct any obvious speech-to-text typos.
+- Add a "Key Takeaways" or summary section at the end.
+- Do NOT lose any pedagogical/educational details; keep all explanations, formulas, definitions, and examples intact.
+
+Raw Transcript:
+${rawText}`
+    }
+  ];
+
+  const response = await generateWithoutContext(
+    messages,
+    'You are an expert curriculum designer and academic editor. Your job is to format raw voice transcripts into beautiful, comprehensive, and highly readable lecture notes.',
+    0.3
+  );
+
+  return response.content;
 }

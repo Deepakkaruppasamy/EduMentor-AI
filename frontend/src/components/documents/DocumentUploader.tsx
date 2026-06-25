@@ -29,7 +29,16 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ courses, onU
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'application/pdf': ['.pdf'], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'], 'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'], 'text/plain': ['.txt'] },
+    accept: {
+      'application/pdf': ['.pdf'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+      'text/plain': ['.txt'],
+      'audio/mpeg': ['.mp3', '.mpeg'],
+      'audio/wav': ['.wav'],
+      'audio/x-m4a': ['.m4a'],
+      'audio/webm': ['.webm'],
+    },
     maxSize: 50 * 1024 * 1024,
   });
 
@@ -78,7 +87,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ courses, onU
         <p className="text-sm font-medium text-white/70">
           {isDragActive ? 'Drop files here' : 'Drag & drop files or click to browse'}
         </p>
-        <p className="mt-1 text-xs text-white/35">Supports PDF, DOCX, PPTX, TXT · Max 50MB each</p>
+        <p className="mt-1 text-xs text-white/35">Supports PDF, DOCX, PPTX, TXT, MP3, WAV, M4A, WEBM · Max 50MB each</p>
       </div>
 
       {/* File List */}
@@ -88,7 +97,10 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ courses, onU
             className="glass-card p-4">
             <div className="flex items-center gap-3">
               <div className="text-xl">
-                {uf.file.name.endsWith('.pdf') ? '📄' : uf.file.name.endsWith('.docx') ? '📝' : uf.file.name.endsWith('.pptx') ? '📊' : '📃'}
+                {uf.file.name.endsWith('.pdf') ? '📄' :
+                 uf.file.name.endsWith('.docx') || uf.file.name.endsWith('.doc') ? '📝' :
+                 uf.file.name.endsWith('.pptx') ? '📊' :
+                 uf.file.name.endsWith('.txt') ? '📃' : '🎵'}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">

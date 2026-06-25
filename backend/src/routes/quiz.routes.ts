@@ -1,12 +1,26 @@
 import { Router } from 'express';
-import { generateQuiz, evaluateQuiz, getStudentQuizzes, getQuizById } from '../controllers/quiz.controller';
-import { protect } from '../middleware/auth';
+import {
+  generateQuiz,
+  evaluateQuiz,
+  getStudentQuizzes,
+  getQuizById,
+  assignQuiz,
+  getAssignedQuizzesList,
+  getAssignmentDetailAnalytics,
+} from '../controllers/quiz.controller';
+import { protect, authorize } from '../middleware/auth';
 
 const router = Router();
 
 router.post('/generate', protect, generateQuiz);
 router.post('/evaluate', protect, evaluateQuiz);
 router.get('/my', protect, getStudentQuizzes);
+
+// Faculty & Admin assigned quizzes routes
+router.post('/assign', protect, authorize('faculty', 'admin'), assignQuiz);
+router.get('/assignments', protect, authorize('faculty', 'admin'), getAssignedQuizzesList);
+router.get('/assignments/:assignmentId', protect, authorize('faculty', 'admin'), getAssignmentDetailAnalytics);
+
 router.get('/:id', protect, getQuizById);
 
 export default router;

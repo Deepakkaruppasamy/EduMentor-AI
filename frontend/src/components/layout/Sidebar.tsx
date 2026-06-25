@@ -12,6 +12,7 @@ const STUDENT_LINKS = [
   { to: '/flashcards', icon: '🎴', label: 'Flashcards' },
   { to: '/courses', icon: '📚', label: 'My Courses' },
   { to: '/recommendations', icon: '🎯', label: 'Recommendations' },
+  { to: '/profile', icon: '👤', label: 'My Profile' },
 ];
 
 const FACULTY_LINKS = [
@@ -20,6 +21,7 @@ const FACULTY_LINKS = [
   { to: '/documents', icon: '📁', label: 'Upload Documents' },
   { to: '/gradebook', icon: '📒', label: 'Gradebook' },
   { to: '/analytics', icon: '📊', label: 'Analytics' },
+  { to: '/profile', icon: '👤', label: 'My Profile' },
 ];
 
 export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
@@ -49,10 +51,14 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
       {/* User info */}
       <div className="mx-4 mb-4 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold"
-            style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}>
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
+          {user?.avatar ? (
+            <img src={user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover" />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}>
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold text-white">{user?.name}</div>
             <div className="truncate text-[11px] capitalize text-white/50">{user?.role}</div>

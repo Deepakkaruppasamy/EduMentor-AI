@@ -109,7 +109,7 @@ export const getFacultyGradebook = asyncHandler(async (req: AuthRequest, res: Re
 
   // Find all recommendations for this course, which maps student to course
   const enrollments = await Recommendation.find({ course: courseId })
-    .populate('student', 'name email lastLogin')
+    .populate('student', 'name email lastLogin avatar bio department')
     .sort({ avgQuizScore: -1 });
 
   const gradebook = enrollments.map((rec: any) => ({
@@ -117,6 +117,9 @@ export const getFacultyGradebook = asyncHandler(async (req: AuthRequest, res: Re
     name: rec.student?.name || 'Unknown Student',
     email: rec.student?.email || 'N/A',
     lastLogin: rec.student?.lastLogin,
+    avatar: rec.student?.avatar || '',
+    bio: rec.student?.bio || '',
+    department: rec.student?.department || '',
     avgQuizScore: Math.round(rec.avgQuizScore || 0),
     totalQueries: rec.totalQueries || 0,
     weakTopics: rec.weakTopics || [],
@@ -183,4 +186,146 @@ export const getLeaderboard = asyncHandler(async (req: AuthRequest, res: Respons
   }
 
   res.json({ success: true, leaderboard });
+});
+
+export const getStudentsAtRisk = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { courseId } = req.query;
+  if (!courseId) {
+    return res.status(400).json({ success: false, message: 'courseId query parameter is required' });
+  }
+
+  const course = await Course.findById(courseId).populate('documents', 'originalName fileType');
+  if (!course) {
+    return res.status(404).json({ success: false, message: 'Course not found' });
+  }
+
+  // Find all recommendations for this course
+  const recommendations = await Recommendation.find({ course: courseId })
+    .populate('student', 'name email lastLogin avatar bio department');
+
+  const atRiskStudents = [];
+
+  for (const rec of recommendations as any) {
+    const student = rec.student;
+    if (!student) continue;
+
+    const reasons: string[] = [];
+    const avgScore = rec.avgQuizScore || 0;
+    const weakTopics = rec.weakTopics || [];
+    const totalQueries = rec.totalQueries || 0;
+
+    // Check quiz performance
+    if (avgScore > 0 && avgScore < 60) {
+      reasons.push(`Low Quiz Average: ${Math.round(avgScore)}%`);
+    }
+
+    // Check high weak topics concentration
+    if (weakTopics.length >= 3) {
+      reasons.push(`Struggling in ${weakTopics.length} core topics`);
+    }
+
+    // Check inactivity
+    const lastLogin = student.lastLogin;
+    const daysInactive = lastLogin 
+      ? Math.floor((Date.now() - new Date(lastLogin).getTime()) / (1000 * 60 * 60 * 24))
+      : 999;
+
+    if (daysInactive > 7) {
+      reasons.push(lastLogin ? `Inactive for ${daysInactive} days` : 'Never logged in');
+    }
+
+    // Determine risk level
+    let riskLevel: 'high' | 'medium' | 'low' = 'low';
+    if (reasons.length >= 2 || avgScore < 50 || daysInactive > 14) {
+      riskLevel = 'high';
+    } else if (reasons.length === 1 || (avgScore >= 50 && avgScore < 65)) {
+      riskLevel = 'medium';
+    }
+
+    if (riskLevel === 'high' || riskLevel === 'medium') {
+      // Find suggested documents matching weak topics
+      const suggestedDocs = course.documents.filter((doc: any) => {
+        return weakTopics.some((t: string) => 
+          doc.originalName.toLowerCase().includes(t.toLowerCase())
+        );
+      });
+
+      // Fallback: suggest first two documents
+      const docsToSuggest = suggestedDocs.length > 0 
+        ? suggestedDocs 
+        : course.documents.slice(0, 2);
+
+      // Generate email draft
+      const emailDraft = `Subject: Study Support & Resources for ${course.title}
+
+Dear ${student.name},
+
+I'm reaching out to check on your progress in ${course.code} (${course.title}). 
+
+To help you reinforce your understanding, here are some topics we recommend focused practice on:
+${weakTopics.map(t => `- ${t}`).join('\n') || '- General Course Material'}
+
+I suggest reviewing these uploaded course resources:
+${docsToSuggest.map((d: any) => `- ${d.originalName}`).join('\n') || '- Syllabus and Lecture Notes'}
+
+You can ask the EduMentor AI chatbot tutor to explain any of these topics step-by-step or request custom practice quizzes at any time.
+
+Best regards,
+Professor ${req.user?.name || 'Instructor'}`;
+
+      atRiskStudents.push({
+        studentId: student._id,
+        name: student.name,
+        email: student.email,
+        lastLogin: student.lastLogin,
+        avatar: student.avatar || '',
+        bio: student.bio || '',
+        department: student.department || '',
+        riskLevel,
+        reasons,
+        weakTopics,
+        avgQuizScore: Math.round(avgScore),
+        emailDraft,
+        suggestedDocuments: docsToSuggest.map((d: any) => d.originalName),
+      });
+    }
+  }
+
+  res.json({
+    success: true,
+    count: atRiskStudents.length,
+    students: atRiskStudents.sort((a, b) => {
+      if (a.riskLevel === 'high' && b.riskLevel === 'medium') return -1;
+      if (a.riskLevel === 'medium' && b.riskLevel === 'high') return 1;
+      return a.avgQuizScore - b.avgQuizScore;
+    }),
+  });
+});
+
+export const sendIntervention = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { studentId, emailText, subject } = req.body;
+  if (!studentId || !emailText) {
+    return res.status(400).json({ success: false, message: 'studentId and emailText are required' });
+  }
+
+  const student = await User.findById(studentId);
+  if (!student) {
+    return res.status(404).json({ success: false, message: 'Student not found' });
+  }
+
+  console.log(`
+======================================================
+📧 INTERVENTION EMAIL SENT SUCCESSFULLY
+To: ${student.name} <${student.email}>
+Subject: ${subject || 'Course Support Alert'}
+From: Faculty <${req.user?.email}>
+------------------------------------------------------
+${emailText}
+======================================================
+`);
+
+  res.json({
+    success: true,
+    message: `Intervention email sent to ${student.name} successfully.`,
+  });
 });

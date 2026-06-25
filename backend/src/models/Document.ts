@@ -11,7 +11,7 @@ export interface IChunk {
 export interface IDocument extends Document {
   filename: string;
   originalName: string;
-  fileType: 'pdf' | 'docx' | 'pptx' | 'txt';
+  fileType: 'pdf' | 'docx' | 'pptx' | 'txt' | 'mp3' | 'wav' | 'm4a' | 'webm' | 'mpeg';
   filePath: string;
   fileSize: number;
   course: mongoose.Types.ObjectId;
@@ -22,6 +22,7 @@ export interface IDocument extends Document {
   processingError?: string;
   summary?: string;
   conceptMap?: string;
+  transcript?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,7 +38,7 @@ const DocumentSchema = new Schema<IDocument>(
   {
     filename: { type: String, required: true },
     originalName: { type: String, required: true },
-    fileType: { type: String, enum: ['pdf', 'docx', 'pptx', 'txt'], required: true },
+    fileType: { type: String, enum: ['pdf', 'docx', 'pptx', 'txt', 'mp3', 'wav', 'm4a', 'webm', 'mpeg'], required: true },
     filePath: { type: String, required: true },
     fileSize: { type: Number, required: true },
     course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
@@ -52,6 +53,7 @@ const DocumentSchema = new Schema<IDocument>(
     processingError: { type: String },
     summary: { type: String },
     conceptMap: { type: String },
+    transcript: { type: String },
   },
   { timestamps: true }
 );

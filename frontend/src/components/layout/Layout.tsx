@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Toaster } from 'react-hot-toast';
+import { useAuthStore } from '../../store/auth.store';
+import { courseService } from '../../services/course.service';
+import { io } from 'socket.io-client';
+import toast from 'react-hot-toast';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +12,56 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Connect to websocket server
+    const socket = io(window.location.origin, {
+      withCredentials: true,
+    });
+
+    const joinRooms = async () => {
+      try {
+        if (user.role === 'student') {
+          const courses = await courseService.getMy();
+          courses.forEach(c => {
+            socket.emit('join_course', c._id);
+          });
+        } else {
+          const courses = await courseService.getAll();
+          courses.forEach(c => {
+            socket.emit('join_course', c._id);
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to join course socket rooms:', err);
+      }
+    };
+
+    joinRooms();
+
+    // Listen to real-time assigned quizzes
+    socket.on('quiz:assigned', (data: { courseId: string; topic: string; dueDate?: string }) => {
+      toast.success(
+        <div>
+          <p className="font-bold text-xs">🔔 New Quiz Assigned!</p>
+          <p className="text-[10px] text-white/70 mt-0.5">Topic: <strong>{data.topic}</strong></p>
+          {data.dueDate && (
+            <p className="text-[9px] text-amber-400 mt-0.5">
+              Due: {new Date(data.dueDate).toLocaleDateString()}
+            </p>
+          )}
+        </div>,
+        { duration: 8000 }
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0a0b0f]">

@@ -20,13 +20,13 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (_req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedExtensions = ['.pdf', '.docx', '.pptx', '.txt', '.doc'];
+  const allowedExtensions = ['.pdf', '.docx', '.pptx', '.txt', '.doc', '.mp3', '.wav', '.m4a', '.webm', '.mpeg', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
   const ext = path.extname(file.originalname).toLowerCase();
 
   if (allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error(`File type ${ext} not supported. Allowed: PDF, DOCX, PPTX, TXT`));
+    cb(new Error(`File type ${ext} not supported. Allowed: PDF, DOCX, PPTX, TXT, MP3, WAV, M4A, WEBM, MPEG, PNG, JPG, JPEG, GIF, WEBP, SVG`));
   }
 };
 

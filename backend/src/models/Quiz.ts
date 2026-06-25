@@ -33,6 +33,9 @@ export interface IQuiz extends Document {
   maxScore: number;
   status: 'generated' | 'in_progress' | 'completed';
   completedAt?: Date;
+  assignedBy?: mongoose.Types.ObjectId;
+  dueDate?: Date;
+  assignmentId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,7 +46,7 @@ const QuizOptionSchema = new Schema<IQuizOption>({
   isCorrect: Boolean,
 });
 
-const QuizQuestionSchema = new Schema<IQuizQuestion>({
+export const QuizQuestionSchema = new Schema<IQuizQuestion>({
   question: { type: String, required: true },
   type: { type: String, enum: ['mcq', 'short', 'long'], required: true },
   difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
@@ -71,6 +74,9 @@ const QuizSchema = new Schema<IQuiz>(
     maxScore: { type: Number, default: 0 },
     status: { type: String, enum: ['generated', 'in_progress', 'completed'], default: 'generated' },
     completedAt: Date,
+    assignedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    dueDate: Date,
+    assignmentId: String,
   },
   { timestamps: true }
 );

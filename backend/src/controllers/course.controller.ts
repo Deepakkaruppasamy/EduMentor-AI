@@ -14,7 +14,7 @@ const PREDEFINED_COURSES = [
 ];
 
 export const createCourse = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { title, code, description } = req.body;
+  const { title, code, description, image } = req.body;
 
   const chromaCollection = `course_${code.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
   const course = await Course.create({
@@ -23,6 +23,7 @@ export const createCourse = asyncHandler(async (req: AuthRequest, res: Response)
     description,
     faculty: req.user?._id,
     chromaCollection,
+    image,
   });
 
   res.status(201).json({ success: true, course });
@@ -30,15 +31,15 @@ export const createCourse = asyncHandler(async (req: AuthRequest, res: Response)
 
 export const getAllCourses = asyncHandler(async (_req: Request, res: Response) => {
   const courses = await Course.find({ isActive: true })
-    .populate('faculty', 'name email')
+    .populate('faculty', 'name email avatar bio qualifications department')
     .sort({ createdAt: -1 });
   res.json({ success: true, count: courses.length, courses });
 });
 
 export const getCourseById = asyncHandler(async (req: Request, res: Response) => {
   const course = await Course.findById(req.params.id)
-    .populate('faculty', 'name email')
-    .populate('students', 'name email')
+    .populate('faculty', 'name email avatar bio qualifications department')
+    .populate('students', 'name email avatar bio department')
     .populate('documents', 'originalName fileType processingStatus createdAt');
 
   if (!course) {
@@ -83,9 +84,24 @@ export const seedPredefinedCourses = asyncHandler(async (req: AuthRequest, res: 
 export const getMyCourses = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = await User.findById(req.user?._id).populate({
     path: 'courses',
-    populate: { path: 'faculty', select: 'name' },
+    populate: { path: 'faculty', select: 'name email avatar bio qualifications department' },
   });
   res.json({ success: true, courses: user?.courses || [] });
+});
+
+export const updateCourse = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { title, code, description, image } = req.body;
+  const course = await Course.findByIdAndUpdate(
+    req.params.id,
+    { title, code, description, image },
+    { new: true, runValidators: true }
+  ).populate('faculty', 'name email avatar bio qualifications department');
+
+  if (!course) {
+    return res.status(404).json({ success: false, message: 'Course not found' });
+  }
+
+  res.json({ success: true, course });
 });
 
 export const deleteCourse = asyncHandler(async (req: AuthRequest, res: Response) => {
