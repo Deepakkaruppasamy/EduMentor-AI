@@ -1,6 +1,6 @@
 import { ChromaClient, Collection, OpenAIEmbeddingFunction } from 'chromadb';
 import { config } from '../config/env';
-import { generateEmbedding } from './embeddings';
+import { generateEmbedding, generateEmbeddings } from './embeddings';
 
 let chromaClient: ChromaClient | null = null;
 
@@ -34,8 +34,8 @@ export async function addDocumentsToCollection(
   const texts = documents.map((d) => d.text);
   const metadatas = documents.map((d) => d.metadata);
 
-  // Generate embeddings locally
-  const embeddings = await Promise.all(texts.map((t) => generateEmbedding(t)));
+  // Generate embeddings in batch
+  const embeddings = await generateEmbeddings(texts);
 
   await collection.add({
     ids,

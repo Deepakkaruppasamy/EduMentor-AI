@@ -64,7 +64,25 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
           timeout: 30000,
         }
       );
-      return response.data as number[][];
+      const data = response.data;
+      if (Array.isArray(data) && data.length > 0) {
+        const validated: number[][] = [];
+        for (const item of data) {
+          if (Array.isArray(item)) {
+            let finalVec: any = item;
+            while (Array.isArray(finalVec) && Array.isArray(finalVec[0])) {
+              finalVec = finalVec[0];
+            }
+            if (Array.isArray(finalVec) && typeof finalVec[0] === 'number') {
+              validated.push(finalVec);
+            }
+          }
+        }
+        if (validated.length === data.length) {
+          return validated;
+        }
+      }
+      console.warn('Batch HuggingFace API returned invalid format, using fallback.');
     } catch (error) {
       console.warn('Batch HuggingFace API failed, using fallback:', error);
     }
