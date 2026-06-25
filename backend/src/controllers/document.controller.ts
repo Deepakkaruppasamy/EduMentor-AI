@@ -91,7 +91,8 @@ async function processDocumentAsync(
     const existingDocs = await Document.find({ processingStatus: 'completed' });
     const allChunks: { id: string; text: string; metadata: Record<string, any> }[] = [];
     for (const existDoc of existingDocs) {
-      for (const chunk of existDoc.chunks) {
+      const chunksList = existDoc.chunks || [];
+      for (const chunk of chunksList) {
         allChunks.push({
           id: `${existDoc._id}_chunk_${chunk.index}`,
           text: chunk.text,

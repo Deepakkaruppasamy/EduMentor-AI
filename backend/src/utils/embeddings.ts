@@ -16,7 +16,6 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     return embeddingCache.get(cacheKey)!;
   }
 
-  // Try HuggingFace API if key is available
   if (config.HF_API_KEY) {
     try {
       const response = await axios.post(
@@ -27,9 +26,19 @@ export async function generateEmbedding(text: string): Promise<number[]> {
           timeout: 10000,
         }
       );
-      const embedding = response.data as number[];
-      embeddingCache.set(cacheKey, embedding);
-      return embedding;
+      const embedding = response.data;
+      if (Array.isArray(embedding)) {
+        let finalEmbedding: any = embedding;
+        // Recursively unpack nested arrays if returned (e.g. [[...]])
+        while (Array.isArray(finalEmbedding) && Array.isArray(finalEmbedding[0])) {
+          finalEmbedding = finalEmbedding[0];
+        }
+        if (Array.isArray(finalEmbedding) && typeof finalEmbedding[0] === 'number') {
+          embeddingCache.set(cacheKey, finalEmbedding);
+          return finalEmbedding;
+        }
+      }
+      console.warn('HuggingFace API returned invalid embedding format, using fallback:', response.data);
     } catch (error) {
       console.warn('HuggingFace API failed, using fallback embedding:', error);
     }
