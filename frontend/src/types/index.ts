@@ -41,6 +41,7 @@ export interface Document {
   totalChunks: number;
   summary?: string;
   conceptMap?: string;
+  processingError?: string;
   createdAt: string;
 }
 
