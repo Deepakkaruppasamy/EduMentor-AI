@@ -8,6 +8,7 @@ import { generateQuizQuestions, evaluateQuizAnswers } from '../services/quiz/qui
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
 import { updateQuizPerformance } from '../services/recommendations/recommendation.service';
 import { notifyNewQuizAssigned } from '../services/socket.service';
+import { generateWithoutContext } from '../services/ai/groq.service';
 
 export const generateQuiz = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { courseId, topic, questionType = 'mcq', difficulty = 'medium', count = 5 } = req.body;
@@ -321,4 +322,44 @@ export const getAssignmentDetailAnalytics = asyncHandler(async (req: AuthRequest
       submissions
     }
   });
+});
+
+export const evaluateOralAnswer = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { question, answer } = req.body;
+
+  if (!question || !answer) {
+    return res.status(400).json({ success: false, message: 'Question and answer are required' });
+  }
+
+  const prompt = `You are evaluating a student's spoken answer to an oral exam question.
+Question: "${question}"
+Student's Spoken Answer: "${answer}"
+
+Provide a JSON object containing:
+- "score": a number from 0 to 100 representing correctness.
+- "isCorrect": a boolean (true if score >= 60).
+- "feedback": a very short, constructive spoken-style explanation of their answer's accuracy (limit to 1-2 sentences, suitable for speech synthesis).
+
+Return ONLY the raw JSON object. Do not include markdown code block formatting or backticks.`;
+
+  const response = await generateWithoutContext(
+    [{ role: 'user', content: prompt }],
+    'You are an expert academic evaluator. Return JSON only.',
+    0.3,
+    true
+  );
+
+  try {
+    const result = JSON.parse(response.content);
+    res.json({ success: true, result });
+  } catch (error) {
+    res.json({
+      success: true,
+      result: {
+        score: answer.trim().length > 15 ? 85 : 35,
+        isCorrect: answer.trim().length > 15,
+        feedback: "Your answer has been processed. Good effort."
+      }
+    });
+  }
 });

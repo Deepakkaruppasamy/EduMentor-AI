@@ -6,6 +6,16 @@ import LiveQuizSession from '../models/LiveQuizSession';
 import Course from '../models/Course';
 import { generateQuizQuestions } from './quiz/quiz.service';
 import { hybridRetrieve } from './rag/hybrid-rag.service';
+import { generateResponseStream } from './ai/groq.service';
+
+interface PeerLobby {
+  roomId: string;
+  courseId: string;
+  participants: { socketId: string; name: string }[];
+  drawingStrokes: any[];
+}
+
+const activeLobbies = new Map<string, PeerLobby>();
 
 let io: SocketServer | null = null;
 
@@ -330,8 +340,140 @@ export function initSocketServer(server: HttpServer): SocketServer {
       }
     });
 
+    // --- COLLABORATIVE STUDY LOBBY EVENTS ---
+
+    // Create a new study lobby
+    socket.on('study:create', (data: { courseId: string; studentName: string }) => {
+      const { courseId, studentName } = data;
+      const roomId = Math.floor(100000 + Math.random() * 900000).toString();
+
+      activeLobbies.set(roomId, {
+        roomId,
+        courseId,
+        participants: [{ socketId: socket.id, name: studentName }],
+        drawingStrokes: [],
+      });
+
+      socket.join(roomId);
+      socket.emit('study:created', { roomId, courseId });
+      io?.to(roomId).emit('study:participants', [{ socketId: socket.id, name: studentName }]);
+      console.log(`🏫 Study Lobby ${roomId} created for course ${courseId} by ${studentName}`);
+    });
+
+    // Join an existing study lobby
+    socket.on('study:join', (data: { roomId: string; studentName: string }) => {
+      const { roomId, studentName } = data;
+      const lobby = activeLobbies.get(roomId);
+      if (!lobby) {
+        socket.emit('study:error', 'Study lobby room not found');
+        return;
+      }
+
+      if (!lobby.participants.some(p => p.socketId === socket.id)) {
+        lobby.participants.push({ socketId: socket.id, name: studentName });
+      }
+
+      socket.join(roomId);
+      socket.emit('study:joined', { roomId, courseId: lobby.courseId, strokes: lobby.drawingStrokes });
+      io?.to(roomId).emit('study:participants', lobby.participants);
+      io?.to(roomId).emit('study:message', { sender: 'System', text: `${studentName} has joined the study room.` });
+      console.log(`🏫 Student ${studentName} joined Study Lobby ${roomId}`);
+    });
+
+    // Peer-to-peer message broadcast
+    socket.on('study:message', (data: { roomId: string; sender: string; text: string }) => {
+      const { roomId, sender, text } = data;
+      io?.to(roomId).emit('study:message', { sender, text, timestamp: new Date() });
+    });
+
+    // Whiteboard drawing stroke broadcast
+    socket.on('study:draw', (data: { roomId: string; stroke: any }) => {
+      const { roomId, stroke } = data;
+      const lobby = activeLobbies.get(roomId);
+      if (lobby) {
+        lobby.drawingStrokes.push(stroke);
+        if (lobby.drawingStrokes.length > 2000) {
+          lobby.drawingStrokes.shift();
+        }
+        socket.to(roomId).emit('study:draw', stroke);
+      }
+    });
+
+    // Clear board broadcast
+    socket.on('study:clear_board', (data: { roomId: string }) => {
+      const { roomId } = data;
+      const lobby = activeLobbies.get(roomId);
+      if (lobby) {
+        lobby.drawingStrokes = [];
+        io?.to(roomId).emit('study:clear_board');
+      }
+    });
+
+    // AI Collaborative Chat Query with real-time stream broadcast
+    socket.on('study:query_ai', async (data: { roomId: string; query: string }) => {
+      const { roomId, query } = data;
+      const lobby = activeLobbies.get(roomId);
+      if (!lobby) return;
+
+      try {
+        const course = await Course.findById(lobby.courseId);
+        let context = '';
+        if (course) {
+          const ragResult = await hybridRetrieve(query, course.chromaCollection, 5);
+          context = ragResult.context || '';
+        }
+
+        io?.to(roomId).emit('study:ai_start');
+
+        await generateResponseStream(
+          [{ role: 'user', content: query }],
+          context || 'Review materials',
+          (token) => {
+            io?.to(roomId).emit('study:ai_token', token);
+          }
+        );
+
+        io?.to(roomId).emit('study:ai_end');
+      } catch (error: any) {
+        io?.to(roomId).emit('study:error', 'AI Query failed to process: ' + error.message);
+      }
+    });
+
+    // Explicit leave
+    socket.on('study:leave', (data: { roomId: string; studentName: string }) => {
+      const { roomId, studentName } = data;
+      const lobby = activeLobbies.get(roomId);
+      if (lobby) {
+        lobby.participants = lobby.participants.filter(p => p.socketId !== socket.id);
+        socket.leave(roomId);
+
+        if (lobby.participants.length === 0) {
+          activeLobbies.delete(roomId);
+          console.log(`🏫 Study Lobby ${roomId} closed because it is empty.`);
+        } else {
+          io?.to(roomId).emit('study:participants', lobby.participants);
+          io?.to(roomId).emit('study:message', { sender: 'System', text: `${studentName} has left the study room.` });
+        }
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log(`🔌 Client disconnected: ${socket.id}`);
+      for (const [roomId, lobby] of activeLobbies.entries()) {
+        const participantIndex = lobby.participants.findIndex(p => p.socketId === socket.id);
+        if (participantIndex !== -1) {
+          const pName = lobby.participants[participantIndex].name;
+          lobby.participants.splice(participantIndex, 1);
+          
+          if (lobby.participants.length === 0) {
+            activeLobbies.delete(roomId);
+            console.log(`🏫 Study Lobby ${roomId} closed because it is empty.`);
+          } else {
+            io?.to(roomId).emit('study:participants', lobby.participants);
+            io?.to(roomId).emit('study:message', { sender: 'System', text: `${pName} has left the study room.` });
+          }
+        }
+      }
     });
   });
 
@@ -361,6 +503,7 @@ export function notifyDocumentStatus(
     conceptMap?: string;
     processingError?: string;
     document?: any;
+    transcript?: string;
   }
 ): void {
   try {

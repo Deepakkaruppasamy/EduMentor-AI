@@ -7,6 +7,7 @@ import api from '../services/api';
 import { StudentProgress, Recommendation, Quiz, ChatSession } from '../types';
 import { getGradeColor, formatDate } from '../utils/uuid';
 import { Loader } from '../components/common/Loader';
+import { WeeklyDigestCard } from '../components/dashboard/WeeklyDigestCard';
 
 const StatCard: React.FC<{ icon: string; label: string; value: string | number; sub?: string; gradient: string }> = ({ icon, label, value, sub, gradient }) => (
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5">
@@ -74,6 +75,9 @@ export const StudentDashboard: React.FC = () => {
         <StatCard icon="🎯" label="Avg Quiz Score" value={`${progress?.avgQuizScore || 0}%`} gradient="stat-gradient-green" />
         <StatCard icon="🔥" label="Active Courses" value={user?.courses?.length || 0} gradient="stat-gradient-amber" />
       </div>
+
+      {/* Weekly Digest Summary */}
+      <WeeklyDigestCard />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Quiz Performance Chart */}

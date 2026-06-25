@@ -7,6 +7,7 @@ import {
 import api from '../services/api';
 import { DashboardStats } from '../types';
 import toast from 'react-hot-toast';
+import { WeeklyDigestCard } from '../components/dashboard/WeeklyDigestCard';
 
 const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
 
@@ -70,6 +71,9 @@ export const AdminDashboard: React.FC = () => {
         <StatBig icon="✅" label="Avg Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#48bb78" />
         <StatBig icon="⚠️" label="Hallucination Rate" value={`${stats?.avgHallucinationRate || 0}%`} color="#fc8181" />
       </div>
+
+      {/* Instructor / Faculty Weekly Action Items */}
+      <WeeklyDigestCard />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Query Activity Chart */}

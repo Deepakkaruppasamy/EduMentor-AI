@@ -7,6 +7,7 @@ import { chatService } from '../../services/chat.service';
 import { MessageBubble } from './MessageBubble';
 import { Course } from '../../types';
 import { uuidv4 } from '../../utils/uuid';
+import { AIBuddyAvatar } from './AIBuddyAvatar';
 
 interface ChatWindowProps {
   course: Course;
@@ -27,6 +28,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
   // Text-to-Speech Voice Mode States
   const [voiceMode, setVoiceMode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const [avatarMood, setAvatarMood] = useState<'idle' | 'happy' | 'encouraging'>('idle');
+
+  const getAvatarState = useCallback((): 'idle' | 'thinking' | 'speaking' | 'happy' | 'encouraging' => {
+    if (isSpeaking || isStreaming) return 'speaking';
+    if (isLoading) return 'thinking';
+    return avatarMood;
+  }, [isSpeaking, isStreaming, isLoading, avatarMood]);
   const synthRef = useRef<SpeechSynthesis | null>(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -236,6 +245,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
         speakResponse(accumulatedContent);
       }
       
+      // Trigger avatar mood based on answer trust score
+      const trust = doneData.hallucination?.trustScore ?? 100;
+      if (trust >= 75) {
+        setAvatarMood('happy');
+        setTimeout(() => setAvatarMood('idle'), 4000);
+      } else if (trust >= 45) {
+        setAvatarMood('encouraging');
+        setTimeout(() => setAvatarMood('idle'), 4000);
+      }
+
       setLoading(false);
       setIsStreaming(false);
     };
@@ -278,10 +297,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
     <div className="flex h-full flex-col">
       {/* Course Header */}
       <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl text-sm"
-          style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2) 0%, rgba(159,122,234,0.2) 100%)', border: '1px solid rgba(79,99,255,0.3)' }}>
-          📚
-        </div>
+        <AIBuddyAvatar state={getAvatarState()} size={36} />
         <div>
           <div className="text-sm font-semibold text-white">{course.title}</div>
           <div className="text-[11px] text-white/40">{course.code} · Hybrid RAG + Llama 3</div>
@@ -325,7 +341,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {messages.length === 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center h-full text-center py-12">
-            <div className="mb-4 text-5xl">🎓</div>
+            <div className="mb-6">
+              <AIBuddyAvatar state={getAvatarState()} size={100} />
+            </div>
             <h3 className="mb-2 text-lg font-semibold text-white">Ask Anything About {course.title}</h3>
             <p className="mb-8 text-sm text-white/40 max-w-sm">
               I'll retrieve answers from your course materials with source citations and trust scores.

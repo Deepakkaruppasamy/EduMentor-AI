@@ -4,6 +4,7 @@ import { QuizGenerator } from '../components/quiz/QuizGenerator';
 import { QuizViewer } from '../components/quiz/QuizViewer';
 import { QuizResultsView } from '../components/quiz/QuizResults';
 import { LiveBattleScreen } from '../components/quiz/LiveBattleScreen';
+import { OralExamScreen } from '../components/quiz/OralExamScreen';
 import { courseService } from '../services/course.service';
 import { quizService } from '../services/chat.service';
 import { Course, Quiz, QuizResults } from '../types';
@@ -23,6 +24,7 @@ export const QuizPage: React.FC = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeTab, setActiveTab] = useState<'practice' | 'assigned'>('practice');
   const [showLiveBattle, setShowLiveBattle] = useState(false);
+  const [showOralExam, setShowOralExam] = useState(false);
 
   const isFaculty = user?.role === 'faculty' || user?.role === 'admin';
 
@@ -90,6 +92,14 @@ export const QuizPage: React.FC = () => {
     );
   }
 
+  if (showOralExam) {
+    return (
+      <div className="p-6">
+        <OralExamScreen courses={courses} onBack={() => setShowOralExam(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {quizState === 'generate' && (
@@ -108,6 +118,15 @@ export const QuizPage: React.FC = () => {
             >
               ⚔️ {isFaculty ? 'Host Live Quiz Battle' : 'Join Live Quiz Battle'}
             </button>
+
+            {!isFaculty && (
+              <button
+                onClick={() => setShowOralExam(true)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-red-500 to-rose-600 border border-red-500/20 shadow-lg shadow-red-500/10"
+              >
+                🎙️ Take AI Oral Exam
+              </button>
+            )}
 
             {/* Tab Selector */}
             <div className="flex gap-2 bg-white/[0.02] border border-white/[0.06] p-1 rounded-xl">

@@ -7,6 +7,7 @@ import {
   assignQuiz,
   getAssignedQuizzesList,
   getAssignmentDetailAnalytics,
+  evaluateOralAnswer,
 } from '../controllers/quiz.controller';
 import { protect, authorize } from '../middleware/auth';
 
@@ -14,6 +15,7 @@ const router = Router();
 
 router.post('/generate', protect, generateQuiz);
 router.post('/evaluate', protect, evaluateQuiz);
+router.post('/evaluate-oral', protect, evaluateOralAnswer);
 router.get('/my', protect, getStudentQuizzes);
 
 // Faculty & Admin assigned quizzes routes

@@ -819,8 +819,6 @@ export const GradebookPage: React.FC = () => {
           )}
         </div>
       )}
-    </div>
-      )}
 
       {/* Student Profile Details Modal */}
       <AnimatePresence>

@@ -263,7 +263,7 @@ Dear ${student.name},
 I'm reaching out to check on your progress in ${course.code} (${course.title}). 
 
 To help you reinforce your understanding, here are some topics we recommend focused practice on:
-${weakTopics.map(t => `- ${t}`).join('\n') || '- General Course Material'}
+${weakTopics.map((t: string) => `- ${t}`).join('\n') || '- General Course Material'}
 
 I suggest reviewing these uploaded course resources:
 ${docsToSuggest.map((d: any) => `- ${d.originalName}`).join('\n') || '- Syllabus and Lecture Notes'}
@@ -328,4 +328,234 @@ ${emailText}
     success: true,
     message: `Intervention email sent to ${student.name} successfully.`,
   });
+});
+
+export const getWeeklyDigest = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?._id;
+  const role = req.user?.role || 'student';
+
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+  if (role === 'student') {
+    // 1. Quizzes completed in last 7 days vs 7-14 days ago
+    const [currentQuizzes, priorQuizzes, currentChats, priorChats, recommendations, userProfile] = await Promise.all([
+      Quiz.find({ student: userId, status: 'completed', completedAt: { $gte: sevenDaysAgo } }),
+      Quiz.find({ student: userId, status: 'completed', completedAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo } }),
+      Chat.find({ user: userId, updatedAt: { $gte: sevenDaysAgo } }),
+      Chat.find({ user: userId, updatedAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo } }),
+      Recommendation.find({ student: userId }).populate('course', 'title code'),
+      User.findById(userId).populate({
+        path: 'courses',
+        populate: { path: 'documents', select: 'originalName fileType' }
+      })
+    ]);
+
+    // Calculate XP
+    // Quiz XP = 100 base + score * 50
+    // Chat XP = totalMessages * 15
+    const calcQuizXp = (quizzes: any[]) => quizzes.reduce((sum, q) => sum + 100 + (q.score || 0) * 50, 0);
+    const calcChatXp = (chats: any[]) => chats.reduce((sum, c) => sum + (c.totalMessages || 0) * 15, 0);
+
+    const currentQuizXp = calcQuizXp(currentQuizzes);
+    const currentChatXp = calcChatXp(currentChats);
+    const currentXp = currentQuizXp + currentChatXp;
+
+    const priorQuizXp = calcQuizXp(priorQuizzes);
+    const priorChatXp = calcChatXp(priorChats);
+    const priorXp = priorQuizXp + priorChatXp;
+
+    const xpChange = currentXp - priorXp;
+
+    // Collect weak topics
+    const weakTopicsSet = new Set<string>();
+    let streak = 0;
+    let avgScoreSum = 0;
+    let recsCount = 0;
+
+    for (const rec of recommendations) {
+      rec.weakTopics.forEach(topic => weakTopicsSet.add(topic));
+      if (rec.learningStreak > streak) {
+        streak = rec.learningStreak;
+      }
+      if (rec.avgQuizScore > 0) {
+        avgScoreSum += rec.avgQuizScore;
+        recsCount++;
+      }
+    }
+
+    const weakTopics = Array.from(weakTopicsSet);
+    const overallAvgScore = recsCount > 0 ? Math.round(avgScoreSum / recsCount) : 0;
+
+    // Suggest 2 review documents
+    const suggestedDocs: any[] = [];
+    if (userProfile && userProfile.courses) {
+      for (const course of userProfile.courses as any[]) {
+        if (course.documents && course.documents.length > 0) {
+          for (const doc of course.documents) {
+            // Check if document title matches any weak topic
+            const isRelevant = weakTopics.some(t => doc.originalName.toLowerCase().includes(t.toLowerCase()));
+            if (isRelevant && suggestedDocs.length < 2) {
+              suggestedDocs.push({
+                _id: doc._id,
+                originalName: doc.originalName,
+                courseId: course._id,
+                courseTitle: course.title,
+                courseCode: course.code,
+                reason: `Focused review for weakness in "${weakTopics.find(t => doc.originalName.toLowerCase().includes(t.toLowerCase()))}"`
+              });
+            }
+          }
+        }
+      }
+
+      // Fallback: If we couldn't find 2 weak-topic matches, pull general documents from enrolled courses
+      if (suggestedDocs.length < 2) {
+        for (const course of userProfile.courses as any[]) {
+          if (course.documents && course.documents.length > 0) {
+            for (const doc of course.documents) {
+              const alreadyAdded = suggestedDocs.some(d => d._id.toString() === doc._id.toString());
+              if (!alreadyAdded && suggestedDocs.length < 2) {
+                suggestedDocs.push({
+                  _id: doc._id,
+                  originalName: doc.originalName,
+                  courseId: course._id,
+                  courseTitle: course.title,
+                  courseCode: course.code,
+                  reason: 'General weekly course reading recommendation'
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Weekly study goal progress checklist
+    const weeklyGoalChecklist = [
+      { id: 'goal1', text: 'Complete at least 2 practice quizzes', done: currentQuizzes.length >= 2 },
+      { id: 'goal2', text: 'Ask the RAG chatbot tutor 5+ questions', done: currentChats.reduce((s, c) => s + (c.totalMessages || 0), 0) >= 5 },
+      { id: 'goal3', text: 'Clear up at least 1 weak topic', done: weakTopics.length < 3 && recommendations.length > 0 }
+    ];
+
+    res.json({
+      success: true,
+      role: 'student',
+      digest: {
+        weeklyXp: currentXp,
+        xpChange,
+        practiceCount: currentQuizzes.length,
+        learningStreak: streak,
+        avgScore: overallAvgScore,
+        weakTopics: weakTopics.slice(0, 5),
+        suggestedDocuments: suggestedDocs,
+        checklist: weeklyGoalChecklist
+      }
+    });
+
+  } else {
+    // Faculty / Admin
+    let coursesQuery = {};
+    if (role === 'faculty') {
+      coursesQuery = { faculty: userId };
+    }
+
+    const facultyCourses = await Course.find(coursesQuery);
+    const courseIds = facultyCourses.map(c => c._id);
+
+    // Get recommendations for these courses
+    const studentRecs = await Recommendation.find({ course: { $in: courseIds } })
+      .populate('student', 'name email lastLogin')
+      .populate('course', 'title code');
+
+    // Aggregate struggled topics
+    const classTopicsMap: Record<string, { count: number; scoreSum: number; courseTitle: string }> = {};
+    const atRiskList: any[] = [];
+
+    for (const rec of studentRecs as any[]) {
+      const student = rec.student;
+      if (!student) continue;
+
+      // Class struggle aggregation
+      for (const topicProg of rec.topicProgress || []) {
+        if (!classTopicsMap[topicProg.topic]) {
+          classTopicsMap[topicProg.topic] = { count: 0, scoreSum: 0, courseTitle: rec.course?.title || 'Course' };
+        }
+        classTopicsMap[topicProg.topic].count += 1;
+        classTopicsMap[topicProg.topic].scoreSum += topicProg.avgScore || 0;
+      }
+
+      // At risk assessment
+      const avgScore = rec.avgQuizScore || 0;
+      const daysInactive = student.lastLogin 
+        ? Math.floor((Date.now() - new Date(student.lastLogin).getTime()) / (1000 * 60 * 60 * 24))
+        : 999;
+      
+      if (avgScore < 60 || daysInactive > 7) {
+        atRiskList.push({
+          studentId: student._id,
+          name: student.name,
+          courseCode: rec.course?.code || 'N/A',
+          courseTitle: rec.course?.title || 'N/A',
+          avgQuizScore: Math.round(avgScore),
+          daysInactive: daysInactive === 999 ? 'Never' : `${daysInactive} days`,
+          riskLevel: (avgScore < 50 || daysInactive > 14) ? 'high' : 'medium'
+        });
+      }
+    }
+
+    const struggledTopics = Object.entries(classTopicsMap)
+      .map(([topic, data]) => ({
+        topic,
+        courseTitle: data.courseTitle,
+        studentCount: data.count,
+        avgScore: Math.round(data.scoreSum / data.count)
+      }))
+      .filter(t => t.avgScore < 65)
+      .sort((a, b) => a.avgScore - b.avgScore)
+      .slice(0, 3);
+
+    // Generate checklist items
+    const checklist: any[] = [];
+    if (struggledTopics.length > 0) {
+      checklist.push({
+        id: 'fac_topic_1',
+        text: `Review lecture notes for "${struggledTopics[0].topic}" (Class average is ${struggledTopics[0].avgScore}%)`,
+        done: false
+      });
+    } else {
+      checklist.push({
+        id: 'fac_topic_1',
+        text: 'All quiz topics are above 65% average score. Good job!',
+        done: true
+      });
+    }
+
+    if (atRiskList.length > 0) {
+      checklist.push({
+        id: 'fac_risk_1',
+        text: `Send outreach resources to ${atRiskList[0].name} (Struggling in ${atRiskList[0].courseCode})`,
+        done: false
+      });
+    }
+
+    checklist.push({
+      id: 'fac_gen_1',
+      text: 'Verify all pending student practice queries',
+      done: true
+    });
+
+    res.json({
+      success: true,
+      role: 'faculty',
+      digest: {
+        totalStudentsCount: studentRecs.length,
+        atRiskCount: atRiskList.filter(s => s.riskLevel === 'high').length,
+        struggledTopics,
+        atRiskStudents: atRiskList.slice(0, 3),
+        checklist
+      }
+    });
+  }
 });

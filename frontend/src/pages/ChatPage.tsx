@@ -11,6 +11,8 @@ import { formatDate } from '../utils/uuid';
 import { Loader } from '../components/common/Loader';
 import { AnimatePresence } from 'framer-motion';
 import { CitationViewer } from '../components/chat/CitationViewer';
+import { useAuthStore } from '../store/auth.store';
+import { StudyLobbyScreen } from '../components/chat/StudyLobbyScreen';
 
 export const ChatPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -19,6 +21,8 @@ export const ChatPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { selectedCourse, setSelectedCourse, clearChat, currentChatId, setCurrentChatId, loadMessages, activeCitation, setActiveCitation } = useChatStore();
+  const { user } = useAuthStore();
+  const [activeChatTab, setActiveChatTab] = useState<'tutor' | 'lobby'>('tutor');
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -143,6 +147,30 @@ export const ChatPage: React.FC = () => {
       <div className="hidden w-64 flex-shrink-0 flex-col lg:flex"
         style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
 
+        {/* Toggle Mode */}
+        <div className="p-3 border-b border-white/5 grid grid-cols-2 gap-1.5">
+          <button
+            onClick={() => setActiveChatTab('tutor')}
+            className="py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={{
+              background: activeChatTab === 'tutor' ? 'rgba(255,255,255,0.05)' : 'transparent',
+              color: activeChatTab === 'tutor' ? '#fff' : 'rgba(255,255,255,0.4)',
+            }}
+          >
+            💬 Tutor
+          </button>
+          <button
+            onClick={() => setActiveChatTab('lobby')}
+            className="py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={{
+              background: activeChatTab === 'lobby' ? 'rgba(255,255,255,0.05)' : 'transparent',
+              color: activeChatTab === 'lobby' ? '#fff' : 'rgba(255,255,255,0.4)',
+            }}
+          >
+            👥 Lobbies
+          </button>
+        </div>
+
         {/* Course Selector */}
         <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/30">Course</p>
@@ -191,7 +219,15 @@ export const ChatPage: React.FC = () => {
       {/* Chat Area */}
       <div className="flex flex-1 overflow-hidden min-w-0">
         <div className="flex flex-col flex-1">
-          {selectedCourse ? (
+          {activeChatTab === 'lobby' ? (
+            <div className="p-6 overflow-y-auto w-full">
+              <StudyLobbyScreen
+                courses={courses}
+                studentName={user?.name || 'Student'}
+                onClose={() => setActiveChatTab('tutor')}
+              />
+            </div>
+          ) : selectedCourse ? (
             <ChatWindow course={selectedCourse} onRefreshHistory={refreshHistory} />
           ) : (
             <div className="flex h-full items-center justify-center text-center p-8">
