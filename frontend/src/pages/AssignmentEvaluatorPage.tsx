@@ -16,6 +16,11 @@ interface EvaluationReport {
     title: string;
     code: string;
   };
+  studentId?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
   evaluation: {
     score: number;
     feedback: string;
@@ -470,7 +475,14 @@ export const AssignmentEvaluatorPage: React.FC = () => {
                 </div>
 
                 <div className="glass-card p-5 md:col-span-2 space-y-3">
-                  <h3 className="text-xs uppercase font-bold text-white/40 tracking-wider">Overall Feedback</h3>
+                  <div className="flex justify-between items-start gap-4">
+                    <h3 className="text-xs uppercase font-bold text-white/40 tracking-wider">Overall Feedback</h3>
+                    {selectedReport.studentId && (
+                      <span className="px-2 py-0.5 rounded bg-primary-500/10 text-primary-400 text-[10px] font-bold">
+                        Submitted by: {selectedReport.studentId.name}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs md:text-sm text-white/80 leading-relaxed font-medium">
                     {selectedReport.evaluation.feedback}
                   </p>
@@ -623,8 +635,11 @@ export const AssignmentEvaluatorPage: React.FC = () => {
                       ? 'bg-primary-500/15 border-primary-500/40'
                       : 'bg-white/[0.01] border-white/[0.04] hover:border-white/10 hover:bg-white/[0.02]'}`}
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-white truncate max-w-[130px]">{report.fileName}</p>
+                    {report.studentId && (
+                      <p className="text-[10px] text-primary-300 font-semibold truncate">By: {report.studentId.name}</p>
+                    )}
                     <p className="text-[9px] text-white/30 mt-0.5">{new Date(report.createdAt).toLocaleDateString()}</p>
                   </div>
                   <span className="text-xs font-black px-2 py-1 rounded bg-white/5 text-white/80" style={{ color: getScoreColor(report.evaluation.score) }}>
