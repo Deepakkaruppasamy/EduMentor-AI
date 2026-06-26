@@ -9,6 +9,7 @@ export interface User {
   bio?: string;
   qualifications?: string;
   department?: string;
+  preferredLanguage?: string;
 }
 
 export interface AuthState {

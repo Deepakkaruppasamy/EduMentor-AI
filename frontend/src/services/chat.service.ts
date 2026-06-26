@@ -21,7 +21,9 @@ export interface QueryResponse {
 
 export const chatService = {
   query: async (question: string, courseId: string, chatId?: string): Promise<QueryResponse> => {
-    const { data } = await api.post('/chat/query', { question, courseId, chatId });
+    const userLang = useAuthStore.getState().user?.preferredLanguage || 'English';
+    const url = userLang.toLowerCase() === 'english' ? '/chat/query' : '/chat/query-multilingual';
+    const { data } = await api.post(url, { question, courseId, chatId, language: userLang });
     return data;
   },
   queryStream: async (
@@ -34,13 +36,16 @@ export const chatService = {
   ): Promise<void> => {
     try {
       const token = useAuthStore.getState().token;
-      const response = await fetch('/api/chat/query-stream', {
+      const userLang = useAuthStore.getState().user?.preferredLanguage || 'English';
+      const endpoint = userLang.toLowerCase() === 'english' ? '/api/chat/query-stream' : '/api/chat/query-stream-multilingual';
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({ question, courseId, chatId }),
+        body: JSON.stringify({ question, courseId, chatId, language: userLang }),
       });
 
       if (!response.ok) {

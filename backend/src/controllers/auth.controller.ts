@@ -83,10 +83,10 @@ export const getAllUsers = asyncHandler(async (_req: Request, res: Response) => 
 });
 
 export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { name, avatar, bio, qualifications, department } = req.body;
+  const { name, avatar, bio, qualifications, department, preferredLanguage } = req.body;
   const user = await User.findByIdAndUpdate(
     req.user?._id,
-    { name, avatar, bio, qualifications, department },
+    { name, avatar, bio, qualifications, department, preferredLanguage },
     { new: true, runValidators: true }
   );
   res.json({ success: true, user });

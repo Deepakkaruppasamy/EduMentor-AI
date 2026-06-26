@@ -11,6 +11,7 @@ export const ProfilePage: React.FC = () => {
   const [department, setDepartment] = useState(user?.department || '');
   const [qualifications, setQualifications] = useState(user?.qualifications || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
+  const [preferredLanguage, setPreferredLanguage] = useState(user?.preferredLanguage || 'English');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -53,6 +54,7 @@ export const ProfilePage: React.FC = () => {
         avatar,
         bio,
         department,
+        preferredLanguage,
         qualifications: isFaculty ? qualifications : undefined,
       });
 
@@ -63,6 +65,7 @@ export const ProfilePage: React.FC = () => {
         bio: data.user.bio,
         department: data.user.department,
         qualifications: data.user.qualifications,
+        preferredLanguage: data.user.preferredLanguage,
       });
 
       toast.success('Profile updated successfully!');
@@ -161,6 +164,21 @@ export const ProfilePage: React.FC = () => {
                   className="input-field text-white"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-white/60">Preferred Learning/Communication Language</label>
+              <select
+                value={preferredLanguage}
+                onChange={(e) => setPreferredLanguage(e.target.value)}
+                className="input-field text-white cursor-pointer"
+              >
+                {['English', 'Tamil', 'Hindi', 'German', 'French'].map((lang) => (
+                  <option key={lang} value={lang} className="bg-[#1a1d27]">
+                    {lang}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {isFaculty && (

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '../../store/auth.store';
 import toast from 'react-hot-toast';
 import { Logo } from '../common/Logo';
+import { LanguageSelector } from '../common/LanguageSelector';
 
 const STUDENT_LINKS = [
   { to: '/dashboard', icon: '📊', label: 'Dashboard' },
@@ -66,6 +67,10 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
             <div className="truncate text-sm font-semibold text-white">{user?.name}</div>
             <div className="truncate text-[11px] capitalize text-white/50">{user?.role}</div>
           </div>
+        </div>
+        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+          <span className="text-[10px] text-white/40 font-bold uppercase">Language</span>
+          <LanguageSelector />
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import { MessageBubble } from './MessageBubble';
 import { Course } from '../../types';
 import { uuidv4 } from '../../utils/uuid';
 import { AIBuddyAvatar } from './AIBuddyAvatar';
+import { LanguageSelector } from '../common/LanguageSelector';
 
 interface ChatWindowProps {
   course: Course;
@@ -355,6 +356,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
             <span>{voiceMode ? '🔊' : '🔇'}</span>
             <span className="hidden sm:inline"> {voiceMode ? 'TTS Active' : 'TTS Off'}</span>
           </button>
+
+          <LanguageSelector />
 
           <div className="hidden md:flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium"
             style={{ background: 'rgba(72,187,120,0.1)', border: '1px solid rgba(72,187,120,0.2)', color: '#48bb78' }}>

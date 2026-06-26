@@ -11,6 +11,7 @@ export interface IUser extends Document {
   bio?: string;
   qualifications?: string;
   department?: string;
+  preferredLanguage?: string;
   isActive: boolean;
   lastLogin?: Date;
   createdAt: Date;
@@ -36,6 +37,7 @@ const UserSchema = new Schema<IUser>(
     bio: { type: String, default: '' },
     qualifications: { type: String, default: '' },
     department: { type: String, default: '' },
+    preferredLanguage: { type: String, default: 'English', enum: ['English', 'Tamil', 'Hindi', 'German', 'French'] },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
   },

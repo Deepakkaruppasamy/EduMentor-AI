@@ -6,6 +6,7 @@ import { courseService } from '../../services/course.service';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { LanguageSelector } from '../common/LanguageSelector';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -142,7 +143,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <span className="text-base">🎓</span>
             <span className="text-sm font-bold text-white">EduMentor AI</span>
           </div>
-          <div className="w-9" />
+          <div className="flex items-center">
+            <LanguageSelector />
+          </div>
         </header>
 
         {/* Page Content */}
