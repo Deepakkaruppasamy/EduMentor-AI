@@ -82,11 +82,23 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => {
+        .catch((error) => {
           // If network fails and request is for page navigation, fallback to app shell
           if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+            return caches.match('/index.html').then((cachedIndex) => {
+              if (cachedIndex) return cachedIndex;
+              // If index.html is not in cache, return an elegant offline HTML fallback
+              return new Response(
+                '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline - EduMentor AI</title></head><body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div style="text-align:center;padding:2rem;background:#1e293b;border-radius:1rem;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);max-width:400px;width:90%;"><h2>You are offline</h2><p style="color:#94a3b8;">Please check your connection and try again.</p><button onclick="window.location.reload()" style="background:#4f63ff;color:white;border:none;padding:0.75rem 1.5rem;border-radius:0.5rem;cursor:pointer;font-weight:600;margin-top:1rem;">Retry</button></div></body></html>',
+                {
+                  status: 503,
+                  headers: { 'Content-Type': 'text/html' }
+                }
+              );
+            });
           }
+          // For non-navigation requests, return standard Response.error() to prevent console TypeErrors
+          return Response.error();
         });
     })
   );

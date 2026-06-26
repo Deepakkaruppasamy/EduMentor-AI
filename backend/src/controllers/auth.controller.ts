@@ -155,8 +155,8 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
   res.json({
     success: true,
-    message: 'Password reset link generated. Reset instructions printed to console.',
-    resetUrl: process.env.NODE_ENV !== 'production' ? resetUrl : undefined,
+    message: 'Password reset link generated successfully. Since no email service is configured, you can reset your password using the link displayed below.',
+    resetUrl,
   });
 });
 
