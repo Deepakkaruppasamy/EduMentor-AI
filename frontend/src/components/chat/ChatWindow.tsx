@@ -23,6 +23,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { messages, addMessage, updateMessage, currentChatId, setCurrentChatId, isLoading, setLoading } = useChatStore();
+  const { user } = useAuthStore();
+  const preferredLanguage = user?.preferredLanguage || 'English';
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -80,6 +82,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
     if (!cleanText) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    // Dynamically assign target RFC 5646 language locale code
+    const langMap: Record<string, string> = {
+      'English': 'en-US',
+      'Tamil': 'ta-IN',
+      'Hindi': 'hi-IN',
+      'German': 'de-DE',
+      'French': 'fr-FR'
+    };
+    const targetLangCode = langMap[preferredLanguage] || 'en-US';
+    utterance.lang = targetLangCode;
+
+    // Find and bind voice fitting this language code
+    const voices = synthRef.current.getVoices();
+    const matchedVoice = voices.find(v => 
+      v.lang === targetLangCode || 
+      v.lang.startsWith(targetLangCode.split('-')[0])
+    );
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+    }
+
     utteranceRef.current = utterance;
 
     utterance.onstart = () => {
@@ -96,7 +120,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
     };
 
     synthRef.current.speak(utterance);
-  }, [voiceMode]);
+  }, [voiceMode, preferredLanguage]);
 
   useEffect(() => {
     return () => {
@@ -118,7 +142,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
       const rec = new SpeechRecognition();
       rec.continuous = false;
       rec.interimResults = false;
-      rec.lang = 'en-US';
+      
+      const langMap: Record<string, string> = {
+        'English': 'en-US',
+        'Tamil': 'ta-IN',
+        'Hindi': 'hi-IN',
+        'German': 'de-DE',
+        'French': 'fr-FR'
+      };
+      rec.lang = langMap[preferredLanguage] || 'en-US';
 
       rec.onstart = () => setIsListening(true);
       rec.onend = () => setIsListening(false);
@@ -140,7 +172,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
       };
       recognitionRef.current = rec;
     }
-  }, []);
+  }, [preferredLanguage]);
 
   const toggleSpeech = () => {
     if (!recognitionRef.current) {
