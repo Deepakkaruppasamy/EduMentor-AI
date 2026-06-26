@@ -4,6 +4,7 @@ import { useAuthStore } from './store/auth.store';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ChatPage } from './pages/ChatPage';
@@ -42,6 +43,9 @@ const App: React.FC = () => {
         } />
         <Route path="/register" element={
           isAuthenticated ? <Navigate to={user?.role === 'student' ? '/dashboard' : '/admin'} /> : <RegisterPage />
+        } />
+        <Route path="/reset-password/:token" element={
+          isAuthenticated ? <Navigate to={user?.role === 'student' ? '/dashboard' : '/admin'} /> : <ResetPasswordPage />
         } />
 
         {/* Student Routes */}

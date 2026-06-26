@@ -12,6 +12,10 @@ export interface IUser extends Document {
   qualifications?: string;
   department?: string;
   preferredLanguage?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  loginAttempts: number;
+  lockUntil?: Date;
   isActive: boolean;
   lastLogin?: Date;
   createdAt: Date;
@@ -38,6 +42,10 @@ const UserSchema = new Schema<IUser>(
     qualifications: { type: String, default: '' },
     department: { type: String, default: '' },
     preferredLanguage: { type: String, default: 'English', enum: ['English', 'Tamil', 'Hindi', 'German', 'French'] },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
   },
