@@ -14,6 +14,7 @@ import { RecommendationsPage } from './pages/RecommendationsPage';
 import { FlashcardsPage } from './pages/FlashcardsPage';
 import { GradebookPage } from './pages/GradebookPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -94,7 +95,7 @@ const App: React.FC = () => {
         } />
         <Route path="/analytics" element={
           <ProtectedRoute roles={['faculty', 'admin']}>
-            <AppPage><AdminDashboard /></AppPage>
+            <AppPage><AnalyticsPage /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/gradebook" element={
