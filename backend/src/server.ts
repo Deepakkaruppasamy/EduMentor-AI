@@ -15,6 +15,7 @@ import quizRoutes from './routes/quiz.routes';
 import recommendationRoutes from './routes/recommendation.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import flashcardRoutes from './routes/flashcard.routes';
+import assignmentEvaluationRoutes from './routes/assignment-evaluation.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { createServer } from 'http';
 import { initSocketServer } from './services/socket.service';
@@ -57,6 +58,7 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/flashcards', flashcardRoutes);
+app.use('/api/assignment-evaluations', assignmentEvaluationRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
