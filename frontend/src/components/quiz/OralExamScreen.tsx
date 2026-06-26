@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Course } from '../../types';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { Loader } from '../common/Loader';
 
 interface OralExamScreenProps {
   courses: Course[];
@@ -320,12 +321,7 @@ export const OralExamScreen: React.FC<OralExamScreenProps> = ({ courses, onBack 
           )}
 
           {status === 'evaluating' && (
-            <div className="w-full py-4 space-y-2">
-              <div className="flex justify-center">
-                <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              </div>
-              <p className="text-xs text-white/40">Evaluating spoken syntax correctness and grading...</p>
-            </div>
+            <Loader small message="Evaluating spoken syntax correctness and grading..." />
           )}
         </div>
       )}

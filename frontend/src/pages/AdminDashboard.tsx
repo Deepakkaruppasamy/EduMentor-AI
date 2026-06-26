@@ -9,6 +9,8 @@ import { DashboardStats } from '../types';
 import toast from 'react-hot-toast';
 import { WeeklyDigestCard } from '../components/dashboard/WeeklyDigestCard';
 
+import { Loader } from '../components/common/Loader';
+
 const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
 
 const StatBig: React.FC<{ icon: string; label: string; value: string | number; color: string }> = ({ icon, label, value, color }) => {
@@ -47,9 +49,7 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   if (isLoading) {
-    return <div className="flex h-full items-center justify-center">
-      <div className="h-10 w-10 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
-    </div>;
+    return <Loader message="Aggregating platform diagnostics..." />;
   }
 
   const topicsChartData = stats?.topTopics?.slice(0, 8).map(t => ({ name: t.topic.substring(0, 20), count: t.count })) || [];

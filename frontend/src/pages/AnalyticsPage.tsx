@@ -9,6 +9,7 @@ import { courseService } from '../services/course.service';
 import { Course, DashboardStats } from '../types';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { Loader } from '../components/common/Loader';
 
 const StatCard: React.FC<{ icon: string; label: string; value: string | number; color: string }> = ({ icon, label, value, color }) => (
   <div className="glass-card p-4 flex items-center gap-4">
@@ -66,11 +67,7 @@ export const AnalyticsPage: React.FC = () => {
   }, [selectedCourseId]);
 
   if (isLoadingCourses || (isLoadingData && !stats)) {
-    return (
-      <div className="flex h-full items-center justify-center min-h-[400px]">
-        <div className="h-10 w-10 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
-      </div>
-    );
+    return <Loader message="Aggregating academic insights..." />;
   }
 
   const topicsChartData = stats?.topTopics?.slice(0, 8).map(t => ({ name: t.topic.substring(0, 18), count: t.count })) || [];

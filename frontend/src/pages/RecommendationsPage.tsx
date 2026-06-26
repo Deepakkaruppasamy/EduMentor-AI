@@ -4,6 +4,7 @@ import api from '../services/api';
 import { courseService } from '../services/course.service';
 import { Course, Recommendation } from '../types';
 import toast from 'react-hot-toast';
+import { Loader } from '../components/common/Loader';
 
 export const RecommendationsPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -58,9 +59,7 @@ export const RecommendationsPage: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex h-40 items-center justify-center">
-          <div className="h-8 w-8 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
-        </div>
+        <Loader message="Synthesizing personalized study plan..." />
       ) : !recommendation ? (
         <div className="glass-card p-8 text-center">
           <div className="text-4xl mb-3">📊</div>

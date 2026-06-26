@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { motion } from 'framer-motion';
+import { Loader } from '../common/Loader';
 
 interface StudentDigest {
   weeklyXp: number;
@@ -77,9 +78,8 @@ export const WeeklyDigestCard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="glass-card p-6 flex flex-col items-center justify-center space-y-3 py-12">
-        <div className="h-6 w-6 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
-        <span className="text-xs text-white/40">Aggregating weekly digest statistics...</span>
+      <div className="glass-card p-6 py-12">
+        <Loader small message="Aggregating weekly digest statistics..." />
       </div>
     );
   }

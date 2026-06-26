@@ -5,6 +5,7 @@ import { Logo } from './Logo';
 interface LoaderProps {
   message?: string;
   fullscreen?: boolean;
+  small?: boolean;
 }
 
 const LOADING_STEPS = [
@@ -16,15 +17,37 @@ const LOADING_STEPS = [
   'Synthesizing study recommendations...',
 ];
 
-export const Loader: React.FC<LoaderProps> = ({ message, fullscreen = false }) => {
+export const Loader: React.FC<LoaderProps> = ({ message, fullscreen = false, small = false }) => {
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
+    if (small) return;
     const interval = setInterval(() => {
       setStepIndex((prev) => (prev + 1) % LOADING_STEPS.length);
     }, 2500);
     return () => clearInterval(interval);
-  }, []);
+  }, [small]);
+
+  if (small) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-4 space-y-2.5">
+        <div className="relative flex items-center justify-center">
+          <motion.div
+            className="absolute rounded-full border-t border-b border-primary-500/30"
+            style={{ width: 44, height: 44 }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          />
+          <Logo size="sm" />
+        </div>
+        {message && (
+          <p className="text-[10px] text-white/40 font-mono animate-pulse">
+            {message}
+          </p>
+        )}
+      </div>
+    );
+  }
 
   const content = (
     <div className="flex flex-col items-center justify-center text-center p-8 z-10">

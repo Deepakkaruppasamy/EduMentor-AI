@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/auth.store';
 import { Course } from '../../types';
 import { getGradeColor } from '../../utils/uuid';
 import toast from 'react-hot-toast';
+import { Loader } from '../common/Loader';
 
 interface LiveParticipant {
   studentId: string;
@@ -354,9 +355,8 @@ export const LiveBattleScreen: React.FC<LiveBattleScreenProps> = ({ courses, onC
               </button>
             </div>
           ) : (
-            <div className="text-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-              <div className="h-4 w-4 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin mx-auto mb-2" />
-              <p className="text-xs text-white/50">Your instructor will start the game shortly. Stand by!</p>
+            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+              <Loader small message="Your instructor will start the game shortly. Stand by!" />
             </div>
           )}
         </div>

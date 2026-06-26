@@ -7,6 +7,7 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { LanguageSelector } from '../common/LanguageSelector';
+import { Logo } from '../common/Logo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -140,7 +141,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </svg>
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-base">🎓</span>
+            <Logo size="sm" />
             <span className="text-sm font-bold text-white">EduMentor AI</span>
           </div>
           <div className="flex items-center">
