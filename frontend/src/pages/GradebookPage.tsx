@@ -230,7 +230,7 @@ export const GradebookPage: React.FC = () => {
       </div>
 
       {/* Tabs Menu */}
-      <div className="flex gap-2 border-b border-white/5 pb-1">
+      <div className="flex gap-2 border-b border-white/5 pb-1 overflow-x-auto whitespace-nowrap scrollbar-none">
         {[
           { id: 'grades', label: '📊 Student Grades & Analytics' },
           { id: 'risk', label: '🚨 At-Risk Warning Alerts' },
@@ -245,7 +245,7 @@ export const GradebookPage: React.FC = () => {
               setAssignmentAnalytics(null);
               setSelectedRiskStudent(null);
             }}
-            className="px-4 py-2 text-xs font-semibold rounded-t-xl transition-all duration-200"
+            className="px-4 py-2 text-xs font-semibold rounded-t-xl transition-all duration-200 flex-shrink-0"
             style={{
               background: activeTab === tab.id ? 'rgba(255,255,255,0.03)' : 'transparent',
               color: activeTab === tab.id ? '#fff' : 'rgba(255,255,255,0.4)',
@@ -333,9 +333,9 @@ export const GradebookPage: React.FC = () => {
                       <th className="pb-3 text-white/40 font-semibold uppercase">Student</th>
                       <th className="pb-3 text-white/40 font-semibold uppercase text-center">Quiz Avg</th>
                       <th className="pb-3 text-white/40 font-semibold uppercase text-center">AI Queries</th>
-                      <th className="pb-3 text-white/40 font-semibold uppercase">Weak Topics</th>
-                      <th className="pb-3 text-white/40 font-semibold uppercase">Strong Topics</th>
-                      <th className="pb-3 text-white/40 font-semibold uppercase text-right">Last Active</th>
+                      <th className="pb-3 text-white/40 font-semibold uppercase hidden md:table-cell">Weak Topics</th>
+                      <th className="pb-3 text-white/40 font-semibold uppercase hidden md:table-cell">Strong Topics</th>
+                      <th className="pb-3 text-white/40 font-semibold uppercase text-right hidden sm:table-cell">Last Active</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
@@ -364,13 +364,13 @@ export const GradebookPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-4 text-center font-medium text-white/70">{student.totalQueries}</td>
-                        <td className="py-4 pr-3 max-w-[200px] truncate text-white/60">
+                        <td className="py-4 pr-3 max-w-[200px] truncate text-white/60 hidden md:table-cell">
                           {student.weakTopics.join(', ') || <span className="text-white/20">None</span>}
                         </td>
-                        <td className="py-4 pr-3 max-w-[200px] truncate text-white/60">
+                        <td className="py-4 pr-3 max-w-[200px] truncate text-white/60 hidden md:table-cell">
                           {student.strongTopics.join(', ') || <span className="text-white/20">None</span>}
                         </td>
-                        <td className="py-4 text-right text-white/40">
+                        <td className="py-4 text-right text-white/40 hidden sm:table-cell">
                           {student.lastLogin ? formatDate(student.lastLogin) : 'Never'}
                         </td>
                       </tr>
@@ -717,7 +717,7 @@ export const GradebookPage: React.FC = () => {
                         <th className="pb-3 text-white/40 font-semibold uppercase">Student</th>
                         <th className="pb-3 text-white/40 font-semibold uppercase text-center">Status</th>
                         <th className="pb-3 text-white/40 font-semibold uppercase text-center">Grade</th>
-                        <th className="pb-3 text-white/40 font-semibold uppercase text-right">Submitted At</th>
+                        <th className="pb-3 text-white/40 font-semibold uppercase text-right hidden sm:table-cell">Submitted At</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.03]">
@@ -747,7 +747,7 @@ export const GradebookPage: React.FC = () => {
                               <span className="text-white/20">-</span>
                             )}
                           </td>
-                          <td className="py-3 text-right text-white/45">
+                          <td className="py-3 text-right text-white/45 hidden sm:table-cell">
                             {sub.completedAt ? formatDate(sub.completedAt) : '-'}
                           </td>
                         </tr>

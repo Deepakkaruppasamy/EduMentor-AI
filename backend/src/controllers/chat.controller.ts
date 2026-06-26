@@ -286,10 +286,51 @@ async function updateDailyAnalytics(trustScore: number, responseTime: number, co
 
     await Analytics.findOneAndUpdate(
       { date: today },
-      {
-        $inc: { totalQueries: 1, hallucinationCount: trustScore < 45 ? 1 : 0 },
-        $push: { avgTrustScore: trustScore },
-      },
+      [
+        {
+          $set: {
+            totalQueries: { $add: [ { $ifNull: [ "$totalQueries", 0 ] }, 1 ] },
+            hallucinationCount: {
+              $add: [
+                { $ifNull: [ "$hallucinationCount", 0 ] },
+                trustScore < 45 ? 1 : 0
+              ]
+            },
+            avgTrustScore: {
+              $divide: [
+                {
+                  $add: [
+                    { $multiply: [ { $ifNull: [ "$avgTrustScore", 0 ] }, { $ifNull: [ "$totalQueries", 0 ] } ] },
+                    trustScore
+                  ]
+                },
+                { $add: [ { $ifNull: [ "$totalQueries", 0 ] }, 1 ] }
+              ]
+            },
+            avgResponseTime: {
+              $divide: [
+                {
+                  $add: [
+                    { $multiply: [ { $ifNull: [ "$avgResponseTime", 0 ] }, { $ifNull: [ "$totalQueries", 0 ] } ] },
+                    responseTime
+                  ]
+                },
+                { $add: [ { $ifNull: [ "$totalQueries", 0 ] }, 1 ] }
+              ]
+            }
+          }
+        },
+        {
+          $set: {
+            hallucinationRate: {
+              $multiply: [
+                { $divide: [ "$hallucinationCount", "$totalQueries" ] },
+                100
+              ]
+            }
+          }
+        }
+      ] as any,
       { upsert: true, new: true }
     );
   } catch (err) {

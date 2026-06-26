@@ -12,14 +12,29 @@ import { AIBuddyAvatar } from './AIBuddyAvatar';
 interface ChatWindowProps {
   course: Course;
   onRefreshHistory?: () => void;
+  onToggleLeftPanel?: () => void;
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory }) => {
+export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory, onToggleLeftPanel }) => {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { messages, addMessage, updateMessage, currentChatId, setCurrentChatId, isLoading, setLoading } = useChatStore();
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Voice Query Speech Recognition
   const [isListening, setIsListening] = useState(false);
@@ -296,20 +311,31 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
   return (
     <div className="flex h-full flex-col">
       {/* Course Header */}
-      <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <AIBuddyAvatar state={getAvatarState()} size={36} />
-        <div>
-          <div className="text-sm font-semibold text-white">{course.title}</div>
-          <div className="text-[11px] text-white/40">{course.code} · Hybrid RAG + Llama 3</div>
+      <div className="flex items-center gap-2 px-3 py-3 md:gap-3 md:px-6 md:py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,11,15,0.4)', backdropFilter: 'blur(10px)' }}>
+        {onToggleLeftPanel && (
+          <button
+            onClick={onToggleLeftPanel}
+            className="lg:hidden p-1.5 rounded-xl text-white/60 hover:bg-white/5 hover:text-white transition-all mr-0.5"
+            title="Chat History"
+          >
+            💬
+          </button>
+        )}
+        <AIBuddyAvatar state={getAvatarState()} size={32} />
+        <div className="min-w-0 flex-1">
+          <div className="text-xs md:text-sm font-semibold text-white truncate max-w-[120px] xs:max-w-[180px] sm:max-w-[300px] md:max-w-none">{course.title}</div>
+          <div className="text-[10px] md:text-[11px] text-white/40 truncate">{course.code} · AI Tutor</div>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 md:gap-2">
           {currentChatId && (
-            <div className="flex items-center gap-1.5 mr-2">
-              <button onClick={handleRename} className="btn-secondary py-1 px-2.5 text-[10px] rounded-lg hover:border-primary-500 transition-colors" title="Rename Session">
-                ✏️ Rename
+            <div className="flex items-center gap-1 mr-1">
+              <button onClick={handleRename} className="btn-secondary py-1 px-2 text-[10px] rounded-lg hover:border-primary-500 transition-colors" title="Rename Session">
+                <span className="hidden sm:inline">✏️ Rename</span>
+                <span className="sm:hidden">✏️</span>
               </button>
-              <button onClick={handleExport} className="btn-secondary py-1 px-2.5 text-[10px] rounded-lg hover:border-primary-500 transition-colors" title="Export to Markdown">
-                📥 Export
+              <button onClick={handleExport} className="btn-secondary py-1 px-2 text-[10px] rounded-lg hover:border-primary-500 transition-colors" title="Export to Markdown">
+                <span className="hidden sm:inline">📥 Export</span>
+                <span className="sm:hidden">📥</span>
               </button>
             </div>
           )}
@@ -317,7 +343,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
           {/* TTS Voice Mode Toggle */}
           <button
             onClick={() => setVoiceMode(!voiceMode)}
-            className="flex items-center gap-1.5 py-1 px-2.5 text-[10px] rounded-lg transition-all"
+            className="flex items-center gap-1 py-1 px-2 text-[10px] rounded-lg transition-all"
             style={{
               background: voiceMode
                 ? 'linear-gradient(135deg, rgba(79,99,255,0.2) 0%, rgba(159,122,234,0.2) 100%)'
@@ -326,10 +352,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
               color: voiceMode ? '#7c8fff' : 'rgba(255,255,255,0.6)',
             }}
           >
-            {voiceMode ? '🔊 TTS Active' : '🔇 TTS Off'}
+            <span>{voiceMode ? '🔊' : '🔇'}</span>
+            <span className="hidden sm:inline"> {voiceMode ? 'TTS Active' : 'TTS Off'}</span>
           </button>
 
-          <div className="flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium"
+          <div className="hidden md:flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium"
             style={{ background: 'rgba(72,187,120,0.1)', border: '1px solid rgba(72,187,120,0.2)', color: '#48bb78' }}>
             <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
             AI Ready
@@ -386,9 +413,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={`Ask about ${course.title}...`}
+            placeholder={isOnline ? `Ask about ${course.title}...` : 'You are currently offline. Live query is disabled.'}
             rows={1}
-            disabled={isLoading}
+            disabled={isLoading || !isOnline}
             className="w-full resize-none bg-transparent px-5 py-4 pr-24 text-sm text-white outline-none placeholder-white/30 disabled:opacity-50"
             style={{ maxHeight: '120px', scrollbarWidth: 'none' }}
             onInput={(e) => {
@@ -399,8 +426,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
           />
           <button
             onClick={toggleSpeech}
-            disabled={isLoading}
-            className="absolute bottom-3 right-14 flex h-9 w-9 items-center justify-center rounded-xl transition-all text-white/60 hover:text-white"
+            disabled={isLoading || !isOnline}
+            className="absolute bottom-3 right-14 flex h-9 w-9 items-center justify-center rounded-xl transition-all text-white/60 hover:text-white disabled:opacity-30"
             style={{ 
               background: isListening ? 'rgba(252,129,129,0.2)' : 'transparent',
               border: isListening ? '1px solid rgba(252,129,129,0.4)' : 'none',
@@ -412,7 +439,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
           </button>
           <button
             onClick={handleSend}
-            disabled={!input.trim() || isLoading}
+            disabled={!input.trim() || isLoading || !isOnline}
             className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-xl transition-all disabled:opacity-30"
             style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #7c3aed 100%)' }}
           >

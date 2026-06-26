@@ -216,6 +216,45 @@ export const StudyLobbyScreen: React.FC<StudyLobbyScreenProps> = ({ courses, stu
     isDrawingRef.current = false;
   };
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    isDrawingRef.current = true;
+    lastPosRef.current = {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    };
+    if (e.cancelable) e.preventDefault();
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawingRef.current || !canvasRef.current || !socketRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const currentX = touch.clientX - rect.left;
+    const currentY = touch.clientY - rect.top;
+
+    const stroke = {
+      x1: lastPosRef.current.x,
+      y1: lastPosRef.current.y,
+      x2: currentX,
+      y2: currentY,
+      color: '#4f63ff',
+      width: 3,
+    };
+
+    drawLineOnCanvas(ctx, stroke.x1, stroke.y1, stroke.x2, stroke.y2, stroke.color, stroke.width);
+    socketRef.current.emit('study:draw', { roomId: roomCode, stroke });
+
+    lastPosRef.current = { x: currentX, y: currentY };
+    if (e.cancelable) e.preventDefault();
+  };
+
   const clearCanvasLocal = () => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
@@ -329,7 +368,7 @@ export const StudyLobbyScreen: React.FC<StudyLobbyScreenProps> = ({ courses, stu
         </div>
       ) : (
         /* Active Lobby UI */
-        <div className="h-[80vh] flex flex-col md:flex-row gap-4">
+        <div className="h-auto md:h-[80vh] flex flex-col md:flex-row gap-4 animate-fadeIn">
           
           {/* Left / Center Panel: Whiteboard & Collaborative AI */}
           <div className="flex-1 flex flex-col gap-4">
@@ -357,7 +396,7 @@ export const StudyLobbyScreen: React.FC<StudyLobbyScreenProps> = ({ courses, stu
                 </button>
               </div>
             </div>
-
+ 
             {/* Drawing Canvas */}
             <div className="flex-1 glass-card p-2 relative overflow-hidden bg-[#111319] min-h-[300px]">
               <span className="absolute top-3 left-3 text-[9px] uppercase font-semibold text-white/20 select-none">
@@ -371,6 +410,9 @@ export const StudyLobbyScreen: React.FC<StudyLobbyScreenProps> = ({ courses, stu
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUpOrLeave}
                 onMouseLeave={handleMouseUpOrLeave}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleMouseUpOrLeave}
                 className="w-full h-full bg-[#111319] cursor-crosshair rounded-xl block"
               />
             </div>

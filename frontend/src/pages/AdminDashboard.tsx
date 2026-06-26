@@ -11,20 +11,25 @@ import { WeeklyDigestCard } from '../components/dashboard/WeeklyDigestCard';
 
 const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
 
-const StatBig: React.FC<{ icon: string; label: string; value: string | number; color: string }> = ({ icon, label, value, color }) => (
-  <div className="glass-card p-5">
-    <div className="flex items-center justify-between">
-      <span className="text-2xl">{icon}</span>
-      <div className="text-right">
-        <div className="text-2xl font-black text-white">{value}</div>
-        <div className="text-xs text-white/40">{label}</div>
+const StatBig: React.FC<{ icon: string; label: string; value: string | number; color: string }> = ({ icon, label, value, color }) => {
+  const isPercentage = typeof value === 'string' && value.endsWith('%');
+  const widthVal = isPercentage ? value : '100%';
+
+  return (
+    <div className="glass-card p-3.5 md:p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-xl md:text-2xl">{icon}</span>
+        <div className="text-right min-w-0">
+          <div className="text-lg md:text-xl lg:text-2xl font-black text-white truncate">{value}</div>
+          <div className="text-[9px] xs:text-[10px] md:text-xs text-white/40 truncate">{label}</div>
+        </div>
+      </div>
+      <div className="progress-bar mt-2 md:mt-3">
+        <div className="progress-fill" style={{ background: color, width: widthVal }} />
       </div>
     </div>
-    <div className="progress-bar mt-3">
-      <div className="progress-fill w-full" style={{ background: color }} />
-    </div>
-  </div>
-);
+  );
+};
 
 export const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -51,21 +56,21 @@ export const AdminDashboard: React.FC = () => {
   const activityData = activity.map(a => ({ date: new Date(a.date).toLocaleDateString(), queries: a.queries, trust: a.avgTrustScore }));
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4 md:p-6 md:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">📈 Admin Dashboard</h1>
-        <p className="mt-1 text-sm text-white/40">Platform-wide analytics and system health</p>
+        <h1 className="text-xl md:text-2xl font-bold text-white">📈 Admin Dashboard</h1>
+        <p className="mt-0.5 text-xs md:text-sm text-white/40">Platform-wide analytics and system health</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         <StatBig icon="👥" label="Total Users" value={stats?.totalUsers || 0} color="#4f63ff" />
         <StatBig icon="🟢" label="Active Users (7d)" value={stats?.activeUsers || 0} color="#48bb78" />
         <StatBig icon="💬" label="Total Queries" value={stats?.totalQueries || 0} color="#9f7aea" />
         <StatBig icon="📚" label="Total Courses" value={stats?.totalCourses || 0} color="#f6ad55" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         <StatBig icon="📁" label="Docs Processed" value={stats?.totalDocuments || 0} color="#06b6d4" />
         <StatBig icon="📝" label="Quizzes Generated" value={stats?.totalQuizzes || 0} color="#e879f9" />
         <StatBig icon="✅" label="Avg Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#48bb78" />
@@ -75,10 +80,10 @@ export const AdminDashboard: React.FC = () => {
       {/* Instructor / Faculty Weekly Action Items */}
       <WeeklyDigestCard />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
         {/* Query Activity Chart */}
-        <div className="glass-card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white/80">📊 Daily Query Activity</h2>
+        <div className="glass-card p-3.5 md:p-5">
+          <h2 className="mb-4 text-xs md:text-sm font-semibold text-white/80">📊 Daily Query Activity</h2>
           {activityData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={activityData}>
@@ -96,8 +101,8 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Top Topics */}
-        <div className="glass-card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white/80">🔥 Most Asked Topics</h2>
+        <div className="glass-card p-3.5 md:p-5">
+          <h2 className="mb-4 text-xs md:text-sm font-semibold text-white/80">🔥 Most Asked Topics</h2>
           {topicsChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={topicsChartData} layout="vertical" barCategoryGap="20%">
@@ -120,19 +125,19 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* System Health */}
-      <div className="glass-card p-5">
-        <h2 className="mb-4 text-sm font-semibold text-white/80">🔒 System Health</h2>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="glass-card p-3.5 md:p-5">
+        <h2 className="mb-4 text-xs md:text-sm font-semibold text-white/80">🔒 System Health</h2>
+        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
           {[
             { label: 'API Status', value: '✅ Operational', color: 'text-green-400' },
             { label: 'MongoDB', value: '✅ Connected', color: 'text-green-400' },
             { label: 'ChromaDB', value: '🔄 Active', color: 'text-amber-400' },
             { label: 'Llama 3 (Groq)', value: '✅ Ready', color: 'text-green-400' },
           ].map(item => (
-            <div key={item.label} className="rounded-xl p-3 text-center"
+            <div key={item.label} className="rounded-xl p-2.5 md:p-3 text-center"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className={`text-sm font-semibold ${item.color}`}>{item.value}</div>
-              <div className="text-[10px] text-white/40 mt-0.5">{item.label}</div>
+              <div className={`text-xs md:text-sm font-semibold ${item.color}`}>{item.value}</div>
+              <div className="text-[9px] md:text-[10px] text-white/40 mt-0.5">{item.label}</div>
             </div>
           ))}
         </div>

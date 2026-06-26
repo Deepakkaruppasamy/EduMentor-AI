@@ -1,0 +1,22 @@
+{
+  "short_name": "EduMentor",
+  "name": "EduMentor AI Chatbot",
+  "description": "Your Intelligent AI Learning Companion for course materials, quizzes and RAG tutoring.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0a0b0f",
+  "theme_color": "#4f63ff",
+  "display": "standalone",
+  "orientation": "portrait"
+}

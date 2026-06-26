@@ -13,8 +13,22 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -108,6 +122,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Offline Banner */}
+        {!isOnline && (
+          <div className="bg-red-500/20 border-b border-red-500/30 text-red-200 text-xs font-semibold py-2 px-4 text-center flex items-center justify-center gap-2 animate-pulse z-50">
+            <span>⚠️</span>
+            <span>You are currently offline. Viewing cached data. Chat querying and quiz creation are disabled.</span>
+          </div>
+        )}
+
         {/* Mobile Header */}
         <header className="flex items-center justify-between px-4 py-3 lg:hidden"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,11,15,0.95)' }}>

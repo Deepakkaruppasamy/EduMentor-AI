@@ -59,12 +59,12 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({ explainability, halluc
           {explainability.sources.map((source, i) => (
             <div key={i} className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <div className="flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-bold flex-shrink-0"
                     style={{ background: 'rgba(79,99,255,0.2)', color: '#7c8fff' }}>
                     {source.rank}
                   </div>
-                  <span className="font-semibold text-white/80 truncate max-w-[120px]" title={source.documentName}>
+                  <span className="font-semibold text-white/80 truncate flex-1 min-w-0" title={source.documentName}>
                     {source.documentName}
                   </span>
                   {source.pageNumber && (
