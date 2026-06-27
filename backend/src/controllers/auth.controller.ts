@@ -214,6 +214,33 @@ export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) =
   res.json({ success: true, user });
 });
 
+// Avatar system controller — modular, non-breaking
+export const updateAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const {
+    avatarGender, avatarModel, avatarPose, avatarExpression,
+    avatarOutfit, avatarAccessories, avatarAnimation,
+    profileImage, useCustomPhoto
+  } = req.body;
+
+  const updatePayload: Record<string, any> = {};
+  if (avatarGender !== undefined) updatePayload.avatarGender = avatarGender;
+  if (avatarModel !== undefined) updatePayload.avatarModel = avatarModel;
+  if (avatarPose !== undefined) updatePayload.avatarPose = avatarPose;
+  if (avatarExpression !== undefined) updatePayload.avatarExpression = avatarExpression;
+  if (avatarOutfit !== undefined) updatePayload.avatarOutfit = avatarOutfit;
+  if (avatarAccessories !== undefined) updatePayload.avatarAccessories = avatarAccessories;
+  if (avatarAnimation !== undefined) updatePayload.avatarAnimation = avatarAnimation;
+  if (profileImage !== undefined) updatePayload.profileImage = profileImage;
+  if (useCustomPhoto !== undefined) updatePayload.useCustomPhoto = useCustomPhoto;
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    updatePayload,
+    { new: true, runValidators: false }
+  );
+  res.json({ success: true, user });
+});
+
 export const uploadImage = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No image file uploaded' });

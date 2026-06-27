@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, getMe, getAllUsers, updateUser, uploadImage, forgotPassword, resendOtp, resetPassword, changePassword, firstLoginChangePassword } from '../controllers/auth.controller';
+import { register, login, getMe, getAllUsers, updateUser, updateAvatar, uploadImage, forgotPassword, resendOtp, resetPassword, changePassword, firstLoginChangePassword } from '../controllers/auth.controller';
 import { protect, authorize } from '../middleware/auth';
 import { upload } from '../middleware/upload';
 
@@ -16,5 +16,7 @@ router.post('/resend-otp', resendOtp);
 router.post('/reset-password', resetPassword);
 router.put('/change-password', protect, changePassword);
 router.post('/first-login-change', firstLoginChangePassword);
+// Avatar system route
+router.put('/avatar', protect, updateAvatar);
 
 export default router;

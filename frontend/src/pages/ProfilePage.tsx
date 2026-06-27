@@ -3,6 +3,9 @@ import { useAuthStore } from '../store/auth.store';
 import { authService } from '../services/auth.service';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { AvatarFrame } from '../components/avatar/AvatarFrame';
+import { AvatarSettings } from '../components/avatar/AvatarSettings';
+import { useAvatarStore } from '../store/avatar.store';
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuthStore();
@@ -15,6 +18,7 @@ export const ProfilePage: React.FC = () => {
   const [preferredLanguage, setPreferredLanguage] = useState(user?.preferredLanguage || 'English');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const { config } = useAvatarStore();
 
   // Change Password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -132,22 +136,22 @@ export const ProfilePage: React.FC = () => {
       <div className="grid gap-6 md:grid-cols-3">
         {/* Left Column: Avatar & Quick Info */}
         <div className="glass-card p-6 flex flex-col items-center text-center space-y-4">
+          {/* Avatar / Profile Picture */}
           <div className="relative group">
-            {avatar ? (
+            {user?.useCustomPhoto && (avatar || user?.profileImage) ? (
+              // Show uploaded photo if user opted for it
               <img
-                src={avatar}
+                src={avatar || user?.profileImage || ''}
                 alt={name}
                 className="h-32 w-32 rounded-2xl object-cover border border-white/10"
               />
             ) : (
-              <div
-                className="h-32 w-32 rounded-2xl flex items-center justify-center text-4xl font-bold text-white font-mono"
-                style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}
-              >
-                {name.charAt(0).toUpperCase()}
+              // Animated avatar (default)
+              <div className="relative">
+                <AvatarFrame size={128} showControls className="rounded-2xl" />
               </div>
             )}
-            
+
             {/* Upload Overlay */}
             <label className="absolute inset-0 bg-black/60 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-200">
               <span className="text-2xl">📸</span>
@@ -378,6 +382,9 @@ export const ProfilePage: React.FC = () => {
           </form>
         </div>
       </div>
+
+      {/* Avatar Settings Section — New Modular Feature */}
+      <AvatarSettings />
     </div>
   );
 };

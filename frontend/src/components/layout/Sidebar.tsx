@@ -16,6 +16,7 @@ const STUDENT_LINKS = [
   { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
+  { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
 ];
 
 const FACULTY_LINKS = [
@@ -29,6 +30,7 @@ const FACULTY_LINKS = [
   { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
+  { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
 ];
 
 const ADMIN_LINKS = [
@@ -41,6 +43,7 @@ const ADMIN_LINKS = [
   { to: '/faculty-ai-assistant', icon: '🧙‍♂️', label: 'Faculty AI Assistant' },
   { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
+  { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
 ];
 
 export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
@@ -93,19 +96,27 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3">
-        {links.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            onClick={onClose}
-            className={`sidebar-link ${location.pathname === link.to ? 'active' : ''}`}
-          >
-            <span className="text-base">{link.icon}</span>
-            <span>{link.label}</span>
-          </Link>
-        ))}
+      {/* Navigation — scrollable */}
+      <nav
+        className="flex-1 px-3 py-1 overflow-y-auto"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255,255,255,0.1) transparent',
+        }}
+      >
+        <div className="space-y-1">
+          {links.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={onClose}
+              className={`sidebar-link ${location.pathname === link.to ? 'active' : ''}`}
+            >
+              <span className="text-base">{link.icon}</span>
+              <span>{link.label}</span>
+            </Link>
+          ))}
+        </div>
       </nav>
 
       {/* Logout */}

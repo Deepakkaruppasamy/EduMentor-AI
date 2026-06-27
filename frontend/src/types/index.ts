@@ -14,6 +14,16 @@ export interface User {
   semester?: number;
   phone?: string;
   courseName?: string;
+  // Avatar system fields
+  avatarGender?: 'male' | 'female';
+  avatarModel?: string;
+  avatarPose?: string;
+  avatarExpression?: string;
+  avatarOutfit?: string;
+  avatarAccessories?: string;
+  avatarAnimation?: string;
+  profileImage?: string;
+  useCustomPhoto?: boolean;
 }
 
 export interface AuthState {

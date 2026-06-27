@@ -25,6 +25,16 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  // Avatar system fields
+  avatarGender?: 'male' | 'female';
+  avatarModel?: string;
+  avatarPose?: string;
+  avatarExpression?: string;
+  avatarOutfit?: string;
+  avatarAccessories?: string;
+  avatarAnimation?: string;
+  profileImage?: string;
+  useCustomPhoto?: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -56,6 +66,16 @@ const UserSchema = new Schema<IUser>(
     phone: { type: String },
     isFirstLogin: { type: Boolean, default: true },
     courseName: { type: String },
+    // Avatar system fields (all optional, non-breaking)
+    avatarGender: { type: String, enum: ['male', 'female'] },
+    avatarModel: { type: String },
+    avatarPose: { type: String, default: 'standing' },
+    avatarExpression: { type: String, default: 'neutral' },
+    avatarOutfit: { type: String, default: 'casual' },
+    avatarAccessories: { type: String },
+    avatarAnimation: { type: String, default: 'smooth' },
+    profileImage: { type: String },
+    useCustomPhoto: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

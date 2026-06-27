@@ -218,7 +218,7 @@ export const ChatPage: React.FC = () => {
   );
 
   return (
-    <div className="flex h-[calc(100vh-0px)] lg:h-screen">
+    <div className="flex h-[calc(100vh-0px)] lg:h-screen w-full min-w-0 overflow-hidden">
       {/* Left Panel: Course Selector + Chat History */}
       {/* Desktop Panel */}
       <div className="hidden w-64 flex-shrink-0 flex-col lg:flex"
