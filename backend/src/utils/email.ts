@@ -9,11 +9,11 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async (options: SendEmailOptions): Promise<void> => {
-  const isPlaceholder = 
-    !config.SMTP_HOST || 
-    !config.SMTP_USER || 
-    !config.SMTP_PASS || 
-    config.SMTP_USER === 'your-email@gmail.com' || 
+  const isPlaceholder =
+    !config.SMTP_HOST ||
+    !config.SMTP_USER ||
+    !config.SMTP_PASS ||
+    config.SMTP_USER === 'your-email@gmail.com' ||
     config.SMTP_PASS === 'your-app-password';
 
   // If SMTP configurations are not set or are placeholders, fall back to console logging
