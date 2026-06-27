@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import { connectDatabase } from './config/database';
 import { config } from './config/env';
 import authRoutes from './routes/auth.routes';
+import adminRoutes from './routes/admin.routes';
 import courseRoutes from './routes/course.routes';
 import documentRoutes from './routes/document.routes';
 import chatRoutes from './routes/chat.routes';
@@ -20,6 +21,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { createServer } from 'http';
 import { initSocketServer } from './services/socket.service';
 import { initializeIndices } from './services/rag/index-sync.service';
+import User from './models/User';
 
 const app = express();
 
@@ -51,6 +53,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/document', documentRoutes);
 app.use('/api/chat', chatRoutes);
@@ -97,6 +100,21 @@ const PORT = config.PORT || 5000;
 const start = async () => {
   try {
     await connectDatabase();
+
+    // Seed default Super Admin if none exists
+    const userCount = await User.countDocuments();
+    if (userCount === 0) {
+      await User.create({
+        name: 'Super Admin',
+        email: 'admin@university.edu',
+        password: 'AdminPassword123!',
+        role: 'admin',
+        isFirstLogin: true,
+        isActive: true,
+        department: 'Administration',
+      });
+      console.log('✅ Seeded default Super Admin user: admin@university.edu / AdminPassword123!');
+    }
     
     // Re-index completed documents on startup
     initializeIndices();

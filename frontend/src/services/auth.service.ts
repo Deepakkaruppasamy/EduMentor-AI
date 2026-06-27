@@ -37,4 +37,8 @@ export const authService = {
     const { data } = await api.put('/auth/change-password', { currentPassword, newPassword });
     return data;
   },
+  changePasswordFirstTime: async (email: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> => {
+    const { data } = await api.post('/auth/first-login-change', { email, currentPassword, newPassword });
+    return data;
+  },
 };

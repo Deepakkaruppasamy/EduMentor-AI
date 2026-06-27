@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import User from '../models/User';
+import AuditLog from '../models/AuditLog';
 import { config } from '../config/env';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
@@ -11,26 +12,41 @@ const generateToken = (id: string): string => {
 };
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password, role, department, courses } = req.body;
+  // Allow registration ONLY if there are no users in the database at all (for bootstrapping)
+  const count = await User.countDocuments();
+  if (count > 0) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access Denied. Public registration is disabled. Please contact the administrator.'
+    });
+  }
+
+  const { name, email, password, role, department } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ success: false, message: 'Please provide name, email and password' });
-  }
-
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return res.status(409).json({ success: false, message: 'Email already registered' });
   }
 
   const user = await User.create({
     name,
     email,
     password,
-    role: role || 'student',
+    role: role || 'admin',
     department: department || '',
-    courses: courses || [],
+    isFirstLogin: true,
+    isActive: true,
   });
   const token = generateToken(user._id.toString());
+
+  await AuditLog.create({
+    action: 'USER_CREATED',
+    performedBy: 'SYSTEM',
+    targetUser: email,
+    details: 'Bootstrap Super Admin created via register endpoint.',
+    ipAddress: req.ip || req.socket.remoteAddress,
+    device: req.headers['user-agent'] || 'Unknown Device',
+    location: 'Local Intranet'
+  });
 
   res.status(201).json({
     success: true,
@@ -42,6 +58,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       email: user.email,
       role: user.role,
       preferredLanguage: user.preferredLanguage,
+      isFirstLogin: user.isFirstLogin,
     },
   });
 });
@@ -54,13 +71,49 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const user = await User.findOne({ email }).select('+password');
-  if (!user || !user.isActive) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  if (!user) {
+    await AuditLog.create({
+      action: 'LOGIN_FAILED',
+      performedBy: email,
+      details: 'Failed login attempt: Email is not registered.',
+      ipAddress: req.ip || req.socket.remoteAddress,
+      device: req.headers['user-agent'] || 'Unknown Device',
+      location: 'Local Intranet'
+    });
+    return res.status(401).json({
+      success: false,
+      message: 'Access Denied. Your email is not registered. Please contact the administrator.'
+    });
+  }
+
+  if (!user.isActive) {
+    await AuditLog.create({
+      action: 'LOGIN_FAILED',
+      performedBy: email,
+      targetUser: email,
+      details: 'Failed login attempt: Account is disabled/inactive.',
+      ipAddress: req.ip || req.socket.remoteAddress,
+      device: req.headers['user-agent'] || 'Unknown Device',
+      location: 'Local Intranet'
+    });
+    return res.status(401).json({
+      success: false,
+      message: 'Access Denied. Your account has been disabled. Please contact the administrator.'
+    });
   }
 
   // Account lockout check
   if (user.lockUntil && user.lockUntil > new Date()) {
     const minutesLeft = Math.ceil((user.lockUntil.getTime() - Date.now()) / 60000);
+    await AuditLog.create({
+      action: 'LOGIN_BLOCKED',
+      performedBy: email,
+      targetUser: email,
+      details: `Login blocked: Account is locked. Try again in ${minutesLeft} minute(s).`,
+      ipAddress: req.ip || req.socket.remoteAddress,
+      device: req.headers['user-agent'] || 'Unknown Device',
+      location: 'Local Intranet'
+    });
     return res.status(403).json({
       success: false,
       message: `Account is temporarily locked. Please try again in ${minutesLeft} minute(s).`,
@@ -74,12 +127,34 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       user.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 mins lock
       user.loginAttempts = 0; // reset login attempts count
       await user.save({ validateBeforeSave: false });
+
+      await AuditLog.create({
+        action: 'LOGIN_BLOCKED',
+        performedBy: email,
+        targetUser: email,
+        details: 'Failed login attempt: Account locked due to 5 consecutive failed attempts.',
+        ipAddress: req.ip || req.socket.remoteAddress,
+        device: req.headers['user-agent'] || 'Unknown Device',
+        location: 'Local Intranet'
+      });
+
       return res.status(403).json({
         success: false,
         message: 'Too many failed login attempts. Your account has been locked for 15 minutes.',
       });
     }
     await user.save({ validateBeforeSave: false });
+
+    await AuditLog.create({
+      action: 'LOGIN_FAILED',
+      performedBy: email,
+      targetUser: email,
+      details: `Failed login attempt: Incorrect password. Attempt ${user.loginAttempts} of 5.`,
+      ipAddress: req.ip || req.socket.remoteAddress,
+      device: req.headers['user-agent'] || 'Unknown Device',
+      location: 'Local Intranet'
+    });
+
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
   }
 
@@ -88,6 +163,16 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   user.lockUntil = undefined;
   user.lastLogin = new Date();
   await user.save({ validateBeforeSave: false });
+
+  await AuditLog.create({
+    action: 'LOGIN_SUCCESS',
+    performedBy: email,
+    targetUser: email,
+    details: 'User logged in successfully.',
+    ipAddress: req.ip || req.socket.remoteAddress,
+    device: req.headers['user-agent'] || 'Unknown Device',
+    location: 'Local Intranet'
+  });
 
   const token = generateToken(user._id.toString());
 
@@ -101,6 +186,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       email: user.email,
       role: user.role,
       preferredLanguage: user.preferredLanguage,
+      isFirstLogin: user.isFirstLogin,
     },
   });
 });
@@ -141,7 +227,15 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).json({ success: false, message: 'No account found with this email' });
+    await AuditLog.create({
+      action: 'PASSWORD_RESET_REQUESTED',
+      performedBy: email,
+      details: 'Password reset request failed: Email is not registered.',
+      ipAddress: req.ip || req.socket.remoteAddress,
+      device: req.headers['user-agent'] || 'Unknown Device',
+      location: 'Local Intranet'
+    });
+    return res.status(404).json({ success: false, message: 'Access Denied. Your email is not registered. Please contact the administrator.' });
   }
 
   // Generate reset token
@@ -149,6 +243,16 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
   user.resetPasswordToken = resetToken;
   user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
   await user.save({ validateBeforeSave: false });
+
+  await AuditLog.create({
+    action: 'PASSWORD_RESET_REQUESTED',
+    performedBy: email,
+    targetUser: email,
+    details: 'Password reset link generated successfully.',
+    ipAddress: req.ip || req.socket.remoteAddress,
+    device: req.headers['user-agent'] || 'Unknown Device',
+    location: 'Local Intranet'
+  });
 
   const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
   console.log(`[PASSWORD RESET SERVICE] Reset URL generated: ${resetUrl}`);
@@ -185,6 +289,16 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
   user.lockUntil = undefined;
   await user.save();
 
+  await AuditLog.create({
+    action: 'PASSWORD_RESET_COMPLETED',
+    performedBy: user.email,
+    targetUser: user.email,
+    details: 'User successfully completed password reset.',
+    ipAddress: req.ip || req.socket.remoteAddress,
+    device: req.headers['user-agent'] || 'Unknown Device',
+    location: 'Local Intranet'
+  });
+
   res.json({ success: true, message: 'Password reset successful. You can now log in.' });
 });
 
@@ -208,4 +322,37 @@ export const changePassword = asyncHandler(async (req: AuthRequest, res: Respons
   await user.save();
 
   res.json({ success: true, message: 'Password changed successfully' });
+});
+
+export const firstLoginChangePassword = asyncHandler(async (req: Request, res: Response) => {
+  const { email, currentPassword, newPassword } = req.body;
+  if (!email || !currentPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: 'Please provide email, current, and new passwords' });
+  }
+
+  const user = await User.findOne({ email }).select('+password');
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  const isMatch = await user.comparePassword(currentPassword);
+  if (!isMatch) {
+    return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+  }
+
+  user.password = newPassword;
+  user.isFirstLogin = false; // toggle first login off
+  await user.save();
+
+  await AuditLog.create({
+    action: 'PASSWORD_RESET_COMPLETED',
+    performedBy: user.email,
+    targetUser: user.email,
+    details: 'User successfully changed password on first login.',
+    ipAddress: req.ip || req.socket.remoteAddress,
+    device: req.headers['user-agent'] || 'Unknown Device',
+    location: 'Local Intranet'
+  });
+
+  res.json({ success: true, message: 'Password updated successfully. First login completed.' });
 });

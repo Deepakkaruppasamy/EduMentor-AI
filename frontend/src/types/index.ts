@@ -10,6 +10,10 @@ export interface User {
   qualifications?: string;
   department?: string;
   preferredLanguage?: string;
+  isFirstLogin?: boolean;
+  semester?: number;
+  phone?: string;
+  courseName?: string;
 }
 
 export interface AuthState {

@@ -28,12 +28,26 @@ const FACULTY_LINKS = [
   { to: '/profile', icon: '👤', label: 'My Profile' },
 ];
 
+const ADMIN_LINKS = [
+  { to: '/admin', icon: '📈', label: 'Dashboard' },
+  { to: '/admin/users', icon: '👥', label: 'User Directory' },
+  { to: '/courses', icon: '📚', label: 'Manage Courses' },
+  { to: '/documents', icon: '📁', label: 'Upload Documents' },
+  { to: '/gradebook', icon: '📒', label: 'Gradebook' },
+  { to: '/analytics', icon: '📊', label: 'Analytics' },
+  { to: '/profile', icon: '👤', label: 'My Profile' },
+];
+
 export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const links = user?.role === 'student' ? STUDENT_LINKS : FACULTY_LINKS;
+  const links = user?.role === 'admin' 
+    ? ADMIN_LINKS 
+    : user?.role === 'faculty' 
+      ? FACULTY_LINKS 
+      : STUDENT_LINKS;
 
   const handleLogout = () => {
     logout();

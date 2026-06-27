@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, getMe, getAllUsers, updateUser, uploadImage, forgotPassword, resetPassword, changePassword } from '../controllers/auth.controller';
+import { register, login, getMe, getAllUsers, updateUser, uploadImage, forgotPassword, resetPassword, changePassword, firstLoginChangePassword } from '../controllers/auth.controller';
 import { protect, authorize } from '../middleware/auth';
 import { upload } from '../middleware/upload';
 
@@ -14,5 +14,6 @@ router.get('/users', protect, authorize('admin', 'faculty'), getAllUsers);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.put('/change-password', protect, changePassword);
+router.post('/first-login-change', firstLoginChangePassword);
 
 export default router;

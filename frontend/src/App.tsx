@@ -3,8 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/auth.store';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { FirstLoginChangePage } from './pages/FirstLoginChangePage';
+import { InactivityHandler } from './components/auth/InactivityHandler';
+import { AdminUserManagement } from './components/admin/AdminUserManagement';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ChatPage } from './pages/ChatPage';
@@ -22,7 +24,16 @@ import { AssignmentEvaluatorPage } from './pages/AssignmentEvaluatorPage';
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
   const { isAuthenticated, user } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (roles && user && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
+  if (user?.isFirstLogin) return <Navigate to="/first-login-change" replace />;
+  if (roles && user && !roles.includes(user.role)) return <Navigate to={user.role === 'student' ? '/dashboard' : '/admin'} replace />;
+  return <>{children}</>;
+};
+
+// First login route wrapper
+const FirstLoginRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user && !user.isFirstLogin) return <Navigate to={user.role === 'student' ? '/dashboard' : '/admin'} replace />;
   return <>{children}</>;
 };
 
@@ -36,16 +47,22 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <InactivityHandler />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={
-          isAuthenticated ? <Navigate to={user?.role === 'student' ? '/dashboard' : '/admin'} /> : <LoginPage />
+          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <LoginPage />
         } />
         <Route path="/register" element={
-          isAuthenticated ? <Navigate to={user?.role === 'student' ? '/dashboard' : '/admin'} /> : <RegisterPage />
+          <Navigate to="/login" replace />
+        } />
+        <Route path="/first-login-change" element={
+          <FirstLoginRoute>
+            <FirstLoginChangePage />
+          </FirstLoginRoute>
         } />
         <Route path="/reset-password/:token" element={
-          isAuthenticated ? <Navigate to={user?.role === 'student' ? '/dashboard' : '/admin'} /> : <ResetPasswordPage />
+          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ResetPasswordPage />
         } />
 
         {/* Student Routes */}
@@ -96,6 +113,11 @@ const App: React.FC = () => {
         <Route path="/admin" element={
           <ProtectedRoute roles={['faculty', 'admin']}>
             <AppPage><AdminDashboard /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute roles={['admin']}>
+            <AppPage><AdminUserManagement /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/documents" element={

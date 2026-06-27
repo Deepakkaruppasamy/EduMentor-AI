@@ -18,6 +18,10 @@ export interface IUser extends Document {
   lockUntil?: Date;
   isActive: boolean;
   lastLogin?: Date;
+  semester?: number;
+  phone?: string;
+  isFirstLogin: boolean;
+  courseName?: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -48,6 +52,10 @@ const UserSchema = new Schema<IUser>(
     lockUntil: { type: Date },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
+    semester: { type: Number },
+    phone: { type: String },
+    isFirstLogin: { type: Boolean, default: true },
+    courseName: { type: String },
   },
   { timestamps: true }
 );
