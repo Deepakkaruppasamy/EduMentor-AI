@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { ChatMessage } from '../../types';
 import { SourcePanel } from './SourcePanel';
 import { TrustScoreBadge } from './TrustScoreBadge';
+import { ConceptGraph } from './ConceptGraph';
 import { formatDate } from '../../utils/uuid';
 
 interface MessageBubbleProps {
@@ -51,6 +52,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             </div>
           )}
         </div>
+
+        {/* Concept Graph Visualization */}
+        {!isUser && !message.isLoading && message.conceptGraph && (
+          <ConceptGraph graph={message.conceptGraph} />
+        )}
 
         {/* Metadata row (for AI messages) */}
         {!isUser && !message.isLoading && message.content && (

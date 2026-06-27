@@ -176,3 +176,63 @@ ${rawText}`
 
   return response.content;
 }
+
+export interface ConceptNode {
+  concept: string;
+  children?: ConceptNode[];
+}
+
+export async function extractConceptGraph(
+  question: string,
+  answer: string
+): Promise<ConceptNode> {
+  const systemPrompt = `You are an educational assistant that extracts hierarchical concept maps from academic questions and explanations.
+Generate a hierarchical concept graph that relates the key concepts discussed in the user's question and the provided answer.
+Format the output as a JSON object matching this schema:
+{
+  "concept": "string (the main root concept)",
+  "children": [
+    {
+      "concept": "string (sub-concept 1)",
+      "children": [
+        {
+          "concept": "string (sub-sub-concept)",
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+
+Ensure:
+- The graph is highly relevant to the topics of the question and answer.
+- The depth of the tree is between 2 and 3 levels.
+- The children list has between 2 and 5 elements per node.
+- Respond ONLY with the JSON object, no introductory or trailing text.`;
+
+  const messages: LLMMessage[] = [
+    {
+      role: 'user',
+      content: `Question: ${question}\n\nAnswer: ${answer}`
+    }
+  ];
+
+  try {
+    const response = await generateWithoutContext(
+      messages,
+      systemPrompt,
+      0.2,
+      true // JSON Mode
+    );
+    return JSON.parse(response.content) as ConceptNode;
+  } catch (err) {
+    console.error('Failed to extract concept graph:', err);
+    return {
+      concept: "Key Concepts",
+      children: [
+        { concept: "Core Topic", children: [] },
+        { concept: "Explanation Details", children: [] }
+      ]
+    };
+  }
+}

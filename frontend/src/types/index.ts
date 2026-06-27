@@ -96,6 +96,7 @@ export interface ChatMessage {
   confidenceScore?: number;
   hallucination?: HallucinationInfo;
   explainability?: ExplainabilityInfo;
+  conceptGraph?: any;
   isLoading?: boolean;
 }
 

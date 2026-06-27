@@ -5,7 +5,7 @@ import Analytics from '../models/Analytics';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
-import { generateResponse, generateResponseStream } from '../services/ai/groq.service';
+import { generateResponse, generateResponseStream, extractConceptGraph } from '../services/ai/groq.service';
 import { detectHallucination } from '../services/hallucination/hallucination.service';
 import { buildExplainableResult } from '../services/explainability/explainability.service';
 import { trackStudentQuery } from '../services/recommendations/recommendation.service';
@@ -57,6 +57,9 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
     ragResult.retrievalMethod
   );
 
+  // 5.5. Extract concept map
+  const conceptGraph = await extractConceptGraph(question, llmResponse.content);
+
   // 6. Save chat messages
   chat.messages.push({
     role: 'user',
@@ -76,6 +79,7 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
     trustScore: hallucinationResult.trustScore,
     confidenceScore: explainableResult.overallConfidence,
     hallucinationFlags: hallucinationResult.hallucinatedSentences,
+    conceptGraph,
     timestamp: new Date(),
   });
   chat.totalMessages = chat.messages.length;
@@ -96,6 +100,7 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
     success: true,
     chatId: chat._id,
     answer: llmResponse.content,
+    conceptGraph,
     hallucination: {
       trustScore: hallucinationResult.trustScore,
       status: hallucinationResult.status,
@@ -172,6 +177,9 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
       ragResult.retrievalMethod
     );
 
+    // 5.5. Extract concept map
+    const conceptGraph = await extractConceptGraph(question, fullAnswerText);
+
     // 6. Save chat messages
     chat.messages.push({
       role: 'user',
@@ -191,6 +199,7 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
       trustScore: hallucinationResult.trustScore,
       confidenceScore: explainableResult.overallConfidence,
       hallucinationFlags: hallucinationResult.hallucinatedSentences,
+      conceptGraph,
       timestamp: new Date(),
     });
     chat.totalMessages = chat.messages.length;
@@ -211,6 +220,7 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
     const finalPayload = {
       type: 'done',
       chatId: chat._id,
+      conceptGraph,
       hallucination: {
         trustScore: hallucinationResult.trustScore,
         status: hallucinationResult.status,
