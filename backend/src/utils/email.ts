@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { config } from '../config/env';
 
 interface SendEmailOptions {
@@ -9,19 +9,12 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async (options: SendEmailOptions): Promise<void> => {
-  const isPlaceholder =
-    !config.SMTP_HOST ||
-    !config.SMTP_USER ||
-    !config.SMTP_PASS ||
-    config.SMTP_USER === 'your-email@gmail.com' ||
-    config.SMTP_PASS === 'your-app-password';
-
-  // If SMTP configurations are not set or are placeholders, fall back to console logging
-  if (isPlaceholder) {
-    console.warn('⚠️ SMTP settings are incomplete or using placeholders. Printing email to console:');
+  // If Resend API key is not set, fall back to console logging
+  if (!config.RESEND_API_KEY || config.RESEND_API_KEY === 're_your_resend_api_key') {
+    console.warn('⚠️ RESEND_API_KEY is not configured. Printing email to console:');
     console.log(`
 ======================================================
-📧 [SIMULATED EMAIL - SMTP NOT CONFIGURED]
+📧 [SIMULATED EMAIL - RESEND NOT CONFIGURED]
 To: ${options.email}
 Subject: ${options.subject}
 ------------------------------------------------------
@@ -31,34 +24,39 @@ ${options.text}
     return;
   }
 
-  // Create transporter
-  const transporter = nodemailer.createTransport({
-    host: config.SMTP_HOST,
-    port: config.SMTP_PORT,
-    secure: config.SMTP_PORT === 465, // true for 465, false for 587 or other ports
-    auth: {
-      user: config.SMTP_USER,
-      pass: config.SMTP_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: config.SMTP_FROM,
-    to: options.email,
-    subject: options.subject,
-    text: options.text,
-    html: options.html,
-  };
+  const resend = new Resend(config.RESEND_API_KEY);
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`📧 Email sent successfully via SMTP: ${info.messageId}`);
+    const { data, error } = await resend.emails.send({
+      from: config.EMAIL_FROM,
+      to: [options.email],
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+    });
+
+    if (error) {
+      console.error('❌ Resend API returned an error:', error);
+      console.warn('⚠️ Falling back to console simulation:');
+      console.log(`
+======================================================
+📧 [SIMULATED EMAIL - RESEND API ERROR]
+To: ${options.email}
+Subject: ${options.subject}
+------------------------------------------------------
+${options.text}
+======================================================
+`);
+      return;
+    }
+
+    console.log(`📧 Email sent successfully via Resend: ${data?.id}`);
   } catch (error) {
-    console.error('❌ Failed to send email via SMTP:', error);
-    console.warn('⚠️ SMTP connection timed out or failed. Falling back to console simulation:');
+    console.error('❌ Failed to send email via Resend:', error);
+    console.warn('⚠️ Falling back to console simulation:');
     console.log(`
 ======================================================
-📧 [SIMULATED EMAIL - SMTP SENDING FAILED]
+📧 [SIMULATED EMAIL - RESEND FAILED]
 To: ${options.email}
 Subject: ${options.subject}
 ------------------------------------------------------
