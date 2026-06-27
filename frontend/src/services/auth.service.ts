@@ -25,12 +25,16 @@ export const authService = {
     const { data } = await api.get('/auth/me');
     return data.user;
   },
-  forgotPassword: async (email: string): Promise<{ success: boolean; message: string; resetUrl?: string }> => {
+  forgotPassword: async (email: string): Promise<{ success: boolean; message: string }> => {
     const { data } = await api.post('/auth/forgot-password', { email });
     return data;
   },
-  resetPassword: async (token: string, password: string): Promise<{ success: boolean; message: string }> => {
-    const { data } = await api.post(`/auth/reset-password/${token}`, { password });
+  resendOtp: async (email: string): Promise<{ success: boolean; message: string }> => {
+    const { data } = await api.post('/auth/resend-otp', { email });
+    return data;
+  },
+  resetPassword: async (payload: { email: string; otpCode: string; newPassword: string; confirmPassword: string }): Promise<{ success: boolean; message: string }> => {
+    const { data } = await api.post('/auth/reset-password', payload);
     return data;
   },
   changePassword: async (currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> => {

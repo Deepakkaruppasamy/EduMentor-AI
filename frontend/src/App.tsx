@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/auth.store';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/LoginPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { FirstLoginChangePage } from './pages/FirstLoginChangePage';
 import { InactivityHandler } from './components/auth/InactivityHandler';
@@ -63,7 +64,10 @@ const App: React.FC = () => {
             <FirstLoginChangePage />
           </FirstLoginRoute>
         } />
-        <Route path="/reset-password/:token" element={
+        <Route path="/forgot-password" element={
+          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ForgotPasswordPage />
+        } />
+        <Route path="/reset-password" element={
           isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ResetPasswordPage />
         } />
 

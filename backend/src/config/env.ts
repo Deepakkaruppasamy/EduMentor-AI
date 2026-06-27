@@ -11,6 +11,11 @@ export const config = {
   CHROMA_URL: process.env.CHROMA_URL || 'http://127.0.0.1:8000',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
   HF_API_KEY: process.env.HF_API_KEY || '',
+  SMTP_HOST: process.env.SMTP_HOST || '',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+  SMTP_USER: process.env.SMTP_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || '',
+  SMTP_FROM: process.env.SMTP_FROM || 'EduMentor AI <no-reply@edumentor.ai>',
   MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
   CHUNK_SIZE: 512,
   CHUNK_OVERLAP: 50,

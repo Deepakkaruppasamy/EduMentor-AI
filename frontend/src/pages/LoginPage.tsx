@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { authService } from '../services/auth.service';
 import { useAuthStore } from '../store/auth.store';
@@ -14,12 +14,6 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
-
-  // Forgot password modal state
-  const [showForgotModal, setShowForgotModal] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [isForgotLoading, setIsForgotLoading] = useState(false);
-  const [resetLink, setResetLink] = useState<string | null>(null);
 
   // Load Remember Me email
   useEffect(() => {
@@ -58,27 +52,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotEmail) {
-      toast.error('Please enter your email address');
-      return;
-    }
-    setIsForgotLoading(true);
-    setResetLink(null);
-    try {
-      const response = await authService.forgotPassword(forgotEmail);
-      toast.success(response.message || 'Reset link generated successfully.');
-      if (response.resetUrl) {
-        setResetLink(response.resetUrl);
-      }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to generate reset link.');
-    } finally {
-      setIsForgotLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       {/* Background Orbs */}
@@ -114,13 +87,12 @@ export const LoginPage: React.FC = () => {
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <label className="block text-xs font-medium text-white/60">Password</label>
-              <button 
-                type="button" 
-                onClick={() => setShowForgotModal(true)}
-                className="text-xs text-primary-400 hover:text-primary-300 transition-colors focus:outline-none"
+              <Link 
+                to="/forgot-password"
+                className="text-xs text-primary-400 hover:text-primary-300 font-semibold transition-colors focus:outline-none"
               >
                 Forgot password?
-              </button>
+              </Link>
             </div>
             <div className="relative">
               <input id="login-password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
@@ -171,79 +143,6 @@ export const LoginPage: React.FC = () => {
           Access is restricted to pre-approved university accounts. Please contact the system administrator to request access.
         </p>
       </motion.div>
-
-      {/* Forgot Password Modal */}
-      <AnimatePresence>
-        {showForgotModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-card w-full max-w-sm p-6 relative"
-            >
-              <button 
-                onClick={() => {
-                  setShowForgotModal(false);
-                  setResetLink(null);
-                }} 
-                className="absolute right-4 top-4 text-white/40 hover:text-white/80 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              <h2 className="text-xl font-bold text-white mb-2">Reset Password</h2>
-              <p className="text-xs text-white/60 mb-4">
-                Enter your email address and we'll generate a reset link for you to change your password.
-              </p>
-
-              <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-white/60">Email Address</label>
-                  <input 
-                    type="email" 
-                    value={forgotEmail} 
-                    onChange={e => setForgotEmail(e.target.value)} 
-                    required
-                    placeholder="your@university.edu" 
-                    className="input-field" 
-                  />
-                </div>
-
-                <button type="submit" disabled={isForgotLoading} className="btn-primary w-full">
-                  {isForgotLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Generating Link...
-                    </span>
-                  ) : 'Send Reset Link'}
-                </button>
-              </form>
-
-              {resetLink && (
-                <div className="mt-4 p-3 bg-primary-500/10 border border-primary-500/20 rounded-xl">
-                  <p className="text-[11px] font-mono text-primary-300 break-all select-all">
-                    {resetLink}
-                  </p>
-                  <button 
-                    onClick={() => {
-                      const relativePath = resetLink.substring(resetLink.indexOf('/reset-password/'));
-                      navigate(relativePath);
-                      setShowForgotModal(false);
-                      setResetLink(null);
-                    }}
-                    className="mt-2 w-full text-xs font-semibold py-1.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors"
-                  >
-                    Go to Reset Page
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
