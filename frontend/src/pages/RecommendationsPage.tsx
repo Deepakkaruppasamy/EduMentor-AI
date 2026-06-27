@@ -67,7 +67,8 @@ export const RecommendationsPage: React.FC = () => {
           <p className="mt-2 text-sm text-white/40">Start chatting and taking quizzes to get personalized recommendations.</p>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <>
+          <div className="grid gap-6 lg:grid-cols-2">
           {/* Stats */}
           <div className="glass-card p-5 space-y-4">
             <h2 className="text-sm font-semibold text-white/80">📈 Learning Stats</h2>
@@ -235,6 +236,7 @@ export const RecommendationsPage: React.FC = () => {
             })}
           </div>
         </div>
+        </>
       )}
     </div>
   );

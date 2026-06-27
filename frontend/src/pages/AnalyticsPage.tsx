@@ -200,7 +200,6 @@ export const AnalyticsPage: React.FC = () => {
                 <p className="text-xs text-white/20 text-center py-10">All students are actively engaged!</p>
               )}
             </div>
-            </div>
           </div>
           <button
             onClick={() => navigate('/gradebook')}
