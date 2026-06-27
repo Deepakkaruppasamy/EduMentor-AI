@@ -5,6 +5,10 @@ import { useAuthStore } from '../../store/auth.store';
 import toast from 'react-hot-toast';
 import { Logo } from '../common/Logo';
 import { LanguageSelector } from '../common/LanguageSelector';
+import { useNotificationStore } from '../../store/notification.store';
+import { NotificationDrawer } from './NotificationDrawer';
+import { AvatarFrame } from '../avatar/AvatarFrame';
+import { AnimatePresence } from 'framer-motion';
 
 const STUDENT_LINKS = [
   { to: '/dashboard', icon: '📊', label: 'Dashboard' },
@@ -50,6 +54,10 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const { notifications } = useNotificationStore();
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const links = user?.role === 'admin' 
     ? ADMIN_LINKS 
@@ -75,19 +83,39 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
       </div>
 
       {/* User info */}
-      <div className="mx-4 mb-4 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="mx-4 mb-4 rounded-xl p-3 relative" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex items-center gap-3">
-          {user?.avatar ? (
-            <img src={user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover" />
+          {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
+            <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
           ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}>
-              {user?.name?.charAt(0).toUpperCase()}
+            <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
+              <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-white">{user?.name}</div>
-            <div className="truncate text-[11px] capitalize text-white/50">{user?.role}</div>
+            <div className="truncate text-xs font-semibold text-white leading-snug">{user?.name}</div>
+            <div className="truncate text-[10px] capitalize text-white/40 font-medium mt-0.5">{user?.role}</div>
+          </div>
+
+          {/* Notification Bell with Badge */}
+          <div className="relative">
+            <button
+              onClick={() => setNotifOpen(!notifOpen)}
+              className="h-8 w-8 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-white/50 hover:text-white transition-all flex items-center justify-center relative focus:outline-none"
+              title="Notifications"
+            >
+              <span className="text-sm leading-none">🔔</span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            <AnimatePresence>
+              {notifOpen && (
+                <NotificationDrawer onClose={() => setNotifOpen(false)} />
+              )}
+            </AnimatePresence>
           </div>
         </div>
         <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">

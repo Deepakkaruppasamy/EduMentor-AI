@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { Logo } from '../common/Logo';
+import { useNotificationStore } from '../../store/notification.store';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const { addNotification } = useNotificationStore();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -62,6 +64,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     // Listen to real-time assigned quizzes
     socket.on('quiz:assigned', (data: { courseId: string; topic: string; dueDate?: string }) => {
+      addNotification({
+        type: 'quiz_assigned',
+        title: 'New Quiz Assigned',
+        message: `Topic: ${data.topic}${data.dueDate ? ` (Due: ${new Date(data.dueDate).toLocaleDateString()})` : ''}`,
+        link: '/quiz',
+      });
       toast.success(
         <div>
           <p className="font-bold text-xs">🔔 New Quiz Assigned!</p>
@@ -79,6 +87,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Listen to real-time live battles hosted by faculty
     socket.on('quiz:live_announced', (data: { sessionId: string; topic: string; courseCode: string }) => {
       if (user?.role === 'student') {
+        addNotification({
+          type: 'live_battle',
+          title: 'Live Quiz Battle!',
+          message: `Join live battle in ${data.courseCode} on "${data.topic}"`,
+          courseCode: data.courseCode,
+          link: `/quiz?joinSession=${data.sessionId}`,
+        });
         toast((t) => (
           <div className="flex flex-col gap-1 text-xs">
             <p className="font-bold text-white">⚔️ Live Quiz Battle Starting!</p>
@@ -94,6 +109,47 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           </div>
         ), { duration: 15000, icon: '⚔️' });
+      }
+    });
+
+    // Listen to document processing updates
+    socket.on('document:status', (data: { docId: string; status: string; filename?: string }) => {
+      const isDone = data.status === 'completed';
+      const isFailed = data.status === 'failed';
+
+      if (isDone || isFailed) {
+        addNotification({
+          type: 'document_status',
+          title: isDone ? 'Document Processed' : 'Document Processing Failed',
+          message: isDone
+            ? `Your document "${data.filename || 'uploaded file'}" is ready for tutoring.`
+            : `Failed to process "${data.filename || 'uploaded file'}".`,
+          link: '/documents',
+        });
+        toast[isDone ? 'success' : 'error'](
+          isDone
+            ? `📄 Document "${data.filename || 'file'}" successfully indexed!`
+            : `⚠️ Document processing failed for "${data.filename || 'file'}".`
+        );
+      }
+    });
+
+    // Listen to assignment evaluation completion updates
+    socket.on('assignment:evaluated', (data: { studentId: string; courseId: string; score: number; fileName: string; evaluationId: string }) => {
+      if (user?.id === data.studentId) {
+        addNotification({
+          type: 'evaluation',
+          title: 'Assignment Graded',
+          message: `Your assignment "${data.fileName}" was graded. Score: ${data.score}/100`,
+          link: `/assignment-evaluator`,
+        });
+        toast.success(
+          <div>
+            <p className="font-bold text-xs">📋 Assignment Graded!</p>
+            <p className="text-[10px] text-white/70 mt-0.5">"${data.fileName}" score: <strong className="text-emerald-400">{data.score}/100</strong></p>
+          </div>,
+          { duration: 8000 }
+        );
       }
     });
 

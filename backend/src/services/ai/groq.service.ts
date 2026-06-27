@@ -32,15 +32,20 @@ Always:
 export async function generateResponse(
   messages: LLMMessage[],
   context: string,
-  temperature = 0.3
+  temperature = 0.3,
+  preferredLanguage = 'English'
 ): Promise<LLMResponse> {
   if (!config.GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
   }
 
+  const languagePrompt = preferredLanguage && preferredLanguage.toLowerCase() !== 'english'
+    ? `\n- IMPORTANT: You MUST answer the user's question and explain all concepts natively in ${preferredLanguage}. Make the translation natural and preserve all academic definitions.`
+    : '';
+
   const systemMessage: LLMMessage = {
     role: 'system',
-    content: `${SYSTEM_PROMPT}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
+    content: `${SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
   };
 
   const allMessages = [systemMessage, ...messages];
@@ -105,15 +110,20 @@ export async function generateResponseStream(
   messages: LLMMessage[],
   context: string,
   onToken: (token: string) => void,
-  temperature = 0.3
+  temperature = 0.3,
+  preferredLanguage = 'English'
 ): Promise<{ model: string }> {
   if (!config.GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
   }
 
+  const languagePrompt = preferredLanguage && preferredLanguage.toLowerCase() !== 'english'
+    ? `\n- IMPORTANT: You MUST answer the user's question and explain all concepts natively in ${preferredLanguage}. Make the translation natural and preserve all academic definitions.`
+    : '';
+
   const systemMessage: LLMMessage = {
     role: 'system',
-    content: `${SYSTEM_PROMPT}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
+    content: `${SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
   };
 
   const allMessages = [systemMessage, ...messages];

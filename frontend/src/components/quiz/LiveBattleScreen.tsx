@@ -120,7 +120,7 @@ export const LiveBattleScreen: React.FC<LiveBattleScreenProps> = ({ courses, onC
             clearInterval(timerIntervalRef.current);
             // If faculty, tell server to show results when time is up
             if (isFaculty) {
-              socket.emit('quiz:show_results', { sessionId: session?._id || data.question });
+              socket.emit('quiz:show_results', { sessionId: session?._id });
             }
             return 0;
           }

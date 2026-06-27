@@ -43,8 +43,10 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
   }));
   recentHistory.push({ role: 'user', content: question });
 
+  const preferredLanguage = req.user?.preferredLanguage || 'English';
+
   // 3. Generate LLM response
-  const llmResponse = await generateResponse(recentHistory, ragResult.context);
+  const llmResponse = await generateResponse(recentHistory, ragResult.context, 0.3, preferredLanguage);
 
   // 4. Hallucination detection
   const chunkTexts = ragResult.chunks.map((c) => c.text);
@@ -163,8 +165,10 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
     res.write(`data: ${JSON.stringify({ type: 'token', text: token })}\n\n`);
   };
 
+  const preferredLanguage = req.user?.preferredLanguage || 'English';
+
   try {
-    await generateResponseStream(recentHistory, ragResult.context, onToken);
+    await generateResponseStream(recentHistory, ragResult.context, onToken, 0.3, preferredLanguage);
 
     // 4. Hallucination detection
     const chunkTexts = ragResult.chunks.map((c) => c.text);

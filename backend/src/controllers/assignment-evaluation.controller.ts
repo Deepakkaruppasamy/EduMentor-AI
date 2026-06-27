@@ -6,6 +6,7 @@ import AssignmentEvaluation from '../models/AssignmentEvaluation';
 import { extractText, cleanText } from '../utils/document-processor';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
 import { generateWithoutContext } from '../services/ai/groq.service';
+import { getIO } from '../services/socket.service';
 
 export const evaluateAssignment = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -179,7 +180,21 @@ export const evaluateAssignment = async (req: any, res: Response, next: NextFunc
 
     await evaluation.save();
 
-    // 6. Cleanup uploaded temp file
+    // 6. Broadcast real-time evaluation update to the course room
+    try {
+      const socketIO = getIO();
+      socketIO.to(`course_${course._id}`).emit('assignment:evaluated', {
+        studentId: req.user._id,
+        courseId: course._id,
+        score: evaluationData.score,
+        fileName: file.originalname,
+        evaluationId: evaluation._id,
+      });
+    } catch (socketErr: any) {
+      console.warn('Failed to broadcast assignment evaluation socket notification:', socketErr.message);
+    }
+
+    // 7. Cleanup uploaded temp file
     if (fs.existsSync(file.path)) {
       fs.unlinkSync(file.path);
     }
