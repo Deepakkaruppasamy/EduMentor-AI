@@ -77,7 +77,9 @@ export const AvatarSettings: React.FC = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       updateUser({ profileImage: data.imageUrl });
-      toast.success('Photo uploaded!');
+      // Auto-switch to photo mode after a successful upload
+      setUsePhoto(true);
+      toast.success('Photo uploaded! Click “Save Avatar” to confirm.');
     } catch {
       toast.error('Photo upload failed');
     } finally {
@@ -235,9 +237,14 @@ export const AvatarSettings: React.FC = () => {
                 </button>
               </div>
 
-              {user?.profileImage && (
+              {/* Show either profileImage or fallback to legacy user.avatar */}
+              {(user?.profileImage || user?.avatar) && (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                  <img src={user.profileImage} alt="Profile" className="h-12 w-12 rounded-xl object-cover" />
+                  <img
+                    src={user?.profileImage || user?.avatar || ''}
+                    alt="Profile"
+                    className="h-12 w-12 rounded-xl object-cover"
+                  />
                   <div>
                     <p className="text-xs text-white font-semibold">Current Photo</p>
                     <p className="text-[10px] text-white/40 mt-0.5">Uploaded profile picture</p>

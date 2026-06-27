@@ -138,10 +138,12 @@ export const ProfilePage: React.FC = () => {
         <div className="glass-card p-6 flex flex-col items-center text-center space-y-4">
           {/* Avatar / Profile Picture */}
           <div className="relative group">
-            {user?.useCustomPhoto && (avatar || user?.profileImage) ? (
-              // Show uploaded photo if user opted for it
+            {/* Photo mode: show if useCustomPhoto=true with any photo URL,
+                OR user has legacy avatar URL but no avatar model configured (backward compat) */}
+            {(user?.useCustomPhoto && (avatar || user?.profileImage || user?.avatar)) ||
+             (avatar && !user?.avatarModel) ? (
               <img
-                src={avatar || user?.profileImage || ''}
+                src={user?.profileImage || avatar || user?.avatar || ''}
                 alt={name}
                 className="h-32 w-32 rounded-2xl object-cover border border-white/10"
               />

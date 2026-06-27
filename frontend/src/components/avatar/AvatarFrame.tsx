@@ -4,6 +4,29 @@ import { AvatarFace } from './AvatarFace';
 import { useAvatarStore } from '../../store/avatar.store';
 import { AvatarExpression, AvatarPose } from '../../types/avatar.types';
 
+// Pose → natural expression mapping so face reflects the pose
+const POSE_EXPRESSION: Record<AvatarPose, AvatarExpression> = {
+  standing:        'neutral',
+  waving:          'happy',
+  hands_in_pocket: 'neutral',
+  folded_arms:     'neutral',
+  thinking:        'thinking',
+  typing:          'neutral',
+  reading:         'thinking',
+  holding_coffee:  'smile',
+  peace_sign:      'smile',
+  namaste:         'neutral',
+  thumbs_up:       'proud',
+  sitting:         'neutral',
+  leaning:         'smile',
+  saluting:        'neutral',
+  pointing:        'neutral',
+  victory:         'excited',
+  professional:    'neutral',
+  relaxed:         'smile',
+  walking:         'neutral',
+};
+
 interface AvatarFrameProps {
   size?: number;
   className?: string;
@@ -56,6 +79,22 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
     }, 50);
     return () => clearInterval(breathe);
   }, [prefersReducedMotion]);
+
+  // ── KEY FIX 1: Sync expression from config on mount and whenever config.expression changes
+  // The interaction store is NOT persisted, so after reload currentExpression resets to 'neutral'.
+  // This effect re-hydrates it from the persisted config.
+  useEffect(() => {
+    setExpression((config.expression as AvatarExpression) || 'neutral');
+  }, [config.expression]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── KEY FIX 2: When pose changes, update the face expression to match
+  // If user set a non-neutral expression specifically, honour that; otherwise use pose's natural expression.
+  useEffect(() => {
+    if (config.expression === 'neutral') {
+      const poseExpr = POSE_EXPRESSION[config.pose] || 'neutral';
+      setExpression(poseExpr);
+    }
+  }, [config.pose]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Eye tracking — follows mouse relative to frame center
   useEffect(() => {
@@ -229,7 +268,12 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
             >
               <AvatarFace
                 config={config}
-                expression={interaction.currentExpression}
+                // ── KEY FIX 3: Use config.expression as the idle baseline; interaction overrides temporarily
+                expression={
+                  interaction.mood !== 'idle'
+                    ? interaction.currentExpression
+                    : (interaction.currentExpression || (config.expression as AvatarExpression) || 'neutral')
+                }
                 eyeTarget={interaction.eyeTarget}
                 size={Math.round(frameSize * 0.88)}
               />
