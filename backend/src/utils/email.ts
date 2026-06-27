@@ -9,9 +9,16 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async (options: SendEmailOptions): Promise<void> => {
-  // If SMTP configurations are not set, fall back to console logging
-  if (!config.SMTP_HOST || !config.SMTP_USER || !config.SMTP_PASS) {
-    console.warn('⚠️ SMTP settings are incomplete (missing host, user, or pass). Printing email to console:');
+  const isPlaceholder = 
+    !config.SMTP_HOST || 
+    !config.SMTP_USER || 
+    !config.SMTP_PASS || 
+    config.SMTP_USER === 'your-email@gmail.com' || 
+    config.SMTP_PASS === 'your-app-password';
+
+  // If SMTP configurations are not set or are placeholders, fall back to console logging
+  if (isPlaceholder) {
+    console.warn('⚠️ SMTP settings are incomplete or using placeholders. Printing email to console:');
     console.log(`
 ======================================================
 📧 [SIMULATED EMAIL - SMTP NOT CONFIGURED]
