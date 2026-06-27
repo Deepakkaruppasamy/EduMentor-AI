@@ -29,6 +29,7 @@ export const AnalyticsPage: React.FC = () => {
   const [gradebook, setGradebook] = useState<any[]>([]);
   const [struggledTopics, setStruggledTopics] = useState<any[]>([]);
   const [atRiskStudents, setAtRiskStudents] = useState<any[]>([]);
+  const [deptAnalytics, setDeptAnalytics] = useState<any[]>([]);
   
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [isLoadingData, setIsLoadingData] = useState(false);
@@ -58,6 +59,7 @@ export const AnalyticsPage: React.FC = () => {
       .then(([dashboardRes, gradebookRes, riskRes]) => {
         setStats(dashboardRes.data.stats);
         setActivity(dashboardRes.data.recentActivity || []);
+        setDeptAnalytics(dashboardRes.data.departmentAnalytics || []);
         setGradebook(gradebookRes.data.gradebook || []);
         setStruggledTopics(gradebookRes.data.struggledTopics || []);
         setAtRiskStudents(riskRes.data.students || []);
@@ -198,6 +200,7 @@ export const AnalyticsPage: React.FC = () => {
                 <p className="text-xs text-white/20 text-center py-10">All students are actively engaged!</p>
               )}
             </div>
+            </div>
           </div>
           <button
             onClick={() => navigate('/gradebook')}
@@ -205,6 +208,57 @@ export const AnalyticsPage: React.FC = () => {
           >
             📋 Launch Support Intervention
           </button>
+        </div>
+      </div>
+
+      {/* Department Analytics & Comparison */}
+      <div className="glass-card p-5 border border-white/5 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-3">
+          <div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+              <span>🏢</span> Departmental Insights & Comparison
+            </h2>
+            <p className="text-xs text-white/40 mt-0.5">Distribution of students and comparative metrics for AI Usage, quiz scores, and learning progress across departments</p>
+          </div>
+          <span className="text-[9px] text-white/40 font-mono tracking-wider bg-white/5 border border-white/5 px-2.5 py-1 rounded-full">
+            Department Engine v1
+          </span>
+        </div>
+
+        {/* Student numbers list card group */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {deptAnalytics.map((dept) => (
+            <div key={dept.department} className="p-4 rounded-xl border border-white/5 bg-[#12151e]/30 flex justify-between items-center">
+              <div>
+                <span className="text-[9px] uppercase font-extrabold text-white/40 tracking-wider font-mono">Department</span>
+                <h4 className="text-sm font-black text-white mt-0.5">{dept.department}</h4>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] uppercase font-extrabold text-white/40 tracking-wider font-mono">Active Students</span>
+                <div className="text-lg font-black text-primary-400 mt-0.5">{dept.studentCount}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Comparison Recharts bar chart */}
+        <div className="p-4 bg-white/[0.01] border border-white/5 rounded-xl">
+          <h3 className="text-xs font-bold text-white/70 mb-4 text-left">📊 Multi-Dimensional Departmental Comparison</h3>
+          {deptAnalytics.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={deptAnalytics} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="department" tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
+                <Bar dataKey="aiUsage" fill="#4f63ff" name="AI Usage (Queries)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgQuizScore" fill="#48bb78" name="Quiz Average (%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="learningProgress" fill="#9f7aea" name="Learning Progress (%)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-52 items-center justify-center text-xs text-white/30">No comparative analytics available</div>
+          )}
         </div>
       </div>
     </div>

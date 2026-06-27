@@ -97,6 +97,13 @@ export interface ChatMessage {
   hallucination?: HallucinationInfo;
   explainability?: ExplainabilityInfo;
   conceptGraph?: any;
+  explanations?: {
+    simply?: string;
+    detail?: string;
+    example?: string;
+    realWorld?: string;
+    exam?: string;
+  };
   isLoading?: boolean;
 }
 
@@ -177,6 +184,12 @@ export interface StudentProgress {
   avgQuizScore: number;
   recentChats: ChatSession[];
   recentQuizzes: Quiz[];
+  courseProgress?: {
+    courseId: string;
+    title: string;
+    code: string;
+    progress: number;
+  }[];
 }
 
 // ─── Recommendation Types ───────────────────────────────────────────────────
@@ -195,6 +208,12 @@ export interface Recommendation {
   suggestedTopics: string[];
   revisionPlan: string;
   personalizedQuizTopics: string[];
+  resourceRecommendations?: {
+    category: 'Lecture Slides' | 'PDFs' | 'Books' | 'YouTube Videos' | 'Research Papers';
+    title: string;
+    description: string;
+    link?: string;
+  }[];
   totalQueries: number;
   avgQuizScore: number;
   learningStreak: number;

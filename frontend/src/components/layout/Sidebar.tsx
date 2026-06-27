@@ -13,6 +13,7 @@ const STUDENT_LINKS = [
   { to: '/flashcards', icon: '🎴', label: 'Flashcards' },
   { to: '/courses', icon: '📚', label: 'My Courses' },
   { to: '/recommendations', icon: '🎯', label: 'Recommendations' },
+  { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
 ];
@@ -24,6 +25,8 @@ const FACULTY_LINKS = [
   { to: '/quiz', icon: '⚔️', label: 'Quiz Battle Arena' },
   { to: '/gradebook', icon: '📒', label: 'Gradebook' },
   { to: '/analytics', icon: '📊', label: 'Analytics' },
+  { to: '/faculty-ai-assistant', icon: '🧙‍♂️', label: 'Faculty AI Assistant' },
+  { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
 ];
@@ -35,6 +38,8 @@ const ADMIN_LINKS = [
   { to: '/documents', icon: '📁', label: 'Upload Documents' },
   { to: '/gradebook', icon: '📒', label: 'Gradebook' },
   { to: '/analytics', icon: '📊', label: 'Analytics' },
+  { to: '/faculty-ai-assistant', icon: '🧙‍♂️', label: 'Faculty AI Assistant' },
+  { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
 ];
 

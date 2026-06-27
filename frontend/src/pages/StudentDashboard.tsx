@@ -76,6 +76,66 @@ export const StudentDashboard: React.FC = () => {
         <StatCard icon="🔥" label="Active Courses" value={user?.courses?.length || 0} gradient="stat-gradient-amber" />
       </div>
 
+      {/* Learning Heatmap & Subject Mastery */}
+      <div className="glass-card p-5 border border-white/5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-white/80 flex items-center gap-1.5">
+            <span>🧠</span> Learning Heatmap & Subject Mastery
+          </h2>
+          <span className="text-[10px] text-white/40 uppercase tracking-wider font-mono">Instant Weakness Map</span>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {progress?.courseProgress && progress.courseProgress.length > 0 ? (
+            progress.courseProgress.map((course) => {
+              const progressVal = course.progress;
+              const theme = progressVal >= 85 
+                ? { bg: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400', bar: 'bg-emerald-500' }
+                : progressVal >= 60
+                  ? { bg: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400', bar: 'bg-indigo-500' }
+                  : { bg: 'bg-rose-500/10 border-rose-500/20 text-rose-400', bar: 'bg-rose-500' };
+
+              const totalBlocks = 10;
+              const filledBlocks = Math.round((progressVal / 100) * totalBlocks);
+
+              return (
+                <div key={course.courseId} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex flex-col justify-between space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0">
+                      <span className="text-[9px] uppercase font-bold text-white/40 tracking-wider font-mono">{course.code}</span>
+                      <h3 className="text-xs font-semibold text-white truncate max-w-[160px]">{course.title}</h3>
+                    </div>
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border flex-shrink-0 ${theme.bg}`}>
+                      {progressVal}% Mastery
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {/* Unicode Blocks Progress Bar */}
+                    <div className="font-mono text-xs tracking-wider select-none text-white/60">
+                      <span className={theme.bar === 'bg-emerald-500' ? 'text-emerald-400' : theme.bar === 'bg-indigo-500' ? 'text-indigo-400' : 'text-rose-400'}>
+                        {'█'.repeat(filledBlocks)}
+                      </span>
+                      <span className="text-white/10">
+                        {'░'.repeat(totalBlocks - filledBlocks)}
+                      </span>
+                    </div>
+
+                    {/* Standard Premium Progress Bar */}
+                    <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                      <div className={`h-full ${theme.bar}`} style={{ width: `${progressVal}%` }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="col-span-3 text-center py-6 text-xs text-white/30">
+              No active courses with learning progress.
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Weekly Digest Summary */}
       <WeeklyDigestCard />
 

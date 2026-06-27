@@ -80,6 +80,7 @@ export const ChatPage: React.FC = () => {
         timestamp: new Date(m.timestamp),
         trustScore: m.trustScore,
         confidenceScore: m.confidenceScore,
+        explanations: m.explanations || {},
         explainability: m.sources && m.sources.length > 0 ? {
           sources: m.sources.map((s: any, idx: number) => ({
             rank: idx + 1,

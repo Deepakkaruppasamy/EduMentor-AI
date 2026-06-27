@@ -433,8 +433,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
         )}
 
         <AnimatePresence>
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
+          {messages.map((message, index) => (
+            <MessageBubble 
+              key={message.id} 
+              message={message} 
+              chatId={currentChatId || undefined} 
+              messageIndex={index} 
+            />
           ))}
         </AnimatePresence>
         <div ref={messagesEndRef} />

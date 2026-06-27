@@ -9,7 +9,9 @@ import { InactivityHandler } from './components/auth/InactivityHandler';
 import { AdminUserManagement } from './components/admin/AdminUserManagement';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { FacultyAIAssistantPage } from './pages/FacultyAIAssistantPage';
 import { ChatPage } from './pages/ChatPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { QuizPage } from './pages/QuizPage';
 import { CoursesPage } from './pages/CoursesPage';
 import { DocumentsPage } from './pages/DocumentsPage';
@@ -120,6 +122,11 @@ const App: React.FC = () => {
             <AppPage><AdminUserManagement /></AppPage>
           </ProtectedRoute>
         } />
+        <Route path="/faculty-ai-assistant" element={
+          <ProtectedRoute roles={['faculty', 'admin']}>
+            <AppPage><FacultyAIAssistantPage /></AppPage>
+          </ProtectedRoute>
+        } />
         <Route path="/documents" element={
           <ProtectedRoute roles={['faculty', 'admin']}>
             <AppPage><DocumentsPage /></AppPage>
@@ -128,6 +135,11 @@ const App: React.FC = () => {
         <Route path="/analytics" element={
           <ProtectedRoute roles={['faculty', 'admin']}>
             <AppPage><AnalyticsPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/reports" element={
+          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
+            <AppPage><ReportsPage /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/gradebook" element={

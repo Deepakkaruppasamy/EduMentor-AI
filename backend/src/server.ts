@@ -9,6 +9,8 @@ import { connectDatabase } from './config/database';
 import { config } from './config/env';
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
+import facultyRoutes from './routes/faculty.routes';
+import reportRoutes from './routes/report.routes';
 import courseRoutes from './routes/course.routes';
 import documentRoutes from './routes/document.routes';
 import chatRoutes from './routes/chat.routes';
@@ -54,6 +56,8 @@ app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/faculty', facultyRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/document', documentRoutes);
 app.use('/api/chat', chatRoutes);

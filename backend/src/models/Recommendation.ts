@@ -16,6 +16,12 @@ export interface IRecommendation extends Document {
   suggestedTopics: string[];
   revisionPlan: string;
   personalizedQuizTopics: string[];
+  resourceRecommendations?: {
+    category: 'Lecture Slides' | 'PDFs' | 'Books' | 'YouTube Videos' | 'Research Papers';
+    title: string;
+    description: string;
+    link?: string;
+  }[];
   totalQueries: number;
   avgQuizScore: number;
   learningStreak: number;
@@ -41,6 +47,14 @@ const RecommendationSchema = new Schema<IRecommendation>(
     suggestedTopics: [String],
     revisionPlan: { type: String, default: '' },
     personalizedQuizTopics: [String],
+    resourceRecommendations: [
+      {
+        category: { type: String, enum: ['Lecture Slides', 'PDFs', 'Books', 'YouTube Videos', 'Research Papers'] },
+        title: { type: String, required: true },
+        description: { type: String },
+        link: { type: String }
+      }
+    ],
     totalQueries: { type: Number, default: 0 },
     avgQuizScore: { type: Number, default: 0 },
     learningStreak: { type: Number, default: 0 },

@@ -5,7 +5,7 @@ import Analytics from '../models/Analytics';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
-import { generateResponse, generateResponseStream, extractConceptGraph } from '../services/ai/groq.service';
+import { generateResponse, generateResponseStream, extractConceptGraph, generateWithoutContext } from '../services/ai/groq.service';
 import { detectHallucination } from '../services/hallucination/hallucination.service';
 import { buildExplainableResult } from '../services/explainability/explainability.service';
 import { trackStudentQuery } from '../services/recommendations/recommendation.service';
@@ -347,3 +347,88 @@ async function updateDailyAnalytics(trustScore: number, responseTime: number, co
     console.warn('Failed to update analytics:', err);
   }
 }
+
+export const explainMessage = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id: chatId, messageIndex } = req.params;
+  const { explanationType } = req.body;
+
+  if (!chatId || messageIndex === undefined || !explanationType) {
+    return res.status(400).json({ success: false, message: 'chatId, messageIndex, and explanationType are required.' });
+  }
+
+  const index = parseInt(messageIndex, 10);
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    return res.status(404).json({ success: false, message: 'Chat session not found.' });
+  }
+
+  if (index < 0 || index >= chat.messages.length) {
+    return res.status(400).json({ success: false, message: 'Invalid message index.' });
+  }
+
+  const message = chat.messages[index];
+  if (message.role !== 'assistant') {
+    return res.status(400).json({ success: false, message: 'Explanations can only be generated for assistant responses.' });
+  }
+
+  if (!message.explanations) {
+    message.explanations = {};
+  }
+
+  // Check if explanation already exists (cached)
+  const existing = (message.explanations as any)[explanationType];
+  if (existing) {
+    return res.json({ success: true, explanation: existing });
+  }
+
+  let systemPrompt = 'You are an AI teaching assistant. Always respond in formatted Markdown.';
+  let prompt = '';
+
+  const originalContent = message.content;
+  const contextText = message.sources?.map(s => s.chunkText).join('\n') || '';
+
+  switch (explanationType) {
+    case 'simply':
+      systemPrompt = 'You are an educational assistant. Your goal is to explain complex concepts in simple, easy-to-understand terms for beginners. Avoid advanced jargon.';
+      prompt = `Rewrite and explain this explanation simply for a absolute beginner:\n\nOriginal Answer: "${originalContent}"`;
+      break;
+    case 'detail':
+      systemPrompt = 'You are an academic university professor. Provide rich detail, advanced terminology, and comprehensive depth.';
+      prompt = `Provide a comprehensive, detailed academic explanation of this topic. Expand on key terms and cover technical details. Use this retrieved context to assist you if relevant:\n"${contextText}"\n\nOriginal Concept Summary: "${originalContent}"`;
+      break;
+    case 'example':
+      systemPrompt = 'You are an illustrative educator. You explain core ideas by constructing clear, descriptive examples.';
+      prompt = `Create a simple, relatable example or scenario that demonstrates the concepts in this text:\n\n"${originalContent}"`;
+      break;
+    case 'realWorld':
+      systemPrompt = 'You are an industry expert. You explain how theoretical concepts are applied in production systems, software, or actual business hardware.';
+      prompt = `Explain how the concepts in this text are applied in industry or real-world production settings. Give specific scenarios:\n\n"${originalContent}"`;
+      break;
+    case 'exam':
+      systemPrompt = 'You are a university examiner. You structure answers to optimize for grading rubrics and exam scores.';
+      prompt = `Structure the following concept explanation in a formal university exam format. Include:\n1. Precise Definition\n2. Key Points (bullet list)\n3. Main Advantages & Disadvantages\n4. Important Exam Notes.\n\nContent:\n"${originalContent}"`;
+      break;
+    default:
+      return res.status(400).json({ success: false, message: 'Invalid explanationType. Allowed values: simply, detail, example, realWorld, exam.' });
+  }
+
+  try {
+    const response = await generateWithoutContext(
+      [{ role: 'user', content: prompt }],
+      systemPrompt,
+      0.4
+    );
+
+    // Save explanation
+    (message.explanations as any)[explanationType] = response.content;
+    chat.markModified('messages');
+    await chat.save();
+
+    res.json({
+      success: true,
+      explanation: response.content
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message || 'AI explanation generation failed.' });
+  }
+});

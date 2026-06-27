@@ -138,6 +138,103 @@ export const RecommendationsPage: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* AI Resource Recommendations */}
+        <div className="glass-card p-6 border border-white/5 shadow-md mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-white/5">
+            <div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <span>📚</span> AI Resource Recommendations
+              </h2>
+              <p className="text-[11px] text-white/40 mt-0.5">Targeted learning material recommended by the AI based on your weak concepts</p>
+            </div>
+            <span className="text-[9px] text-white/40 font-mono tracking-widest uppercase bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+              Resource Engine v1
+            </span>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-5">
+            {['Lecture Slides', 'PDFs', 'Books', 'YouTube Videos', 'Research Papers'].map((category) => {
+              // Find recommended item for this category
+              let item = recommendation.resourceRecommendations?.find(r => r.category === category);
+              
+              // Fallback Generator if not populated by LLM yet
+              if (!item) {
+                const weakTopic = recommendation.weakTopics[0] || 'Core Course Concepts';
+                const fallbackResources: Record<string, { title: string; description: string; link?: string }> = {
+                  'Lecture Slides': {
+                    title: `${weakTopic} Lecture Companion`,
+                    description: `Review chapter slides and lecture annotations for ${weakTopic}.`,
+                    link: '#'
+                  },
+                  'PDFs': {
+                    title: `${weakTopic} Reference Sheet`,
+                    description: `Printable cheat sheet covering key formulas and terminology.`,
+                    link: '#'
+                  },
+                  'Books': {
+                    title: `Modern Computer Science - ${weakTopic}`,
+                    description: `Recommended textbook reading on the theoretical foundations of ${weakTopic}.`,
+                    link: '#'
+                  },
+                  'YouTube Videos': {
+                    title: `Mastering ${weakTopic} - Tutorial`,
+                    description: `Comprehensive video tutorial explaining the practical applications of ${weakTopic}.`,
+                    link: 'https://www.youtube.com'
+                  },
+                  'Research Papers': {
+                    title: `Seminal Study on ${weakTopic}`,
+                    description: `Read the original academic paper introducing the concepts of ${weakTopic}.`,
+                    link: '#'
+                  }
+                };
+                item = {
+                  category: category as any,
+                  ...fallbackResources[category]
+                };
+              }
+
+              // Category icons
+              const categoryIcons: Record<string, string> = {
+                'Lecture Slides': '📊',
+                'PDFs': '📄',
+                'Books': '📚',
+                'YouTube Videos': '🎥',
+                'Research Papers': '🔬'
+              };
+
+              const linkLabel = category === 'YouTube Videos' 
+                ? 'Watch Tutorial ↗' 
+                : category === 'Research Papers' 
+                  ? 'Read Paper ↗' 
+                  : 'View Document ↗';
+
+              return (
+                <div key={category} className="p-4 rounded-2xl border border-white/5 bg-[#12151e]/50 flex flex-col justify-between space-y-4 hover:border-primary-500/20 hover:bg-[#12151e]/80 transition-all group">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xl group-hover:scale-110 transition-transform duration-300">{categoryIcons[category]}</span>
+                      <span className="text-[9px] font-extrabold uppercase text-white/40 tracking-wider font-mono">{category}</span>
+                    </div>
+                    <h4 className="text-[11px] font-bold text-white leading-snug group-hover:text-primary-300 transition-colors truncate">{item.title}</h4>
+                    <p className="text-[10px] text-white/40 leading-relaxed font-medium line-clamp-3">{item.description}</p>
+                  </div>
+
+                  {item.link && (
+                    <a 
+                      href={item.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-[9px] font-bold py-1.5 w-full bg-white/5 group-hover:bg-primary-600 border border-white/10 group-hover:border-primary-500 text-center text-white rounded-lg transition-all"
+                    >
+                      {linkLabel}
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );

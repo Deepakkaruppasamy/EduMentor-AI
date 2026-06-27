@@ -107,12 +107,29 @@ export async function generatePersonalizedPlan(
 - Average quiz score: ${avgScore}%
 - Total queries: ${rec.totalQueries}
 
-Generate a personalized 2-week revision plan JSON:
+Generate a personalized 2-week revision plan and resource recommendation JSON:
 {
   "revisionPlan": "Detailed weekly plan text...",
   "suggestedTopics": ["topic1", "topic2", "topic3"],
-  "personalizedQuizTopics": ["quiz_topic1", "quiz_topic2"]
-}`;
+  "personalizedQuizTopics": ["quiz_topic1", "quiz_topic2"],
+  "resourceRecommendations": [
+    {
+      "category": "YouTube Videos",
+      "title": "Topic explanation video name",
+      "description": "How this specific video helps clarify the weak topic",
+      "link": "https://www.youtube.com/watch?v=example"
+    }
+  ]
+}
+
+In the "resourceRecommendations" array, please recommend exactly 4 or 5 highly relevant educational resources, covering different categories from:
+- Lecture Slides (slides online)
+- PDFs (reference notes/cheatsheets)
+- Books (textbooks or chapters)
+- YouTube Videos (video tutorials)
+- Research Papers (original concept papers)
+
+Return valid JSON matching the exact schema above.`;
 
   try {
     const response = await generateWithoutContext(
@@ -127,6 +144,7 @@ Generate a personalized 2-week revision plan JSON:
       rec.revisionPlan = plan.revisionPlan || rec.revisionPlan;
       rec.suggestedTopics = plan.suggestedTopics || rec.suggestedTopics;
       rec.personalizedQuizTopics = plan.personalizedQuizTopics || rec.personalizedQuizTopics;
+      rec.resourceRecommendations = plan.resourceRecommendations || [];
       rec.lastUpdated = new Date();
       await rec.save();
     }

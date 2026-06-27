@@ -16,6 +16,13 @@ export interface IChatMessage {
   confidenceScore?: number;
   hallucinationFlags?: string[];
   conceptGraph?: any;
+  explanations?: {
+    simply?: string;
+    detail?: string;
+    example?: string;
+    realWorld?: string;
+    exam?: string;
+  };
   timestamp: Date;
 }
 
@@ -45,6 +52,7 @@ const ChatMessageSchema = new Schema<IChatMessage>({
   confidenceScore: { type: Number },
   hallucinationFlags: [{ type: String }],
   conceptGraph: { type: Schema.Types.Mixed },
+  explanations: { type: Schema.Types.Mixed, default: {} },
   timestamp: { type: Date, default: Date.now },
 });
 
