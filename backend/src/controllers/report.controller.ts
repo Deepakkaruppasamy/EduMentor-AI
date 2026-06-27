@@ -40,8 +40,8 @@ export const generateAIReport = asyncHandler(async (req: AuthRequest, res: Respo
     case 'student_progress': {
       const recs = await Recommendation.find({ student: userId }).populate('course', 'title code');
       rawData = recs.map(r => ({
-        courseCode: r.course?.code || 'N/A',
-        courseTitle: r.course?.title || 'N/A',
+        courseCode: (r.course as any)?.code || 'N/A',
+        courseTitle: (r.course as any)?.title || 'N/A',
         avgQuizScore: Math.round(r.avgQuizScore || 0),
         totalQueries: r.totalQueries || 0,
         learningStreak: r.learningStreak || 0
@@ -78,7 +78,7 @@ Provide:
       const quizzes = await Quiz.find({ student: userId, status: 'completed' }).populate('course', 'title code');
       rawData = quizzes.map(q => ({
         quizDate: q.completedAt ? new Date(q.completedAt).toLocaleDateString() : 'N/A',
-        courseCode: q.course?.code || 'N/A',
+        courseCode: (q.course as any)?.code || 'N/A',
         topic: q.topic || 'General Practice',
         score: q.score || 0,
         maxScore: q.maxScore || 10,
@@ -124,8 +124,8 @@ Provide:
       const courseId = options?.courseId;
       const recs = await Recommendation.find({ course: courseId }).populate('student', 'name email');
       rawData = recs.map(r => ({
-        studentName: r.student?.name || 'Anonymous Student',
-        studentEmail: r.student?.email || 'N/A',
+        studentName: (r.student as any)?.name || 'Anonymous Student',
+        studentEmail: (r.student as any)?.email || 'N/A',
         averageScore: Math.round(r.avgQuizScore || 0),
         queriesAsked: r.totalQueries || 0,
         riskLevel: (r.avgQuizScore < 60) ? 'High Risk' : (r.avgQuizScore < 75) ? 'Medium Risk' : 'Low Risk'
