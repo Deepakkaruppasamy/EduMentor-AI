@@ -287,6 +287,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
         confidenceScore: doneData.explainability.overallConfidence,
         hallucination: doneData.hallucination,
         explainability: doneData.explainability,
+        conceptGraph: doneData.conceptGraph,
       });
  
       if (voiceMode) {

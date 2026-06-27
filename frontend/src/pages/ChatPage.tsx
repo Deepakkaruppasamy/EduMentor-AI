@@ -81,6 +81,7 @@ export const ChatPage: React.FC = () => {
         trustScore: m.trustScore,
         confidenceScore: m.confidenceScore,
         explanations: m.explanations || {},
+        conceptGraph: m.conceptGraph,
         explainability: m.sources && m.sources.length > 0 ? {
           sources: m.sources.map((s: any, idx: number) => ({
             rank: idx + 1,
