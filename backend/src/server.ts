@@ -84,11 +84,15 @@ if (config.NODE_ENV === 'production') {
 
   app.use(express.static(distPath));
   app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api/')) {
-      res.sendFile(path.join(distPath, 'index.html'));
-    } else {
-      res.status(404).json({ message: 'API route not found' });
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ message: 'API route not found' });
     }
+    // Prevent index.html serving for missing static assets
+    if (path.extname(req.path)) {
+      return res.status(404).send('Asset not found');
+    }
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.sendFile(path.join(distPath, 'index.html'));
   });
 }
 
