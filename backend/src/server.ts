@@ -105,9 +105,9 @@ const start = async () => {
   try {
     await connectDatabase();
 
-    // Seed default Super Admin if none exists
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
+    // Seed default Super Admin if email doesn't exist
+    const adminExists = await User.findOne({ email: 'admin@university.edu' });
+    if (!adminExists) {
       await User.create({
         name: 'Super Admin',
         email: 'admin@university.edu',
