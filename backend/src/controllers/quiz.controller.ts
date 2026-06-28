@@ -1,14 +1,16 @@
 import { Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
 import mongoose from 'mongoose';
 import Quiz from '../models/Quiz';
 import Course from '../models/Course';
+import User from '../models/User';
 import { asyncHandler } from '../middleware/errorHandler';
-import { AuthRequest } from '../middleware/auth';
 import { generateQuizQuestions, evaluateQuizAnswers } from '../services/quiz/quiz.service';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
 import { updateQuizPerformance } from '../services/recommendations/recommendation.service';
 import { notifyNewQuizAssigned } from '../services/socket.service';
 import { generateWithoutContext } from '../services/ai/groq.service';
+import { sendEmail } from '../utils/email';
 
 export const generateQuiz = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { courseId, topic, questionType = 'mcq', difficulty = 'medium', count = 5 } = req.body;
@@ -79,6 +81,40 @@ export const evaluateQuiz = asyncHandler(async (req: AuthRequest, res: Response)
   }
 
   const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+  const grade = percentage >= 90 ? 'A' : percentage >= 75 ? 'B' : percentage >= 60 ? 'C' : percentage >= 45 ? 'D' : 'F';
+  const feedback = percentage >= 75 ? '🎉 Excellent work!' : percentage >= 45 ? '📚 Good effort, keep studying!' : '⚠️ Needs more practice on this topic.';
+
+  // Send evaluation result email
+  sendEmail({
+    email: req.user!.email,
+    subject: `Quiz Evaluated: ${quiz.title} 📝`,
+    text: `Hello ${req.user!.name},\n\nYour quiz has been evaluated.\n\nResults Summary:\n- Quiz: ${quiz.title}\n- Score: ${score} / ${maxScore}\n- Percentage: ${percentage}%\n- Grade: ${grade}\n- Feedback: ${feedback}\n\nKeep up the learning effort!\n\nBest regards,\nThe EduMentor AI Team`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h2 style="color: #4f63ff; margin: 0; font-size: 24px; font-weight: 700;">Quiz Evaluation Report 📝</h2>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+        <p style="font-size: 15px;">Hello <strong>${req.user!.name}</strong>,</p>
+        <p style="font-size: 15px; color: #4a5568;">Your submission for <strong>${quiz.title}</strong> has been evaluated successfully. Here is your results breakdown:</p>
+        
+        <div style="background-color: #f7fafc; padding: 20px; border-radius: 10px; margin: 20px 0; border: 1px solid #edf2f7; font-size: 14px; line-height: 1.6; color: #4a5568;">
+          <div style="font-size: 18px; font-weight: bold; text-align: center; color: #2d3748; margin-bottom: 12px;">
+            Score: <span style="color: #4f63ff; font-size: 24px;">${score}</span> / ${maxScore} (${percentage}%)
+          </div>
+          <div style="display: flex; justify-content: space-around; border-top: 1px solid #edf2f7; border-bottom: 1px solid #edf2f7; padding: 10px 0; margin-bottom: 12px; font-size: 16px; font-weight: bold;">
+            <span>Grade: <span style="color: #2b6cb0;">${grade}</span></span>
+          </div>
+          <div style="font-style: italic; text-align: center; color: #4a5568;">
+            ${feedback}
+          </div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+        <p style="font-size: 11px; color: #a0aec0; text-align: center; margin: 0;">EduMentor AI Assessment Desk</p>
+      </div>
+    `
+  }).catch(err => console.error('Failed to send quiz score report email:', err));
 
   res.json({
     success: true,
@@ -87,8 +123,8 @@ export const evaluateQuiz = asyncHandler(async (req: AuthRequest, res: Response)
       score,
       maxScore,
       percentage,
-      grade: percentage >= 90 ? 'A' : percentage >= 75 ? 'B' : percentage >= 60 ? 'C' : percentage >= 45 ? 'D' : 'F',
-      feedback: percentage >= 75 ? '🎉 Excellent work!' : percentage >= 45 ? '📚 Good effort, keep studying!' : '⚠️ Needs more practice on this topic.',
+      grade,
+      feedback,
     },
   });
 });
@@ -176,6 +212,42 @@ export const assignQuiz = asyncHandler(async (req: AuthRequest, res: Response) =
 
   // Notify students via websocket
   notifyNewQuizAssigned(courseId, topic, dueDate);
+
+  // Notify students via email asynchronously
+  User.find({ _id: { $in: course.students } })
+    .select('name email')
+    .then(students => {
+      const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A';
+      students.forEach(student => {
+        sendEmail({
+          email: student.email,
+          subject: `New Quiz Assigned: ${topic} 📝`,
+          text: `Hello ${student.name},\n\nYour instructor ${req.user!.name} has assigned a new quiz for your course "${course.title}".\n\nQuiz Details:\n- Topic: ${topic}\n- Difficulty: ${difficulty}\n- Due Date: ${dueDateStr}\n\nPlease log in to EduMentor AI and complete the assignment before the due date.`,
+          html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #4f63ff; margin: 0; font-size: 24px; font-weight: 700;">New Quiz Assigned 📝</h2>
+                <p style="color: #718096; margin: 5px 0 0 0; font-size: 14px;">Course: ${course.title} (${course.code || ''})</p>
+              </div>
+              <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+              <p style="font-size: 15px;">Hello <strong>${student.name}</strong>,</p>
+              <p style="font-size: 15px; color: #4a5568;">Your instructor <strong>${req.user!.name}</strong> has assigned a new quiz. Here are the details:</p>
+              
+              <div style="background-color: #f7fafc; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #edf2f7; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                <div>📂 <strong>Topic:</strong> ${topic}</div>
+                <div>⚡ <strong>Difficulty:</strong> ${difficulty}</div>
+                <div>📅 <strong>Due Date:</strong> ${dueDateStr}</div>
+              </div>
+              
+              <p style="font-size: 14px; color: #718096;">Please log in to your dashboard to complete the quiz before the deadline.</p>
+              <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+              <p style="font-size: 11px; color: #a0aec0; text-align: center; margin: 0;">EduMentor AI Assessment Desk</p>
+            </div>
+          `
+        }).catch(err => console.error(`Failed to send quiz assignment email to ${student.email}:`, err));
+      });
+    })
+    .catch(err => console.error('Failed to query students for quiz email notifications:', err));
 
   res.status(201).json({
     success: true,

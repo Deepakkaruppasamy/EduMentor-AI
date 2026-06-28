@@ -2,6 +2,8 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Announcement from '../models/Announcement';
 import AnnouncementRead from '../models/AnnouncementRead';
+import User from '../models/User';
+import { sendEmail } from '../utils/email';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -60,6 +62,44 @@ export const createAnnouncement = async (req: AuthRequest, res: Response): Promi
     });
 
     const populated = await Announcement.findById(announcement._id).populate('createdBy', 'name email role');
+
+    // Email broadcast for high-priority/urgent announcements
+    if (priority === 'Urgent' || priority === 'High') {
+      User.find({ role: { $in: parsedTargetRoles }, isActive: true })
+        .select('name email')
+        .then(users => {
+          users.forEach(user => {
+            sendEmail({
+              email: user.email,
+              subject: `URGENT NOTICE: ${title} 📢`,
+              text: `Hello ${user.name},\n\nAn urgent announcement has been posted by ${(populated?.createdBy as any)?.name || 'Platform'}.\n\nAnnouncement Details:\n- Title: ${title}\n- Category: ${type || 'General'}\n- Priority: ${priority}\n\nContent:\n${content}\n\nPlease log in to EduMentor AI to read the full bulletin.`,
+              html: `
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 550px; margin: 0 auto; padding: 25px; border: 1px solid #feb2b2; border-radius: 16px; background-color: #fff5f5; color: #742a2a;">
+                  <div style="text-align: center; margin-bottom: 20px;">
+                    <span style="font-size: 40px;">📢</span>
+                    <h2 style="color: #9b2c2c; margin: 10px 0 0 0; font-size: 24px; font-weight: 800;">URGENT ACADEMIC NOTICE</h2>
+                    <p style="color: #c53030; margin: 5px 0 0 0; font-size: 14px; font-weight: 600;">Category: ${type || 'General'}</p>
+                  </div>
+                  <hr style="border: 0; border-top: 1px solid #fed7d7; margin: 20px 0;" />
+                  <p style="font-size: 15px; color: #2d3748;">Hello <strong>${user.name}</strong>,</p>
+                  <p style="font-size: 15px; color: #2d3748;">An urgent/high-priority announcement has been posted on the EduMentor AI portal:</p>
+                  
+                  <div style="background-color: #ffffff; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #fed7d7; color: #2d3748; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <h3 style="margin-top: 0; color: #9b2c2c; font-size: 18px; font-weight: 700;">${title}</h3>
+                    <p style="font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 0;">${content}</p>
+                  </div>
+                  
+                  <p style="font-size: 13px; color: #742a2a;">Please log in to your dashboard to review this notification and check any attachments.</p>
+                  <hr style="border: 0; border-top: 1px solid #fed7d7; margin: 20px 0;" />
+                  <p style="font-size: 11px; color: #c53030; text-align: center; margin: 0;">EduMentor AI Announcement Desk</p>
+                </div>
+              `
+            }).catch(err => console.error(`Failed to send announcement email to ${user.email}:`, err));
+          });
+        })
+        .catch(err => console.error('Failed to query users for announcement email broadcast:', err));
+    }
+
     res.status(201).json({ success: true, data: populated });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });

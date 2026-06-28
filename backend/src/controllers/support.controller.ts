@@ -9,6 +9,7 @@ import TicketHistory from '../models/support/TicketHistory';
 import User from '../models/User';
 import { generateWithoutContext } from '../services/ai/groq.service';
 import { getSupportIO } from '../services/support-socket.service';
+import { sendEmail } from '../utils/email';
 
 // ──────────────────────────────────────────────────────────────
 // AI SUPPORT BOT CHAT
@@ -105,6 +106,36 @@ export const createTicket = async (req: AuthRequest, res: Response): Promise<voi
       }));
       await SupportNotification.insertMany(notifications);
     } catch (_) {}
+
+    if (populated && populated.user) {
+      sendEmail({
+        email: (populated.user as any).email,
+        subject: `Support Ticket Submitted: ${ticketId}`,
+        text: `Hello ${(populated.user as any).name},\n\nYour support ticket has been successfully submitted.\n\nTicket Details:\n- Ticket ID: ${ticketId}\n- Category: ${category}\n- Priority: ${priority}\n- Subject: ${subject}\n- Description: ${description}\n\nOur support team will review your ticket and respond to you as soon as possible.\n\nBest regards,\nThe EduMentor AI Support Team`,
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h2 style="color: #4f63ff; margin: 0; font-size: 24px; font-weight: 700;">Ticket Submission Receipt 📨</h2>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+            <p style="font-size: 15px;">Hello <strong>${(populated.user as any).name}</strong>,</p>
+            <p style="font-size: 15px; color: #4a5568;">Your support ticket has been successfully filed in our system. Here are the details:</p>
+            
+            <div style="background-color: #f7fafc; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #edf2f7; font-size: 14px; line-height: 1.6; color: #4a5568;">
+              <div>🎟️ <strong>Ticket ID:</strong> ${ticketId}</div>
+              <div>📂 <strong>Category:</strong> ${category}</div>
+              <div>⚡ <strong>Priority:</strong> ${priority}</div>
+              <div style="margin-top: 8px; font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">📝 Subject: ${subject}</div>
+              <div style="margin-top: 8px; font-style: italic;">${description}</div>
+            </div>
+            
+            <p style="font-size: 14px; color: #718096;">Our agents will look into this issue. You will receive an email notice when they reply.</p>
+            <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+            <p style="font-size: 11px; color: #a0aec0; text-align: center; margin: 0;">EduMentor AI Support Desk</p>
+          </div>
+        `
+      }).catch(err => console.error('Failed to send support ticket creation email:', err));
+    }
 
     res.status(201).json({ success: true, data: populated });
   } catch (err: any) {
@@ -219,11 +250,69 @@ export const replyToTicket = async (req: AuthRequest, res: Response): Promise<vo
         oldValue: 'Open',
         newValue: 'Waiting for User',
       });
+
+      // Email the ticket owner user
+      const ticketUser = await User.findById(ticket.user);
+      if (ticketUser) {
+        sendEmail({
+          email: ticketUser.email,
+          subject: `New Agent Reply on Ticket: ${ticket.ticketId}`,
+          text: `Hello ${ticketUser.name},\n\nAn agent has replied to your support ticket ${ticket.ticketId}:\n\nReply:\n"${content}"\n\nPlease log in to view the ticket thread and respond if needed.`,
+          html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #4f63ff; margin: 0; font-size: 24px; font-weight: 700;">New Support Reply 💬</h2>
+              </div>
+              <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+              <p style="font-size: 15px;">Hello <strong>${ticketUser.name}</strong>,</p>
+              <p style="font-size: 15px; color: #4a5568;">A support agent has posted a response to your ticket <strong>${ticket.ticketId}</strong>:</p>
+              
+              <div style="background-color: #f7fafc; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #edf2f7; font-size: 14px; line-height: 1.6; color: #4d5568; font-style: italic;">
+                "${content}"
+              </div>
+              
+              <p style="font-size: 14px; color: #718096;">Please log in to your dashboard if you wish to write back or close the ticket.</p>
+              <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+              <p style="font-size: 11px; color: #a0aec0; text-align: center; margin: 0;">EduMentor AI Support Desk</p>
+            </div>
+          `
+        }).catch(err => console.error('Failed to send ticket reply email to user:', err));
+      }
     } else {
       // User replies, if status was waiting for user, set it back to open/in progress
       if (ticket.status === 'Waiting for User') {
         ticket.status = 'Open';
         await ticket.save();
+      }
+
+      // Email assigned admin/agent
+      if (ticket.assignedTo) {
+        const assignedStaff = await User.findById(ticket.assignedTo);
+        if (assignedStaff) {
+          sendEmail({
+            email: assignedStaff.email,
+            subject: `User Update on Ticket: ${ticket.ticketId}`,
+            text: `Hello ${assignedStaff.name},\n\nThe student/user ${req.user!.name} has replied to the support ticket ${ticket.ticketId}:\n\nMessage:\n"${content}"\n\nPlease log in to review the response.`,
+            html: `
+              <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <h2 style="color: #2b6cb0; margin: 0; font-size: 24px; font-weight: 700;">User Reply on Ticket 💬</h2>
+                </div>
+                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+                <p style="font-size: 15px;">Hello <strong>${assignedStaff.name}</strong>,</p>
+                <p style="font-size: 15px; color: #4a5568;">The user <strong>${req.user!.name}</strong> has posted an update to ticket <strong>${ticket.ticketId}</strong> which is assigned to you:</p>
+                
+                <div style="background-color: #f7fafc; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #edf2f7; font-size: 14px; line-height: 1.6; color: #4d5568; font-style: italic;">
+                  "${content}"
+                </div>
+                
+                <p style="font-size: 14px; color: #718096;">Please log in to your dashboard to review and manage this ticket.</p>
+                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+                <p style="font-size: 11px; color: #a0aec0; text-align: center; margin: 0;">EduMentor AI Support Desk</p>
+              </div>
+            `
+          }).catch(err => console.error('Failed to send ticket reply email to staff:', err));
+        }
       }
     }
 
@@ -291,6 +380,35 @@ export const updateTicketAdmin = async (req: AuthRequest, res: Response): Promis
         body: `Status is now ${status}`,
         relatedTicket: ticket._id,
       });
+
+      // Send status change email to the user
+      const ticketUser = await User.findById(ticket.user);
+      if (ticketUser) {
+        sendEmail({
+          email: ticketUser.email,
+          subject: `Support Ticket Status Update: ${ticket.ticketId}`,
+          text: `Hello ${ticketUser.name},\n\nYour support ticket ${ticket.ticketId} status has been updated to: ${status}.\n\nIf you have any further questions or if this issue was not fully resolved, please log in to your account and reply to the ticket.`,
+          html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #4f63ff; margin: 0; font-size: 24px; font-weight: 700;">Ticket Status Updated 📂</h2>
+              </div>
+              <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+              <p style="font-size: 15px;">Hello <strong>${ticketUser.name}</strong>,</p>
+              <p style="font-size: 15px; color: #4a5568;">Your support ticket <strong>${ticket.ticketId}</strong> has been marked as <strong>${status}</strong> by a support administrator.</p>
+              
+              ${status === 'Resolved' ? `
+                <div style="background-color: #ebf8ff; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #bee3f8; font-size: 13px; line-height: 1.6; color: #2b6cb0;">
+                  ✅ <strong>Resolved:</strong> If this issue occurs again, you can reopen it by submitting feedback or typing a response.
+                </div>
+              ` : ''}
+              
+              <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+              <p style="font-size: 11px; color: #a0aec0; text-align: center; margin: 0;">EduMentor AI Support Desk</p>
+            </div>
+          `
+        }).catch(err => console.error('Failed to send status update email:', err));
+      }
     }
 
     if (priority && priority !== oldPriority) {
@@ -317,6 +435,38 @@ export const updateTicketAdmin = async (req: AuthRequest, res: Response): Promis
         oldValue: oldAssigned,
         newValue: newAssignedName,
       });
+
+      // Email the newly assigned staff member
+      if (assignedToId) {
+        const newAssignee = await User.findById(assignedToId);
+        if (newAssignee) {
+          sendEmail({
+            email: newAssignee.email,
+            subject: `Support Ticket Assigned to You: ${ticket.ticketId}`,
+            text: `Hello ${newAssignee.name},\n\nYou have been assigned to support ticket ${ticket.ticketId}.\n\nTicket Subject: "${ticket.subject}"\nPriority: ${ticket.priority}\n\nPlease log in to review and respond.`,
+            html: `
+              <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <h2 style="color: #2b6cb0; margin: 0; font-size: 24px; font-weight: 700;">New Ticket Assignment 📥</h2>
+                </div>
+                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+                <p style="font-size: 15px;">Hello <strong>${newAssignee.name}</strong>,</p>
+                <p style="font-size: 15px; color: #4a5568;">You have been assigned to handle support ticket <strong>${ticket.ticketId}</strong>:</p>
+                
+                <div style="background-color: #f7fafc; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #edf2f7; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                  <div>🎟️ <strong>Ticket ID:</strong> ${ticket.ticketId}</div>
+                  <div>⚡ <strong>Priority:</strong> ${ticket.priority}</div>
+                  <div style="margin-top: 8px; font-weight: bold;">📝 Subject: "${ticket.subject}"</div>
+                </div>
+                
+                <p style="font-size: 14px; color: #718096;">Please review this ticket and contact the user.</p>
+                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+                <p style="font-size: 11px; color: #a0aec0; text-align: center; margin: 0;">EduMentor AI Support Desk</p>
+              </div>
+            `
+          }).catch(err => console.error('Failed to send assignee notification email:', err));
+        }
+      }
     }
 
     const populated = await SupportTicket.findById(ticket._id)
