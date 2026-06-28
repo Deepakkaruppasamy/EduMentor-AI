@@ -25,6 +25,13 @@ import { AssignmentEvaluatorPage } from './pages/AssignmentEvaluatorPage';
 import { AvatarSettingsPage } from './pages/AvatarSettingsPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { SupportCenterPage } from './pages/SupportCenterPage';
+import { MeetingSchedulerPage } from './pages/MeetingSchedulerPage';
+import { OfficeHoursPage } from './pages/OfficeHoursPage';
+import { StudyPlannerPage } from './pages/StudyPlannerPage';
+import { AcademicCalendarPage } from './pages/AcademicCalendarPage';
+import { NotesGeneratorPage } from './pages/NotesGeneratorPage';
+import { ResearchAssistantPage } from './pages/ResearchAssistantPage';
+import { AnnouncementsPage } from './pages/AnnouncementsPage';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -120,6 +127,41 @@ const App: React.FC = () => {
         <Route path="/support" element={
           <ProtectedRoute>
             <AppPage><SupportCenterPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/meetings" element={
+          <ProtectedRoute>
+            <AppPage><MeetingSchedulerPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/office-hours" element={
+          <ProtectedRoute>
+            <AppPage><OfficeHoursPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/study-planner" element={
+          <ProtectedRoute roles={['student']}>
+            <AppPage><StudyPlannerPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/calendar" element={
+          <ProtectedRoute>
+            <AppPage><AcademicCalendarPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/notes-generator" element={
+          <ProtectedRoute>
+            <AppPage><NotesGeneratorPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/research-assistant" element={
+          <ProtectedRoute>
+            <AppPage><ResearchAssistantPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/announcements" element={
+          <ProtectedRoute>
+            <AppPage><AnnouncementsPage /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/assignment-evaluator" element={

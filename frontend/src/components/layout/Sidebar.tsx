@@ -9,12 +9,20 @@ import { useNotificationStore } from '../../store/notification.store';
 import { NotificationDrawer } from './NotificationDrawer';
 import { AvatarFrame } from '../avatar/AvatarFrame';
 import { AnimatePresence } from 'framer-motion';
+import { GlobalSearchBar } from './GlobalSearchBar';
 
 const STUDENT_LINKS = [
   { to: '/dashboard', icon: '📊', label: 'Dashboard' },
   { to: '/chat', icon: '💬', label: 'AI Chat Tutor' },
   { to: '/messages', icon: '✉️', label: 'Messages' },
+  { to: '/announcements', icon: '📣', label: 'Announcements' },
   { to: '/support', icon: '🛠️', label: 'Support Center' },
+  { to: '/meetings', icon: '📅', label: 'Meeting Scheduler' },
+  { to: '/office-hours', icon: '🏫', label: 'Office Hours' },
+  { to: '/study-planner', icon: '🗓️', label: 'AI Study Planner' },
+  { to: '/calendar', icon: '📆', label: 'Academic Calendar' },
+  { to: '/notes-generator', icon: '📓', label: 'Notes Generator' },
+  { to: '/research-assistant', icon: '🔬', label: 'Research Assistant' },
   { to: '/quiz', icon: '📝', label: 'Quiz Generator' },
   { to: '/flashcards', icon: '🎴', label: 'Flashcards' },
   { to: '/courses', icon: '📚', label: 'My Courses' },
@@ -28,7 +36,13 @@ const STUDENT_LINKS = [
 const FACULTY_LINKS = [
   { to: '/admin', icon: '📈', label: 'Dashboard' },
   { to: '/messages', icon: '✉️', label: 'Messages' },
+  { to: '/announcements', icon: '📣', label: 'Announcements' },
   { to: '/support', icon: '🛠️', label: 'Support Center' },
+  { to: '/meetings', icon: '📅', label: 'Meeting Scheduler' },
+  { to: '/office-hours', icon: '🏫', label: 'Office Hours' },
+  { to: '/calendar', icon: '📆', label: 'Academic Calendar' },
+  { to: '/notes-generator', icon: '📓', label: 'Notes Generator' },
+  { to: '/research-assistant', icon: '🔬', label: 'Research Assistant' },
   { to: '/courses', icon: '📚', label: 'Manage Courses' },
   { to: '/documents', icon: '📁', label: 'Upload Documents' },
   { to: '/quiz', icon: '⚔️', label: 'Quiz Battle Arena' },
@@ -44,7 +58,11 @@ const FACULTY_LINKS = [
 const ADMIN_LINKS = [
   { to: '/admin', icon: '📈', label: 'Dashboard' },
   { to: '/messages', icon: '✉️', label: 'Messages' },
+  { to: '/announcements', icon: '📣', label: 'Announcements' },
   { to: '/support', icon: '🛠️', label: 'Support Center' },
+  { to: '/meetings', icon: '📅', label: 'Meeting Scheduler' },
+  { to: '/office-hours', icon: '🏫', label: 'Office Hours' },
+  { to: '/calendar', icon: '📆', label: 'Academic Calendar' },
   { to: '/chat', icon: '💬', label: 'AI Chat Tutor' },
   { to: '/quiz', icon: '📝', label: 'Quiz Generator' },
   { to: '/flashcards', icon: '🎴', label: 'Flashcards' },
@@ -143,6 +161,10 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
           scrollbarColor: 'rgba(255,255,255,0.1) transparent',
         }}
       >
+        {/* Global Search */}
+        <div className="mb-2">
+          <GlobalSearchBar />
+        </div>
         <div className="space-y-1">
           {links.map((link) => (
             <Link

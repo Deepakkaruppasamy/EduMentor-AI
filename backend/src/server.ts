@@ -21,6 +21,14 @@ import flashcardRoutes from './routes/flashcard.routes';
 import assignmentEvaluationRoutes from './routes/assignment-evaluation.routes';
 import messagingRoutes from './routes/messaging.routes';
 import supportRoutes from './routes/support.routes';
+import appointmentRoutes from './routes/appointment.routes';
+import officeHoursRoutes from './routes/office-hours.routes';
+import studyPlannerRoutes from './routes/study-planner.routes';
+import calendarRoutes from './routes/calendar.routes';
+import notesRoutes from './routes/notes.routes';
+import researchRoutes from './routes/research.routes';
+import searchRoutes from './routes/search.routes';
+import announcementRoutes from './routes/announcement.routes';
 import { initMessagingSocketServer } from './services/messaging-socket.service';
 import { initSupportSocketServer } from './services/support-socket.service';
 import { errorHandler } from './middleware/errorHandler';
@@ -72,6 +80,14 @@ app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/assignment-evaluations', assignmentEvaluationRoutes);
 app.use('/api/messaging', messagingRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/office-hours', officeHoursRoutes);
+app.use('/api/study-planner', studyPlannerRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/notes', notesRoutes);
+app.use('/api/research', researchRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
