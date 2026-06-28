@@ -24,6 +24,10 @@ const TYPE_ICONS: Record<string, string> = {
   Note: '📓',
   Event: '📆',
   Announcement: '📣',
+  Assignment: '📋',
+  Chat: '💬',
+  Discussion: '🗣️',
+  Ticket: '🛠️',
 };
 
 function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {

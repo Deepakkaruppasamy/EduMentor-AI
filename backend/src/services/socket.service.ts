@@ -48,6 +48,20 @@ export function initSocketServer(server: HttpServer): SocketServer {
       console.log(`👤 Client ${socket.id} left course room: ${roomName}`);
     });
 
+    // Join room for a faculty queue
+    socket.on('join_faculty', (facultyId: string) => {
+      const roomName = `faculty_${facultyId}`;
+      socket.join(roomName);
+      console.log(`👤 Client ${socket.id} joined faculty room: ${roomName}`);
+    });
+
+    // Leave room for a faculty queue
+    socket.on('leave_faculty', (facultyId: string) => {
+      const roomName = `faculty_${facultyId}`;
+      socket.leave(roomName);
+      console.log(`👤 Client ${socket.id} left faculty room: ${roomName}`);
+    });
+
     // --- MULTIPLAYER LIVE QUIZ LOBBY EVENTS ---
 
     // Host live quiz session
@@ -539,5 +553,23 @@ export function notifyNewQuizAssigned(
     console.log(`📢 Broadcasted quiz:assigned (${topic}) to room: ${roomName}`);
   } catch (err: any) {
     console.warn('Failed to broadcast socket event:', err.message);
+  }
+}
+
+/**
+ * Broadcast consultation queue updates to faculty room
+ */
+export function notifyQueueUpdate(
+  facultyId: string,
+  eventType: 'join' | 'leave' | 'call',
+  data?: any
+): void {
+  try {
+    const socketIO = getIO();
+    const roomName = `faculty_${facultyId}`;
+    socketIO.to(roomName).emit('queue:updated', { eventType, data });
+    console.log(`📢 Broadcasted queue:updated (${eventType}) to room: ${roomName}`);
+  } catch (err: any) {
+    console.warn('Failed to broadcast queue socket event:', err.message);
   }
 }

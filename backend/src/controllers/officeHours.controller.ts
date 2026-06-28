@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import OfficeHours from '../models/OfficeHours';
 import ConsultationQueue from '../models/ConsultationQueue';
 import User from '../models/User';
+import { notifyQueueUpdate } from '../services/socket.service';
 
 // Faculty: upsert their office hours configuration
 export const upsertOfficeHours = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -112,6 +113,9 @@ export const joinQueue = async (req: AuthRequest, res: Response): Promise<void> 
       .populate('student', 'name email')
       .populate('faculty', 'name email');
 
+    // Notify real-time socket room
+    notifyQueueUpdate(facultyId, 'join', populated);
+
     res.status(201).json({ success: true, data: populated });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
@@ -128,6 +132,9 @@ export const leaveQueue = async (req: AuthRequest, res: Response): Promise<void>
       { faculty: facultyId, student: studentId, status: 'Waiting' },
       { status: 'Left' }
     );
+
+    // Notify real-time socket room
+    notifyQueueUpdate(facultyId, 'leave', { studentId });
 
     res.json({ success: true, message: 'Left the consultation queue.' });
   } catch (err: any) {
@@ -172,9 +179,14 @@ export const callNext = async (req: AuthRequest, res: Response): Promise<void> =
     ).populate('student', 'name email');
 
     if (!next) {
+      // Notify queue empty
+      notifyQueueUpdate(facultyId.toString(), 'call', null);
       res.json({ success: true, data: null, message: 'Queue is empty.' });
       return;
     }
+
+    // Notify real-time socket room
+    notifyQueueUpdate(facultyId.toString(), 'call', next);
 
     res.json({ success: true, data: next });
   } catch (err: any) {

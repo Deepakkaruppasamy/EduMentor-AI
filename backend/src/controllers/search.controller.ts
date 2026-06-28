@@ -5,6 +5,10 @@ import Course from '../models/Course';
 import GeneratedNote from '../models/GeneratedNote';
 import CalendarEvent from '../models/CalendarEvent';
 import Announcement from '../models/Announcement';
+import AssignmentEvaluation from '../models/AssignmentEvaluation';
+import Chat from '../models/Chat';
+import DiscussionBoard from '../models/messaging/DiscussionBoard';
+import SupportTicket from '../models/support/SupportTicket';
 
 export const globalSearch = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -19,7 +23,17 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
     const userId = req.user!._id;
     const regex = new RegExp(query, 'i');
 
-    const [courses, users, notes, events, announcements] = await Promise.all([
+    const [
+      courses,
+      users,
+      notes,
+      events,
+      announcements,
+      assignments,
+      chats,
+      discussions,
+      tickets
+    ] = await Promise.all([
       // Courses
       Course.find({ $or: [{ title: regex }, { description: regex }] })
         .select('title description')
@@ -58,6 +72,39 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
       })
         .select('title type priority createdAt')
         .limit(5),
+
+      // Assignments (evaluations)
+      AssignmentEvaluation.find(
+        role === 'student'
+          ? { studentId: userId, fileName: regex }
+          : { fileName: regex }
+      )
+        .select('fileName createdAt')
+        .limit(5),
+
+      // Chat history (AI chat)
+      Chat.find({
+        user: userId,
+        title: regex
+      })
+        .select('title totalMessages updatedAt')
+        .limit(5),
+
+      // Discussions
+      DiscussionBoard.find({
+        topic: regex
+      })
+        .select('topic category lastActivityAt')
+        .limit(5),
+
+      // Support tickets
+      SupportTicket.find(
+        role === 'admin'
+          ? { $or: [{ subject: regex }, { description: regex }] }
+          : { user: userId, $or: [{ subject: regex }, { description: regex }] }
+      )
+        .select('subject category status priority')
+        .limit(5),
     ]);
 
     res.json({
@@ -68,6 +115,10 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
         notes: notes.map(n => ({ ...n.toObject(), _type: 'Note', _route: '/notes-generator' })),
         events: events.map(e => ({ ...e.toObject(), _type: 'Event', _route: '/calendar' })),
         announcements: announcements.map(a => ({ ...a.toObject(), _type: 'Announcement', _route: '/announcements' })),
+        assignments: assignments.map(a => ({ ...a.toObject(), title: a.fileName, _type: 'Assignment', _route: '/assignment-evaluator' })),
+        chats: chats.map(c => ({ ...c.toObject(), _type: 'Chat', _route: '/chat' })),
+        discussions: discussions.map(d => ({ ...d.toObject(), title: d.topic, _type: 'Discussion', _route: '/messages' })),
+        tickets: tickets.map(t => ({ ...t.toObject(), title: t.subject, _type: 'Ticket', _route: '/support' })),
       },
     });
   } catch (err: any) {

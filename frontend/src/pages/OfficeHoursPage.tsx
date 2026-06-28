@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { officeHoursService } from '../services/officeHours.service';
 import toast from 'react-hot-toast';
+import { io, Socket } from 'socket.io-client';
 
 const STATUS_CONFIG = {
   Available: { color: '#48bb78', bg: 'rgba(72,187,120,0.12)', icon: '🟢' },
@@ -34,9 +35,44 @@ export const OfficeHoursPage: React.FC = () => {
   const [maxAppts, setMaxAppts] = useState(1);
   const [saving, setSaving] = useState(false);
 
+  // Real-time queue updates via Socket.IO
+  useEffect(() => {
+    const targetFacultyId = isFaculty ? user?.id : selectedFaculty?.faculty?._id;
+    if (!targetFacultyId) return;
+
+    const socket = io(window.location.origin, {
+      transports: ['websocket', 'polling'],
+    });
+
+    socket.on('connect', () => {
+      socket.emit('join_faculty', targetFacultyId);
+    });
+
+    socket.on('queue:updated', async (data: any) => {
+      try {
+        const res = await officeHoursService.getQueue(targetFacultyId);
+        setQueue(res.data.data || []);
+        if (!isFaculty) {
+          const mine = (res.data.data || []).find((q: any) => q.student?._id === user?.id);
+          setMyQueueEntry(mine || null);
+        }
+      } catch (err) {
+        console.error('Failed to reload queue:', err);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [isFaculty, selectedFaculty, user]);
+
   useEffect(() => {
     loadFacultyList();
-    if (isFaculty) loadMyConfig();
+    if (isFaculty) {
+      loadMyConfig();
+      // Load current faculty queue
+      officeHoursService.getQueue(user?.id).then(res => setQueue(res.data.data || []));
+    }
   }, []);
 
   const loadFacultyList = async () => {

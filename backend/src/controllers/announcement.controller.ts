@@ -84,7 +84,7 @@ export const getAnnouncements = async (req: AuthRequest, res: Response): Promise
     if (priority) filter.priority = priority;
     if (search) {
       const regex = new RegExp(search as string, 'i');
-      filter.$text = { $search: search as string };
+      filter.$or = [{ title: regex }, { content: regex }];
     }
 
     const announcements = await Announcement.find(filter)
