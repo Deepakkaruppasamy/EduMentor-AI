@@ -6,6 +6,24 @@ const EMBEDDING_DIM = 384; // all-MiniLM-L6-v2 dimension
 // Cache embeddings to avoid repeated API calls
 const embeddingCache = new Map<string, number[]>();
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Robust fetch helper with retries and exponential backoff
+ */
+async function fetchWithRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 2000): Promise<T> {
+  try {
+    return await fn();
+  } catch (error: any) {
+    if (retries > 0) {
+      console.warn(`⚠️ HuggingFace API request failed (${error.message || error}). Retrying in ${delayMs}ms... (${retries} attempts left)`);
+      await delay(delayMs);
+      return fetchWithRetry(fn, retries - 1, delayMs * 1.5);
+    }
+    throw error;
+  }
+}
+
 /**
  * Generate embedding using HuggingFace Inference API (all-MiniLM-L6-v2)
  * Falls back to a simple TF-IDF-like vector if API is unavailable
@@ -18,15 +36,18 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
   if (config.HF_API_KEY) {
     try {
-      const response = await axios.post(
-        'https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2',
-        { inputs: text },
-        {
-          headers: { Authorization: `Bearer ${config.HF_API_KEY}` },
-          timeout: 10000,
-        }
-      );
-      const embedding = response.data;
+      const embedding = await fetchWithRetry(async () => {
+        const response = await axios.post(
+          'https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2',
+          { inputs: text },
+          {
+            headers: { Authorization: `Bearer ${config.HF_API_KEY}` },
+            timeout: 15000,
+          }
+        );
+        return response.data;
+      }, 3, 2000);
+
       if (Array.isArray(embedding)) {
         let finalEmbedding: any = embedding;
         // Recursively unpack nested arrays if returned (e.g. [[...]])
@@ -38,9 +59,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
           return finalEmbedding;
         }
       }
-      console.warn('HuggingFace API returned invalid embedding format, using fallback:', response.data);
-    } catch (error) {
-      console.warn('HuggingFace API failed, using fallback embedding:', error);
+      console.warn('HuggingFace API returned invalid embedding format, using fallback:', embedding);
+    } catch (error: any) {
+      console.warn('HuggingFace API failed after retries, using fallback embedding:', error.message || error);
     }
   }
 
@@ -56,15 +77,18 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   if (config.HF_API_KEY) {
     try {
-      const response = await axios.post(
-        'https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2',
-        { inputs: texts },
-        {
-          headers: { Authorization: `Bearer ${config.HF_API_KEY}` },
-          timeout: 30000,
-        }
-      );
-      const data = response.data;
+      const data = await fetchWithRetry(async () => {
+        const response = await axios.post(
+          'https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2',
+          { inputs: texts },
+          {
+            headers: { Authorization: `Bearer ${config.HF_API_KEY}` },
+            timeout: 30000,
+          }
+        );
+        return response.data;
+      }, 3, 2000);
+
       if (Array.isArray(data) && data.length > 0) {
         const validated: number[][] = [];
         for (const item of data) {
@@ -83,8 +107,8 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
         }
       }
       console.warn('Batch HuggingFace API returned invalid format, using fallback.');
-    } catch (error) {
-      console.warn('Batch HuggingFace API failed, using fallback:', error);
+    } catch (error: any) {
+      console.warn('Batch HuggingFace API failed after retries, using fallback:', error.message || error);
     }
   }
 
