@@ -14,6 +14,7 @@ const STUDENT_LINKS = [
   { to: '/dashboard', icon: '📊', label: 'Dashboard' },
   { to: '/chat', icon: '💬', label: 'AI Chat Tutor' },
   { to: '/messages', icon: '✉️', label: 'Messages' },
+  { to: '/support', icon: '🛠️', label: 'Support Center' },
   { to: '/quiz', icon: '📝', label: 'Quiz Generator' },
   { to: '/flashcards', icon: '🎴', label: 'Flashcards' },
   { to: '/courses', icon: '📚', label: 'My Courses' },
@@ -27,6 +28,7 @@ const STUDENT_LINKS = [
 const FACULTY_LINKS = [
   { to: '/admin', icon: '📈', label: 'Dashboard' },
   { to: '/messages', icon: '✉️', label: 'Messages' },
+  { to: '/support', icon: '🛠️', label: 'Support Center' },
   { to: '/courses', icon: '📚', label: 'Manage Courses' },
   { to: '/documents', icon: '📁', label: 'Upload Documents' },
   { to: '/quiz', icon: '⚔️', label: 'Quiz Battle Arena' },
@@ -42,6 +44,7 @@ const FACULTY_LINKS = [
 const ADMIN_LINKS = [
   { to: '/admin', icon: '📈', label: 'Dashboard' },
   { to: '/messages', icon: '✉️', label: 'Messages' },
+  { to: '/support', icon: '🛠️', label: 'Support Center' },
   { to: '/chat', icon: '💬', label: 'AI Chat Tutor' },
   { to: '/quiz', icon: '📝', label: 'Quiz Generator' },
   { to: '/flashcards', icon: '🎴', label: 'Flashcards' },

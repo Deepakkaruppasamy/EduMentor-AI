@@ -24,6 +24,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { AssignmentEvaluatorPage } from './pages/AssignmentEvaluatorPage';
 import { AvatarSettingsPage } from './pages/AvatarSettingsPage';
 import { MessagesPage } from './pages/MessagesPage';
+import { SupportCenterPage } from './pages/SupportCenterPage';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -114,6 +115,11 @@ const App: React.FC = () => {
         <Route path="/messages" element={
           <ProtectedRoute>
             <AppPage><MessagesPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/support" element={
+          <ProtectedRoute>
+            <AppPage><SupportCenterPage /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/assignment-evaluator" element={
