@@ -19,6 +19,8 @@ import recommendationRoutes from './routes/recommendation.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import flashcardRoutes from './routes/flashcard.routes';
 import assignmentEvaluationRoutes from './routes/assignment-evaluation.routes';
+import messagingRoutes from './routes/messaging.routes';
+import { initMessagingSocketServer } from './services/messaging-socket.service';
 import { errorHandler } from './middleware/errorHandler';
 import { createServer } from 'http';
 import { initSocketServer } from './services/socket.service';
@@ -66,6 +68,7 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/assignment-evaluations', assignmentEvaluationRoutes);
+app.use('/api/messaging', messagingRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -129,6 +132,7 @@ const start = async () => {
 
     const server = createServer(app);
     initSocketServer(server);
+    initMessagingSocketServer(server);
     server.listen(PORT, () => {
       console.log(`🚀 EduMentor AI Server running on port ${PORT}`);
       console.log(`📚 Environment: ${config.NODE_ENV}`);

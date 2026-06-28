@@ -13,6 +13,7 @@ import { AnimatePresence } from 'framer-motion';
 const STUDENT_LINKS = [
   { to: '/dashboard', icon: '📊', label: 'Dashboard' },
   { to: '/chat', icon: '💬', label: 'AI Chat Tutor' },
+  { to: '/messages', icon: '✉️', label: 'Messages' },
   { to: '/quiz', icon: '📝', label: 'Quiz Generator' },
   { to: '/flashcards', icon: '🎴', label: 'Flashcards' },
   { to: '/courses', icon: '📚', label: 'My Courses' },
@@ -25,6 +26,7 @@ const STUDENT_LINKS = [
 
 const FACULTY_LINKS = [
   { to: '/admin', icon: '📈', label: 'Dashboard' },
+  { to: '/messages', icon: '✉️', label: 'Messages' },
   { to: '/courses', icon: '📚', label: 'Manage Courses' },
   { to: '/documents', icon: '📁', label: 'Upload Documents' },
   { to: '/quiz', icon: '⚔️', label: 'Quiz Battle Arena' },
@@ -39,6 +41,12 @@ const FACULTY_LINKS = [
 
 const ADMIN_LINKS = [
   { to: '/admin', icon: '📈', label: 'Dashboard' },
+  { to: '/messages', icon: '✉️', label: 'Messages' },
+  { to: '/chat', icon: '💬', label: 'AI Chat Tutor' },
+  { to: '/quiz', icon: '📝', label: 'Quiz Generator' },
+  { to: '/flashcards', icon: '🎴', label: 'Flashcards' },
+  { to: '/recommendations', icon: '🎯', label: 'Recommendations' },
+  { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/admin/users', icon: '👥', label: 'User Directory' },
   { to: '/courses', icon: '📚', label: 'Manage Courses' },
   { to: '/documents', icon: '📁', label: 'Upload Documents' },

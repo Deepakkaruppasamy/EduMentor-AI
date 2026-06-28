@@ -14,6 +14,7 @@ export interface User {
   semester?: number;
   phone?: string;
   courseName?: string;
+  isMessagingRestricted?: boolean;
   // Avatar system fields
   avatarGender?: 'male' | 'female';
   avatarModel?: string;

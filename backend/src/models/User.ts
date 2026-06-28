@@ -22,6 +22,7 @@ export interface IUser extends Document {
   phone?: string;
   isFirstLogin: boolean;
   courseName?: string;
+  isMessagingRestricted?: boolean;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -66,6 +67,7 @@ const UserSchema = new Schema<IUser>(
     phone: { type: String },
     isFirstLogin: { type: Boolean, default: true },
     courseName: { type: String },
+    isMessagingRestricted: { type: Boolean, default: false },
     // Avatar system fields (all optional, non-breaking)
     avatarGender: { type: String, enum: ['male', 'female'] },
     avatarModel: { type: String },

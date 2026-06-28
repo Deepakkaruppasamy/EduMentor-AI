@@ -23,6 +23,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { AssignmentEvaluatorPage } from './pages/AssignmentEvaluatorPage';
 import { AvatarSettingsPage } from './pages/AvatarSettingsPage';
+import { MessagesPage } from './pages/MessagesPage';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -79,7 +80,7 @@ const App: React.FC = () => {
           </ProtectedRoute>
         } />
         <Route path="/chat" element={
-          <ProtectedRoute roles={['student']}>
+          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
             <AppPage><ChatPage /></AppPage>
           </ProtectedRoute>
         } />
@@ -89,12 +90,12 @@ const App: React.FC = () => {
           </ProtectedRoute>
         } />
         <Route path="/recommendations" element={
-          <ProtectedRoute roles={['student']}>
+          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
             <AppPage><RecommendationsPage /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/flashcards" element={
-          <ProtectedRoute roles={['student']}>
+          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
             <AppPage><FlashcardsPage /></AppPage>
           </ProtectedRoute>
         } />
@@ -108,6 +109,11 @@ const App: React.FC = () => {
         <Route path="/profile" element={
           <ProtectedRoute>
             <AppPage><ProfilePage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/messages" element={
+          <ProtectedRoute>
+            <AppPage><MessagesPage /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/assignment-evaluator" element={
