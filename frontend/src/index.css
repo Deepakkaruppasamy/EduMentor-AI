@@ -139,6 +139,28 @@
     color: #f0f2f8;
   }
 
+  select.input-field {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    cursor: pointer;
+  }
+
+  select.input-field option {
+    background: #1a1d2e;
+    color: #f0f2f8;
+    padding: 8px 12px;
+  }
+
+  select.input-field option:checked,
+  select.input-field option:hover {
+    background: #2d3154;
+    color: #ffffff;
+  }
+
   .input-field::placeholder {
     color: rgba(255, 255, 255, 0.3);
   }

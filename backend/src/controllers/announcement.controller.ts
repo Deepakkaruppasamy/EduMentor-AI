@@ -122,21 +122,27 @@ export const getAnnouncements = async (req: AuthRequest, res: Response): Promise
     const { type, priority, search } = req.query;
 
     const now = new Date();
-    const filter: any = {
-      isActive: true,
-      targetRoles: role,
-      $or: [{ scheduledAt: { $lte: now } }, { scheduledAt: { $exists: false } }],
-      $and: [{ $or: [{ expiresAt: { $gt: now } }, { expiresAt: { $exists: false } }] }],
-    };
 
-    if (type) filter.type = type;
-    if (priority) filter.priority = priority;
+    // Build $and conditions so $or for scheduledAt never collides with $or for search
+    const andConditions: any[] = [
+      // Must be active
+      { isActive: true },
+      // Must be scheduled (or have no schedule)
+      { $or: [{ scheduledAt: { $lte: now } }, { scheduledAt: { $exists: false } }] },
+      // Must not have expired (or have no expiry)
+      { $or: [{ expiresAt: { $gt: now } }, { expiresAt: { $exists: false } }] },
+      // Must target the user's role OR be created by the user themselves
+      { $or: [{ targetRoles: role }, { createdBy: userId }] },
+    ];
+
+    if (type) andConditions.push({ type });
+    if (priority) andConditions.push({ priority });
     if (search) {
       const regex = new RegExp(search as string, 'i');
-      filter.$or = [{ title: regex }, { content: regex }];
+      andConditions.push({ $or: [{ title: regex }, { content: regex }] });
     }
 
-    const announcements = await Announcement.find(filter)
+    const announcements = await Announcement.find({ $and: andConditions })
       .populate('createdBy', 'name email role')
       .sort({ priority: -1, createdAt: -1 })
       .limit(50);
