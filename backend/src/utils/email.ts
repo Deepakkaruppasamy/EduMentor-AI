@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { config } from '../config/env';
 
 interface SendEmailOptions {
@@ -9,12 +9,15 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async (options: SendEmailOptions): Promise<void> => {
-  // If Resend API key is not set, fall back to console logging
-  if (!config.RESEND_API_KEY || config.RESEND_API_KEY === 're_your_resend_api_key') {
-    console.warn('⚠️ RESEND_API_KEY is not configured. Printing email to console:');
+  const isDummyPass = !config.SMTP_PASS || config.SMTP_PASS.includes('xxxx') || config.SMTP_PASS === 'your_brevo_smtp_password';
+  const isDummyUser = !config.SMTP_USER || config.SMTP_USER.includes('your_brevo') || config.SMTP_USER === 'deepak.brevo@domain.com';
+
+  // If SMTP config is missing or placeholder, fall back to console logging
+  if (isDummyPass || isDummyUser) {
+    console.warn('⚠️ Brevo SMTP credentials are not configured. Printing email to console:');
     console.log(`
 ======================================================
-📧 [SIMULATED EMAIL - RESEND NOT CONFIGURED]
+📧 [SIMULATED EMAIL - SMTP NOT CONFIGURED]
 To: ${options.email}
 Subject: ${options.subject}
 ------------------------------------------------------
@@ -24,39 +27,33 @@ ${options.text}
     return;
   }
 
-  const resend = new Resend(config.RESEND_API_KEY);
+  // Create transporter
+  const transporter = nodemailer.createTransport({
+    host: config.SMTP_HOST,
+    port: config.SMTP_PORT,
+    secure: config.SMTP_PORT === 465,
+    auth: {
+      user: config.SMTP_USER,
+      pass: config.SMTP_PASS,
+    },
+  });
 
   try {
-    const { data, error } = await resend.emails.send({
+    await transporter.sendMail({
       from: config.EMAIL_FROM,
-      to: [options.email],
+      to: options.email,
       subject: options.subject,
       text: options.text,
       html: options.html,
     });
 
-    if (error) {
-      console.error('❌ Resend API returned an error:', error);
-      console.warn('⚠️ Falling back to console simulation:');
-      console.log(`
-======================================================
-📧 [SIMULATED EMAIL - RESEND API ERROR]
-To: ${options.email}
-Subject: ${options.subject}
-------------------------------------------------------
-${options.text}
-======================================================
-`);
-      return;
-    }
-
-    console.log(`📧 Email sent successfully via Resend: ${data?.id}`);
+    console.log(`📧 Email sent successfully via Brevo SMTP to: ${options.email}`);
   } catch (error) {
-    console.error('❌ Failed to send email via Resend:', error);
+    console.error('❌ Failed to send email via Brevo SMTP:', error);
     console.warn('⚠️ Falling back to console simulation:');
     console.log(`
 ======================================================
-📧 [SIMULATED EMAIL - RESEND FAILED]
+📧 [SIMULATED EMAIL - SMTP SEND FAILURE]
 To: ${options.email}
 Subject: ${options.subject}
 ------------------------------------------------------
