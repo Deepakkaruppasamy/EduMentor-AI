@@ -10,6 +10,7 @@ import User from '../models/User';
 import { generateWithoutContext } from '../services/ai/groq.service';
 import { getSupportIO } from '../services/support-socket.service';
 import { sendEmail } from '../utils/email';
+import { sendInAppNotification } from '../services/socket.service';
 
 // ──────────────────────────────────────────────────────────────
 // AI SUPPORT BOT CHAT
@@ -108,6 +109,25 @@ export const createTicket = async (req: AuthRequest, res: Response): Promise<voi
     } catch (_) {}
 
     if (populated && populated.user) {
+      // In-app notification to the user
+      sendInAppNotification(userId.toString(), {
+        type: 'ticket',
+        title: 'Ticket Submitted',
+        message: `Your ticket ${ticketId} has been successfully filed.`,
+        link: '/support-center',
+      });
+
+      // In-app notification to all admins
+      const admins = await User.find({ role: 'admin' }).select('_id');
+      admins.forEach(admin => {
+        sendInAppNotification(admin._id.toString(), {
+          type: 'ticket',
+          title: 'New Support Ticket',
+          message: `Ticket ${ticketId} created by ${req.user!.name}`,
+          link: '/support-center',
+        });
+      });
+
       sendEmail({
         email: (populated.user as any).email,
         subject: `Support Ticket Submitted: ${ticketId}`,
@@ -254,6 +274,13 @@ export const replyToTicket = async (req: AuthRequest, res: Response): Promise<vo
       // Email the ticket owner user
       const ticketUser = await User.findById(ticket.user);
       if (ticketUser) {
+        sendInAppNotification(ticketUser._id.toString(), {
+          type: 'ticket',
+          title: 'Support Agent Replied',
+          message: `New reply on ticket ${ticket.ticketId}: "${content.substring(0, 50)}..."`,
+          link: '/support-center',
+        });
+
         sendEmail({
           email: ticketUser.email,
           subject: `New Agent Reply on Ticket: ${ticket.ticketId}`,
@@ -289,6 +316,13 @@ export const replyToTicket = async (req: AuthRequest, res: Response): Promise<vo
       if (ticket.assignedTo) {
         const assignedStaff = await User.findById(ticket.assignedTo);
         if (assignedStaff) {
+          sendInAppNotification(assignedStaff._id.toString(), {
+            type: 'ticket',
+            title: 'User Replied to Ticket',
+            message: `User ${req.user!.name} replied to ticket ${ticket.ticketId}`,
+            link: '/support-center',
+          });
+
           sendEmail({
             email: assignedStaff.email,
             subject: `User Update on Ticket: ${ticket.ticketId}`,
@@ -384,6 +418,13 @@ export const updateTicketAdmin = async (req: AuthRequest, res: Response): Promis
       // Send status change email to the user
       const ticketUser = await User.findById(ticket.user);
       if (ticketUser) {
+        sendInAppNotification(ticketUser._id.toString(), {
+          type: 'ticket',
+          title: 'Ticket Status Updated',
+          message: `Your ticket ${ticket.ticketId} is now ${status}`,
+          link: '/support-center',
+        });
+
         sendEmail({
           email: ticketUser.email,
           subject: `Support Ticket Status Update: ${ticket.ticketId}`,
@@ -440,6 +481,13 @@ export const updateTicketAdmin = async (req: AuthRequest, res: Response): Promis
       if (assignedToId) {
         const newAssignee = await User.findById(assignedToId);
         if (newAssignee) {
+          sendInAppNotification(newAssignee._id.toString(), {
+            type: 'ticket',
+            title: 'Support Ticket Assigned',
+            message: `Ticket ${ticket.ticketId} is assigned to you.`,
+            link: '/support-center',
+          });
+
           sendEmail({
             email: newAssignee.email,
             subject: `Support Ticket Assigned to You: ${ticket.ticketId}`,

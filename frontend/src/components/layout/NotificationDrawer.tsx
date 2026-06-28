@@ -12,6 +12,13 @@ const TYPE_ICONS: Record<AppNotification['type'], { icon: string; bg: string; co
   live_battle:     { icon: '⚔️', bg: 'rgba(236,72,153,0.1)', color: '#ec4899' },
   document_status: { icon: '📁', bg: 'rgba(59,130,246,0.1)', color: '#3b82f6' },
   evaluation:      { icon: '📋', bg: 'rgba(16,185,129,0.1)', color: '#10b981' },
+  appointment:     { icon: '📅', bg: 'rgba(245,158,11,0.1)', color: '#f59e0b' },
+  ticket:          { icon: '🎟️', bg: 'rgba(99,102,241,0.1)', color: '#6366f1' },
+  announcement:    { icon: '📢', bg: 'rgba(239,68,68,0.1)', color: '#ef4444' },
+  office_hours:    { icon: '🏫', bg: 'rgba(20,184,166,0.1)', color: '#14b8a6' },
+  message:         { icon: '💬', bg: 'rgba(168,85,247,0.1)', color: '#a855f7' },
+  study_plan:      { icon: '🗓️', bg: 'rgba(34,197,94,0.1)', color: '#22c55e' },
+  calendar:        { icon: '📆', bg: 'rgba(251,146,60,0.1)', color: '#fb923c' },
 };
 
 export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ onClose }) => {

@@ -34,6 +34,12 @@ export function initSocketServer(server: HttpServer): SocketServer {
   io.on('connection', (socket) => {
     console.log(`🔌 Client connected: ${socket.id}`);
 
+    const handshakeUserId = socket.handshake.query.userId as string;
+    if (handshakeUserId) {
+      socket.join(`user_${handshakeUserId}`);
+      console.log(`👤 Client ${socket.id} joined personal room: user_${handshakeUserId}`);
+    }
+
     // Join room for a course
     socket.on('join_course', (courseId: string) => {
       const roomName = `course_${courseId}`;
@@ -571,5 +577,48 @@ export function notifyQueueUpdate(
     console.log(`📢 Broadcasted queue:updated (${eventType}) to room: ${roomName}`);
   } catch (err: any) {
     console.warn('Failed to broadcast queue socket event:', err.message);
+  }
+}
+
+/**
+ * Send an in-app notification to a user's notification bell
+ */
+export function sendInAppNotification(
+  userId: string,
+  data: {
+    type: 'quiz_assigned' | 'live_battle' | 'document_status' | 'evaluation' | 'appointment' | 'ticket' | 'announcement' | 'office_hours' | 'message' | 'study_plan' | 'calendar';
+    title: string;
+    message: string;
+    link?: string;
+    courseCode?: string;
+  }
+): void {
+  try {
+    const socketIO = getIO();
+    socketIO.to(`user_${userId}`).emit('notification:new', data);
+    console.log(`🔔 In-app notification sent to user_${userId}: ${data.title}`);
+  } catch (err: any) {
+    console.warn('Failed to send in-app notification:', err.message);
+  }
+}
+
+/**
+ * Notify a student that faculty has called them from the office hours queue
+ */
+export function notifyStudentCalled(
+  studentId: string,
+  facultyName: string
+): void {
+  try {
+    const socketIO = getIO();
+    socketIO.to(`user_${studentId}`).emit('notification:new', {
+      type: 'office_hours',
+      title: '🏫 You\'ve Been Called!',
+      message: `${facultyName} is ready to see you now. Head to the office hours room.`,
+      link: '/office-hours',
+    });
+    console.log(`🔔 Office hours call notification sent to user_${studentId}`);
+  } catch (err: any) {
+    console.warn('Failed to send office hours call notification:', err.message);
   }
 }

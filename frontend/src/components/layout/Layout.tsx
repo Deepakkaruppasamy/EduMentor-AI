@@ -40,6 +40,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Connect to websocket server
     const socket = io(window.location.origin, {
       withCredentials: true,
+      query: { userId: user.id },
     });
 
     const joinRooms = async () => {
@@ -62,34 +63,30 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     joinRooms();
 
-    // Listen to real-time assigned quizzes
-    socket.on('quiz:assigned', (data: { courseId: string; topic: string; dueDate?: string }) => {
-      addNotification({
-        type: 'quiz_assigned',
-        title: 'New Quiz Assigned',
-        message: `Topic: ${data.topic}${data.dueDate ? ` (Due: ${new Date(data.dueDate).toLocaleDateString()})` : ''}`,
-        link: '/quiz',
-      });
+    // Listen to real-time in-app notifications (bell icon) — generic handler
+    socket.on('notification:new', (data: {
+      type: 'quiz_assigned' | 'live_battle' | 'document_status' | 'evaluation' | 'appointment' | 'ticket' | 'announcement' | 'office_hours' | 'message' | 'study_plan' | 'calendar';
+      title: string;
+      message: string;
+      link?: string;
+      courseCode?: string;
+    }) => {
+      addNotification(data);
       toast.success(
         <div>
-          <p className="font-bold text-xs">🔔 New Quiz Assigned!</p>
-          <p className="text-[10px] text-white/70 mt-0.5">Topic: <strong>{data.topic}</strong></p>
-          {data.dueDate && (
-            <p className="text-[9px] text-amber-400 mt-0.5">
-              Due: {new Date(data.dueDate).toLocaleDateString()}
-            </p>
-          )}
+          <p className="font-bold text-xs">🔔 {data.title}</p>
+          <p className="text-[10px] text-white/70 mt-0.5">{data.message}</p>
         </div>,
         { duration: 8000 }
       );
     });
 
-    // Listen to real-time live battles hosted by faculty
+    // Listen to real-time live battles hosted by faculty (special toast with Join button)
     socket.on('quiz:live_announced', (data: { sessionId: string; topic: string; courseCode: string }) => {
       if (user?.role === 'student') {
         addNotification({
           type: 'live_battle',
-          title: 'Live Quiz Battle!',
+          title: '⚔️ Live Quiz Battle!',
           message: `Join live battle in ${data.courseCode} on "${data.topic}"`,
           courseCode: data.courseCode,
           link: `/quiz?joinSession=${data.sessionId}`,

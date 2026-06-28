@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import Appointment from '../models/Appointment';
 import User from '../models/User';
 import { sendEmail } from '../utils/email';
+import { sendInAppNotification } from '../services/socket.service';
 
 // Student: request an appointment with a faculty member
 export const requestAppointment = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -42,6 +43,13 @@ export const requestAppointment = async (req: AuthRequest, res: Response): Promi
       .populate('faculty', 'name email department');
 
     if (populated && populated.faculty && populated.student) {
+      sendInAppNotification(facultyId, {
+        type: 'appointment',
+        title: 'New Consultation Request',
+        message: `New request from ${(populated.student as any).name} on ${new Date(populated.date).toLocaleDateString()} at ${populated.timeSlot}`,
+        link: '/meeting-scheduler',
+      });
+
       sendEmail({
         email: (populated.faculty as any).email,
         subject: 'New Consultation Appointment Request 📅',
@@ -143,6 +151,13 @@ export const updateAppointmentStatus = async (req: AuthRequest, res: Response): 
       const studentEmail = (populated.student as any).email;
       const studentName = (populated.student as any).name;
       const facultyName = (populated.faculty as any).name;
+
+      sendInAppNotification(populated.student._id.toString(), {
+        type: 'appointment',
+        title: 'Appointment Status Updated',
+        message: `Your appointment with ${facultyName} is now: ${status}`,
+        link: '/meeting-scheduler',
+      });
       
       let emailText = `Hello ${studentName},\n\nYour consultation appointment with ${facultyName} has been updated to: ${status}.\n\nDetails:\n- Date: ${new Date(populated.date).toLocaleDateString()}\n- Time Slot: ${populated.timeSlot}`;
       let emailHtml = `
@@ -231,6 +246,13 @@ export const cancelAppointment = async (req: AuthRequest, res: Response): Promis
       .populate('faculty', 'name email');
 
     if (populated && populated.faculty && populated.student) {
+      sendInAppNotification(populated.faculty._id.toString(), {
+        type: 'appointment',
+        title: 'Appointment Cancelled',
+        message: `Appointment with ${(populated.student as any).name} on ${new Date(populated.date).toLocaleDateString()} was cancelled`,
+        link: '/meeting-scheduler',
+      });
+
       sendEmail({
         email: (populated.faculty as any).email,
         subject: 'Appointment Consultation Cancelled ❌',

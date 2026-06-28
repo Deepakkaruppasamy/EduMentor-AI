@@ -1,2 +1,2 @@
 @echo off
-rem Overwritten to prevent recursive loops
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe %*

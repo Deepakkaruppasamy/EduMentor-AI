@@ -3,7 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import OfficeHours from '../models/OfficeHours';
 import ConsultationQueue from '../models/ConsultationQueue';
 import User from '../models/User';
-import { notifyQueueUpdate } from '../services/socket.service';
+import { notifyQueueUpdate, notifyStudentCalled } from '../services/socket.service';
 
 // Faculty: upsert their office hours configuration
 export const upsertOfficeHours = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -187,6 +187,15 @@ export const callNext = async (req: AuthRequest, res: Response): Promise<void> =
 
     // Notify real-time socket room
     notifyQueueUpdate(facultyId.toString(), 'call', next);
+
+    // Send in-app bell notification directly to the called student
+    if (next.student) {
+      const facultyUser = await User.findById(facultyId).select('name');
+      notifyStudentCalled(
+        (next.student as any)._id.toString(),
+        facultyUser?.name || 'Your faculty'
+      );
+    }
 
     res.json({ success: true, data: next });
   } catch (err: any) {

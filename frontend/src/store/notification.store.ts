@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface AppNotification {
   id: string;
-  type: 'quiz_assigned' | 'live_battle' | 'document_status' | 'evaluation';
+  type: 'quiz_assigned' | 'live_battle' | 'document_status' | 'evaluation' | 'appointment' | 'ticket' | 'announcement' | 'office_hours' | 'message' | 'study_plan' | 'calendar';
   title: string;
   message: string;
   courseCode?: string;

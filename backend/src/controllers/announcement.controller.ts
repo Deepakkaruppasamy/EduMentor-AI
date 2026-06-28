@@ -4,6 +4,7 @@ import Announcement from '../models/Announcement';
 import AnnouncementRead from '../models/AnnouncementRead';
 import User from '../models/User';
 import { sendEmail } from '../utils/email';
+import { sendInAppNotification } from '../services/socket.service';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -63,12 +64,20 @@ export const createAnnouncement = async (req: AuthRequest, res: Response): Promi
 
     const populated = await Announcement.findById(announcement._id).populate('createdBy', 'name email role');
 
-    // Email broadcast for high-priority/urgent announcements
+    // Email & In-App broadcast for high-priority/urgent announcements
     if (priority === 'Urgent' || priority === 'High') {
       User.find({ role: { $in: parsedTargetRoles }, isActive: true })
         .select('name email')
         .then(users => {
           users.forEach(user => {
+            // Trigger in-app notification bell entry
+            sendInAppNotification(user._id.toString(), {
+              type: 'announcement',
+              title: `📢 URGENT: ${title}`,
+              message: content.substring(0, 80),
+              link: '/announcements',
+            });
+
             sendEmail({
               email: user.email,
               subject: `URGENT NOTICE: ${title} 📢`,

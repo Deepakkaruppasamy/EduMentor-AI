@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { generateQuizQuestions, evaluateQuizAnswers } from '../services/quiz/quiz.service';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
 import { updateQuizPerformance } from '../services/recommendations/recommendation.service';
-import { notifyNewQuizAssigned } from '../services/socket.service';
+import { notifyNewQuizAssigned, sendInAppNotification } from '../services/socket.service';
 import { generateWithoutContext } from '../services/ai/groq.service';
 import { sendEmail } from '../utils/email';
 
@@ -83,6 +83,14 @@ export const evaluateQuiz = asyncHandler(async (req: AuthRequest, res: Response)
   const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
   const grade = percentage >= 90 ? 'A' : percentage >= 75 ? 'B' : percentage >= 60 ? 'C' : percentage >= 45 ? 'D' : 'F';
   const feedback = percentage >= 75 ? '🎉 Excellent work!' : percentage >= 45 ? '📚 Good effort, keep studying!' : '⚠️ Needs more practice on this topic.';
+
+  // Send In-App Notification
+  sendInAppNotification(req.user!._id.toString(), {
+    type: 'evaluation',
+    title: 'Quiz Evaluated',
+    message: `Your quiz "${quiz.title}" has been graded: ${score}/${maxScore} (${grade})`,
+    link: '/quiz',
+  });
 
   // Send evaluation result email
   sendEmail({
@@ -213,12 +221,19 @@ export const assignQuiz = asyncHandler(async (req: AuthRequest, res: Response) =
   // Notify students via websocket
   notifyNewQuizAssigned(courseId, topic, dueDate);
 
-  // Notify students via email asynchronously
+  // Notify students via email and in-app asynchronously
   User.find({ _id: { $in: course.students } })
     .select('name email')
     .then(students => {
       const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A';
       students.forEach(student => {
+        sendInAppNotification(student._id.toString(), {
+          type: 'quiz_assigned',
+          title: 'New Quiz Assigned',
+          message: `New quiz on: ${topic} (Due: ${dueDateStr})`,
+          link: '/quiz',
+        });
+
         sendEmail({
           email: student.email,
           subject: `New Quiz Assigned: ${topic} 📝`,
