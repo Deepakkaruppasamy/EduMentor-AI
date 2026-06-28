@@ -210,51 +210,59 @@ export const AdminSupportPanel: React.FC = () => {
           {/* Categories Chart */}
           <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col h-[280px]">
             <h4 className="text-xs font-bold text-white/60 mb-4 uppercase">Tickets by Category</h4>
-            <div className="flex-1 min-h-0 flex items-center justify-between">
-              <div className="w-[180px] h-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={categoryChartData} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={70}>
-                      {categoryChartData.map((_: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ background: '#111318', border: '1px solid rgba(255,255,255,0.1)' }} />
-                  </PieChart>
-                </ResponsiveContainer>
+            {categoryChartData && categoryChartData.length > 0 ? (
+              <div className="flex-1 min-h-0 flex items-center justify-between">
+                <div className="w-[180px] h-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={categoryChartData} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={70}>
+                        {categoryChartData.map((_: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: '#111318', border: '1px solid rgba(255,255,255,0.1)' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 space-y-1.5 overflow-y-auto pl-4" style={{ maxHeight: '180px', scrollbarWidth: 'none' }}>
+                  {categoryChartData.map((item: any, i: number) => (
+                    <div key={item.name} className="flex items-center gap-2 text-[10px] text-white/60">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                      <span className="truncate flex-1">{item.name}</span>
+                      <span className="font-semibold">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="flex-1 space-y-1.5 overflow-y-auto pl-4" style={{ maxHeight: '180px', scrollbarWidth: 'none' }}>
-                {categoryChartData.map((item: any, i: number) => (
-                  <div key={item.name} className="flex items-center gap-2 text-[10px] text-white/60">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
-                    <span className="truncate flex-1">{item.name}</span>
-                    <span className="font-semibold">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-xs text-white/30">No ticket category data recorded</div>
+            )}
           </div>
 
           {/* Customer Satisfaction Chart */}
           <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col h-[280px]">
             <h4 className="text-xs font-bold text-white/60 mb-4 uppercase">Feedback Ratings (CSAT)</h4>
-            <div className="flex-1 min-h-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={ratingsChartData}>
-                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" fontSize={10} />
-                  <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} />
-                  <Tooltip contentStyle={{ background: '#111318', border: '1px solid rgba(255,255,255,0.1)' }} />
-                  <Bar dataKey="count" fill="#4f63ff" radius={[4, 4, 0, 0]}>
-                    {ratingsChartData.map((item: any, index: number) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={item.name === 'Not Resolved' ? '#fc8181' : '#4f63ff'}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {ratingsChartData && ratingsChartData.length > 0 ? (
+              <div className="flex-1 min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={ratingsChartData}>
+                    <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" fontSize={10} />
+                    <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} />
+                    <Tooltip contentStyle={{ background: '#111318', border: '1px solid rgba(255,255,255,0.1)' }} />
+                    <Bar dataKey="count" fill="#4f63ff" radius={[4, 4, 0, 0]}>
+                      {ratingsChartData.map((item: any, index: number) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={item.name === 'Not Resolved' ? '#fc8181' : '#4f63ff'}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-xs text-white/30">No CSAT ratings data recorded</div>
+            )}
           </div>
         </div>
       )}

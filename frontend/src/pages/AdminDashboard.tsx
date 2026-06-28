@@ -119,29 +119,37 @@ const SuperAdminDashboardView: React.FC = () => {
 
             <div className="grid gap-6 md:grid-cols-2">
               {/* Weak Topics */}
-              <div className="glass-card p-5 border border-white/5">
+              <div className="glass-card p-5 border border-white/5 font-sans">
                 <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Concept Struggles (Top Weak Topics)</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={data.studentAnalytics.weakTopics} layout="vertical">
-                    <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                    <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Bar dataKey="count" fill="#fc8181" radius={[0, 4, 4, 0]} name="Students Struggling" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {data.studentAnalytics.weakTopics && data.studentAnalytics.weakTopics.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={data.studentAnalytics.weakTopics} layout="vertical">
+                      <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
+                      <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
+                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
+                      <Bar dataKey="count" fill="#fc8181" radius={[0, 4, 4, 0]} name="Students Struggling" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No struggling topics recorded</div>
+                )}
               </div>
 
               {/* Strong Topics */}
-              <div className="glass-card p-5 border border-white/5">
+              <div className="glass-card p-5 border border-white/5 font-sans">
                 <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Concepts Mastered (Top Strong Topics)</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={data.studentAnalytics.strongTopics} layout="vertical">
-                    <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                    <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Bar dataKey="count" fill="#48bb78" radius={[0, 4, 4, 0]} name="Students Mastered" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {data.studentAnalytics.strongTopics && data.studentAnalytics.strongTopics.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={data.studentAnalytics.strongTopics} layout="vertical">
+                      <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
+                      <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
+                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
+                      <Bar dataKey="count" fill="#48bb78" radius={[0, 4, 4, 0]} name="Students Mastered" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No mastered topics recorded</div>
+                )}
               </div>
             </div>
           </div>
@@ -184,15 +192,19 @@ const SuperAdminDashboardView: React.FC = () => {
               {/* Class Performance Metrics */}
               <div className="glass-card p-5 border border-white/5">
                 <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Most Queried Academic Topics</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={data.facultyAnalytics.mostAskedTopics}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="topic" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                    <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Bar dataKey="count" fill="#4f63ff" radius={[4, 4, 0, 0]} name="Interactions Count" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {data.facultyAnalytics.mostAskedTopics && data.facultyAnalytics.mostAskedTopics.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={data.facultyAnalytics.mostAskedTopics}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="topic" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
+                      <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
+                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
+                      <Bar dataKey="count" fill="#4f63ff" radius={[4, 4, 0, 0]} name="Interactions Count" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No queries processed yet</div>
+                )}
               </div>
             </div>
           </div>
@@ -212,32 +224,40 @@ const SuperAdminDashboardView: React.FC = () => {
               {/* Language Breakdown */}
               <div className="glass-card p-5 border border-white/5">
                 <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Conversational Language Usage</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie data={data.chatbotAnalytics.languageUsage} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60}>
-                      {data.chatbotAnalytics.languageUsage.map((entry: any, idx: number) => (
-                        <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '9px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                {data.chatbotAnalytics.languageUsage && data.chatbotAnalytics.languageUsage.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie data={data.chatbotAnalytics.languageUsage} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60}>
+                        {data.chatbotAnalytics.languageUsage.map((entry: any, idx: number) => (
+                          <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
+                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '9px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No language data recorded</div>
+                )}
               </div>
 
               {/* Peak Usage Times */}
               <div className="glass-card p-5 border border-white/5 md:col-span-2">
                 <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Chat Activity Load Profile (Peak Times)</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <AreaChart data={data.chatbotAnalytics.peakUsageTime}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Area type="monotone" dataKey="count" stroke="#4f63ff" fill="rgba(79, 99, 255, 0.15)" strokeWidth={2} name="Queries" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+                {data.chatbotAnalytics.peakUsageTime && data.chatbotAnalytics.peakUsageTime.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <AreaChart data={data.chatbotAnalytics.peakUsageTime}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
+                      <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
+                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
+                      <Area type="monotone" dataKey="count" stroke="#4f63ff" fill="rgba(79, 99, 255, 0.15)" strokeWidth={2} name="Queries" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No activity logs recorded</div>
+                )}
+                </div>
             </div>
           </div>
         );
