@@ -251,8 +251,8 @@ export const AdminModerationPanel: React.FC = () => {
 
   const handleToggleRestrict = async (userId: string, currentStatus: boolean) => {
     try {
-      const res = await messagingService.restrictUserMessaging(userId, !currentStatus);
-      toast.success(res.data?.message || 'User permissions updated');
+      await messagingService.restrictUserMessaging(userId, !currentStatus);
+      toast.success('User permissions updated');
       setUsers((prev) =>
         prev.map((u) => (u._id === userId ? { ...u, isMessagingRestricted: !currentStatus } : u))
       );

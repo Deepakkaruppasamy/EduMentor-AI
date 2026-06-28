@@ -110,8 +110,8 @@ export const AcademicCalendarPage: React.FC = () => {
       <div className="flex flex-wrap gap-2">
         {EVENT_TYPES.map(t => (
           <button key={t} onClick={() => setFilteredType(filteredType === t ? '' : t)}
-            className={`text-[10px] px-2 py-1 rounded-lg font-semibold flex items-center gap-1 transition-all ${filteredType === t ? 'ring-1' : 'opacity-60 hover:opacity-100'}`}
-            style={{ background: `${EVENT_TYPE_CONFIG[t].color}15`, color: EVENT_TYPE_CONFIG[t].color, ringColor: EVENT_TYPE_CONFIG[t].color }}>
+            className={`text-[10px] px-2 py-1 rounded-lg font-semibold flex items-center gap-1 transition-all ${filteredType === t ? 'border' : 'border border-transparent opacity-60 hover:opacity-100'}`}
+            style={{ background: `${EVENT_TYPE_CONFIG[t].color}15`, color: EVENT_TYPE_CONFIG[t].color, borderColor: EVENT_TYPE_CONFIG[t].color }}>
             {EVENT_TYPE_CONFIG[t].icon} {t}
           </button>
         ))}

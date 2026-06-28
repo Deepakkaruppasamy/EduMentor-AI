@@ -28,7 +28,7 @@ interface MessagingStore {
   unreadNotifCount: number;
 
   // Active tab
-  activeTab: 'chats' | 'discussions';
+  activeTab: 'chats' | 'discussions' | 'moderate';
 
   // Actions — Conversations
   setConversations: (convos: MsgConversation[]) => void;
@@ -67,7 +67,7 @@ interface MessagingStore {
   markAllNotifsRead: () => void;
 
   // Actions — Tab
-  setActiveTab: (tab: 'chats' | 'discussions') => void;
+  setActiveTab: (tab: 'chats' | 'discussions' | 'moderate') => void;
 }
 
 export const useMessagingStore = create<MessagingStore>((set, get) => ({

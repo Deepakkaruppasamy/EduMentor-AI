@@ -263,7 +263,7 @@ export const MessagesPage: React.FC = () => {
           </button>
           {showAdminTab && (
             <button
-              onClick={() => { setActiveTab('moderate' as any); setActiveConversation(null); setActiveDiscussion(null); }}
+              onClick={() => { setActiveTab('moderate'); setActiveConversation(null); setActiveDiscussion(null); }}
               className={`flex-1 py-3 text-xs font-semibold text-center transition-all border-b-2 ${
                 activeTab === 'moderate'
                   ? 'text-[#7c8fff] border-[#4f63ff]'
@@ -427,6 +427,8 @@ export const MessagesPage: React.FC = () => {
                 loadMessages(activeConversation._id);
               }}
             />
+          </>
+        )}
           </>
         )}
       </div>

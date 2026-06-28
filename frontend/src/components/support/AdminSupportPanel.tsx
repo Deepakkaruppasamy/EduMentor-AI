@@ -6,6 +6,16 @@ import toast from 'react-hot-toast';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import api from '../../services/api';
 
+const SUPPORT_CATEGORIES = [
+  'Login Issues',
+  'Password Reset',
+  'OTP Problems',
+  'Course Access',
+  'Technical Issues',
+  'File Upload Issues',
+  'Feature Requests',
+];
+
 export const AdminSupportPanel: React.FC = () => {
   const { tickets, setTickets, updateTicketInList } = useSupportStore();
   const [selectedTicket, setSelectedTicket] = useState<SupportTicketData | null>(null);
@@ -283,7 +293,7 @@ export const AdminSupportPanel: React.FC = () => {
             </select>
             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="input-field text-xs">
               <option value="">All Categories</option>
-              {require('../../services/support.service').SUPPORT_CATEGORIES?.map((cat: string) => (
+              {SUPPORT_CATEGORIES.map((cat: string) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
