@@ -92,9 +92,9 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
 
       // Discussions
       DiscussionBoard.find({
-        topic: regex
+        title: regex
       })
-        .select('topic category lastActivityAt')
+        .select('title category lastReplyAt')
         .limit(5),
 
       // Support tickets
@@ -117,7 +117,7 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
         announcements: announcements.map(a => ({ ...a.toObject(), _type: 'Announcement', _route: '/announcements' })),
         assignments: assignments.map(a => ({ ...a.toObject(), title: a.fileName, _type: 'Assignment', _route: '/assignment-evaluator' })),
         chats: chats.map(c => ({ ...c.toObject(), _type: 'Chat', _route: '/chat' })),
-        discussions: discussions.map(d => ({ ...d.toObject(), title: d.topic, _type: 'Discussion', _route: '/messages' })),
+        discussions: discussions.map(d => ({ ...d.toObject(), title: d.title, _type: 'Discussion', _route: '/messages' })),
         tickets: tickets.map(t => ({ ...t.toObject(), title: t.subject, _type: 'Ticket', _route: '/support' })),
       },
     });
