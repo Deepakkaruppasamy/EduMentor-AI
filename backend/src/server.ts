@@ -150,9 +150,9 @@ const start = async () => {
     initializeIndices();
 
     const server = createServer(app);
-    initSocketServer(server);
-    initMessagingSocketServer(server);
-    initSupportSocketServer(server);
+    const io = initSocketServer(server);
+    initMessagingSocketServer(io);
+    initSupportSocketServer(io);
     server.listen(PORT, () => {
       console.log(`🚀 EduMentor AI Server running on port ${PORT}`);
       console.log(`📚 Environment: ${config.NODE_ENV}`);

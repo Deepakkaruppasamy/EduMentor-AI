@@ -1,4 +1,3 @@
-import { Server as HttpServer } from 'http';
 import { Server as SocketServer, Namespace, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/env';
@@ -9,15 +8,7 @@ let supportNamespace: Namespace | null = null;
 /**
  * Initialize Socket.IO namespace for platform support center.
  */
-export function initSupportSocketServer(server: HttpServer): void {
-  const io = new SocketServer(server, {
-    cors: {
-      origin: [config.FRONTEND_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
-      methods: ['GET', 'POST'],
-      credentials: true,
-    },
-  });
-
+export function initSupportSocketServer(io: SocketServer): void {
   supportNamespace = io.of('/support');
 
   // JWT Authorization middleware

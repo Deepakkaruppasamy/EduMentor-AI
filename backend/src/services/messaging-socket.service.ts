@@ -1,4 +1,3 @@
-import { Server as HttpServer } from 'http';
 import { Server as SocketServer, Namespace, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/env';
@@ -14,17 +13,7 @@ let messagingNamespace: Namespace | null = null;
  * Initialize the /messaging Socket.IO namespace on the existing HTTP server.
  * This is completely independent from the main socket.service.ts.
  */
-export function initMessagingSocketServer(server: HttpServer): void {
-  // Create a new Socket.IO server instance on a dedicated namespace
-  // We attach to the same HTTP server but use a separate namespace
-  const io = new SocketServer(server, {
-    cors: {
-      origin: [config.FRONTEND_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
-      methods: ['GET', 'POST'],
-      credentials: true,
-    },
-  });
-
+export function initMessagingSocketServer(io: SocketServer): void {
   messagingNamespace = io.of('/messaging');
 
   // JWT Authentication middleware for the namespace
