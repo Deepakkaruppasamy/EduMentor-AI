@@ -4,6 +4,7 @@ import { jsPDF } from 'jspdf';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { Loader } from '../common/Loader';
 
 interface ExcelImportWizardProps {
   onImportComplete: () => void;
@@ -344,10 +345,7 @@ export const ExcelImportWizard: React.FC<ExcelImportWizardProps> = ({ onImportCo
                 {/* Previews Table */}
                 <div className="flex-1 overflow-auto border border-white/10 rounded-xl min-h-[220px]">
                   {isProcessing ? (
-                    <div className="h-full flex items-center justify-center text-xs text-white/40 gap-2">
-                      <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                      Parsing rows...
-                    </div>
+                    <div className="h-full flex items-center justify-center"><Loader small message="Parsing spreadsheet rows..." /></div>
                   ) : (
                     <table className="w-full text-left text-xs border-collapse">
                       <thead className="sticky top-0 bg-[#161a22] text-white/60 font-semibold border-b border-white/10 z-10">

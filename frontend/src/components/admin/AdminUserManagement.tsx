@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import api from '../../services/api';
 import { ExcelImportWizard } from './ExcelImportWizard';
+import { Loader } from '../common/Loader';
 
 interface UserItem {
   _id: string;
@@ -345,9 +346,8 @@ export const AdminUserManagement: React.FC = () => {
       {/* Directory Table */}
       <div className="glass-card overflow-hidden">
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-xs text-white/30 gap-2">
-            <div className="h-6 w-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-            Loading accounts directory...
+          <div className="py-12">
+            <Loader message="Loading accounts directory..." />
           </div>
         ) : users.length === 0 ? (
           <div className="py-20 text-center text-sm text-white/30">
