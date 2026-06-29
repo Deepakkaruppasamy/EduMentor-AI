@@ -696,7 +696,7 @@ export const getSecurityMetrics = async (_req: AuthRequest, res: Response): Prom
     res.json({
       success: true,
       data: {
-        successfulLogins,
+        successfulLogins: successLogins,
         failedLoginAttempts: failedLogins,
         otpSuccessRate,
         passwordResetRequests: passwordResets,
