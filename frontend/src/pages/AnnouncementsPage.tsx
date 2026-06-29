@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth.store';
 import { announcementService } from '../services/announcement.service';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { Loader } from '../components/common/Loader';
 
 const TYPE_CONFIG: Record<string, { color: string; icon: string; bg: string }> = {
   General: { color: '#7c8fff', bg: 'rgba(79,99,255,0.1)', icon: '📢' },
@@ -153,7 +154,7 @@ export const AnnouncementsPage: React.FC = () => {
       </div>
 
       {/* Announcement Cards */}
-      {loading && <div className="text-center py-8 text-white/20 text-sm">Loading announcements…</div>}
+      {loading && <Loader small message="Retrieving announcements..." />}
       <div className="space-y-3">
         {filtered.length === 0 && !loading && <div className="text-center py-12 text-white/20 text-xs">No announcements found</div>}
         {filtered.map(ann => {
