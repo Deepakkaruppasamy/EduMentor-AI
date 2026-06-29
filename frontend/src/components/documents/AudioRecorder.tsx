@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Course, Document } from '../../types';
 import { documentService } from '../../services/document.service';
+import { Loader } from '../common/Loader';
 
 interface AudioRecorderProps {
   courses: Course[];
@@ -164,15 +165,12 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ courses, onUploade
       {/* Recording Interface */}
       <div className="flex flex-col items-center justify-center p-6 rounded-2xl border border-white/10 bg-white/[0.01] space-y-4 text-center">
         {isUploading ? (
-          <div className="w-full space-y-3 py-6">
-            <div className="flex justify-center">
-              <div className="h-10 w-10 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
-            </div>
-            <p className="text-sm font-semibold text-white/80">Uploading Voice Lecture...</p>
-            <div className="progress-bar max-w-xs mx-auto">
+          <div className="w-full py-4">
+            <Loader message="Uploading Voice Lecture..." />
+            <div className="progress-bar max-w-xs mx-auto mt-3">
               <div className="progress-fill" style={{ width: `${uploadProgress}%` }} />
             </div>
-            <span className="text-[10px] text-white/45">{uploadProgress}% uploaded</span>
+            <span className="text-[10px] text-white/45 mt-1 block">{uploadProgress}% uploaded</span>
           </div>
         ) : isRecording ? (
           <div className="space-y-4 py-4 w-full">
