@@ -4,6 +4,7 @@ import { useMessagingStore } from '../../store/messaging.store';
 import { messagingService } from '../../services/messaging.service';
 import { MsgDiscussion, DISCUSSION_CATEGORIES, DiscussionCategory } from '../../types/messaging.types';
 import { format } from 'date-fns';
+import { Loader } from '../common/Loader';
 
 interface DiscussionSidebarProps {
   onSelectDiscussion: (disc: MsgDiscussion) => void;
@@ -119,7 +120,7 @@ export const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ onSelectDi
       {/* Discussion list */}
       <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
         {loading ? (
-          <div className="p-6 text-center text-white/25 text-xs">Loading…</div>
+          <div className="p-6"><Loader small message="Retrieving discussions..." /></div>
         ) : discussions.length === 0 ? (
           <div className="p-6 text-center text-xs">
             <div className="text-2xl mb-2">💭</div>
