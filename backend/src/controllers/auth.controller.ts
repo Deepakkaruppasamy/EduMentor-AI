@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import User from '../models/User';
 import Otp from '../models/Otp';
 import AuditLog from '../models/AuditLog';
+import Course from '../models/Course';
 import { config } from '../config/env';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
@@ -14,47 +15,133 @@ const generateToken = (id: string): string => {
   return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRE as any });
 };
 
+const generateRandomPassword = (): string => {
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const specials = '!@#$%^&*()_+~`|}{[]:;?><,./-';
+  const all = uppercase + lowercase + digits + specials;
+  
+  let password = '';
+  password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  password += digits[Math.floor(Math.random() * digits.length)];
+  password += specials[Math.floor(Math.random() * specials.length)];
+  
+  const length = 10 + Math.floor(Math.random() * 3);
+  for (let i = 4; i < length; i++) {
+    password += all[Math.floor(Math.random() * all.length)];
+  }
+  
+  return password.split('').sort(() => 0.5 - Math.random()).join('');
+};
+
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  // Allow registration ONLY if there are no users in the database at all (for bootstrapping)
-  const count = await User.countDocuments();
-  if (count > 0) {
-    return res.status(403).json({
-      success: false,
-      message: 'Access Denied. Public registration is disabled. Please contact the administrator.'
-    });
+  const { name, email, role, department, semester, phone, courseName, courses } = req.body;
+
+  if (!name || !email || !role || !department) {
+    return res.status(400).json({ success: false, message: 'Please provide name, email, role, and department.' });
   }
 
-  const { name, email, password, role, department } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({ success: false, message: 'Please provide name, email and password' });
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(409).json({ success: false, message: 'Email already registered.' });
   }
 
-  const user = await User.create({
+  const plainPassword = generateRandomPassword();
+
+  const user = new User({
     name,
     email,
-    password,
-    role: role || 'admin',
+    password: plainPassword,
+    role: role || 'student',
     department: department || '',
+    semester: semester ? Number(semester) : undefined,
+    phone,
+    courseName,
     isFirstLogin: true,
     isActive: true,
   });
-  const token = generateToken(user._id.toString());
+
+  // Attempt to link to Course by Code if courseName matches code
+  if (courseName) {
+    const course = await Course.findOne({ code: courseName.toUpperCase() });
+    if (course) {
+      user.courses.push(course._id as any);
+      if (role === 'student') {
+        course.students.push(user._id as any);
+      } else if (role === 'faculty') {
+        course.faculty = user._id as any;
+      }
+      await course.save();
+    }
+  }
+
+  // Link selected courses by ID
+  if (courses && Array.isArray(courses)) {
+    for (const cId of courses) {
+      if (!user.courses.includes(cId)) {
+        user.courses.push(cId);
+        const course = await Course.findById(cId);
+        if (course) {
+          if (role === 'student') {
+            course.students.push(user._id as any);
+          } else if (role === 'faculty') {
+            course.faculty = user._id as any;
+          }
+          await course.save();
+        }
+      }
+    }
+  }
+
+  await user.save();
 
   await AuditLog.create({
     action: 'USER_CREATED',
     performedBy: 'SYSTEM',
     targetUser: email,
-    details: 'Bootstrap Super Admin created via register endpoint.',
+    details: `User self-registered: ${name} (${role})`,
     ipAddress: req.ip || req.socket.remoteAddress,
     device: req.headers['user-agent'] || 'Unknown Device',
     location: 'Local Intranet'
   });
 
+  // Send credentials email
+  sendEmail({
+    email: user.email,
+    subject: 'Welcome to EduMentor AI! - Your Account Credentials 🎓',
+    text: `Hello ${user.name},\n\nAn account has been created for you on EduMentor AI.\n\nYour temporary login credentials are:\nEmail: ${user.email}\nTemporary Password: ${plainPassword}\n\nPlease sign in at ${config.FRONTEND_URL || 'http://localhost:5173'} and update your password on first login.\n\nBest regards,\nThe EduMentor AI Team`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 550px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h2 style="color: #4f63ff; margin: 0; font-size: 28px; font-weight: 800;">Welcome to EduMentor AI! 🎓</h2>
+          <p style="color: #718096; margin: 5px 0 0 0; font-size: 14px;">Your Personalized AI Learning Companion</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+        <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${user.name}</strong>,</p>
+        <p style="font-size: 16px; line-height: 1.6;">An account has been successfully created for you. Below are your temporary login credentials. You will be prompted to set a permanent password when you sign in for the first time.</p>
+        
+        <div style="background-color: #f7fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #edf2f7; font-family: monospace; font-size: 14px; line-height: 1.8;">
+          <div style="margin-bottom: 6px;">📧 <strong>Email Address:</strong> ${user.email}</div>
+          <div style="margin-bottom: 6px;">👥 <strong>User Role:</strong> ${user.role.toUpperCase()}</div>
+          <div>🔑 <strong>Temporary Password:</strong> <span style="color: #e53e3e; font-weight: bold; background-color: #fff5f5; padding: 2px 6px; border-radius: 4px;">${plainPassword}</span></div>
+        </div>
+
+        <p style="font-size: 15px; line-height: 1.6; color: #4a5568;">Click the link below to sign in and set up your permanent credentials:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${config.FRONTEND_URL || 'http://localhost:5173'}" style="background-color: #4f63ff; color: #ffffff; padding: 12px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(79, 99, 255, 0.2);">Go to Login</a>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 25px 0;" />
+        <p style="font-size: 12px; color: #a0aec0; text-align: center; margin: 0;">This email was sent to ${user.email} because a new account was registered on EduMentor AI.</p>
+      </div>
+    `
+  }).catch(err => console.error('Failed to send credentials email:', err));
+
   res.status(201).json({
     success: true,
-    message: 'Registration successful',
-    token,
+    message: 'Registration successful. A temporary password has been sent to your email.',
     user: {
       id: user._id,
       name: user.name,
@@ -63,6 +150,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       preferredLanguage: user.preferredLanguage,
       isFirstLogin: user.isFirstLogin,
     },
+    generatedPassword: plainPassword
   });
 });
 

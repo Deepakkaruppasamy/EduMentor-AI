@@ -5,12 +5,15 @@ export interface LoginCredentials { email: string; password: string; }
 export interface RegisterCredentials { 
   name: string; 
   email: string; 
-  password: string; 
+  password?: string; 
   role: 'student' | 'faculty'; 
   department?: string;
+  semester?: number;
+  phone?: string;
+  courseName?: string;
   courses?: string[];
 }
-export interface AuthResponse { token: string; user: User; message: string; }
+export interface AuthResponse { token: string; user: User; message: string; generatedPassword?: string; }
 
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {

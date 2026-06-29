@@ -10,6 +10,8 @@ import Document from '../models/Document';
 import AssignmentEvaluation from '../models/AssignmentEvaluation';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
+import { sendEmail } from '../utils/email';
+import { config } from '../config/env';
 
 // Helper: Generate strong random password
 const generateRandomPassword = (): string => {
@@ -79,6 +81,38 @@ export const createUser = asyncHandler(async (req: AuthRequest, res: Response) =
   }
 
   await newUser.save();
+
+  // Send credentials email to the newly created user
+  sendEmail({
+    email: newUser.email,
+    subject: 'Welcome to EduMentor AI! - Your Account Credentials 🎓',
+    text: `Hello ${newUser.name},\n\nAn account has been created for you on EduMentor AI by the administrator.\n\nYour temporary login credentials are:\nEmail: ${newUser.email}\nTemporary Password: ${plainPassword}\n\nPlease sign in at ${config.FRONTEND_URL || 'http://localhost:5173'} and update your password on first login.\n\nBest regards,\nThe EduMentor AI Team`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 550px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h2 style="color: #4f63ff; margin: 0; font-size: 28px; font-weight: 800;">Welcome to EduMentor AI! 🎓</h2>
+          <p style="color: #718096; margin: 5px 0 0 0; font-size: 14px;">Your Personalized AI Learning Companion</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+        <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${newUser.name}</strong>,</p>
+        <p style="font-size: 16px; line-height: 1.6;">An account has been successfully created for you on EduMentor AI. Below are your temporary login credentials. You will be prompted to set a permanent password when you sign in for the first time.</p>
+        
+        <div style="background-color: #f7fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #edf2f7; font-family: monospace; font-size: 14px; line-height: 1.8;">
+          <div style="margin-bottom: 6px;">📧 <strong>Email Address:</strong> ${newUser.email}</div>
+          <div style="margin-bottom: 6px;">👥 <strong>User Role:</strong> ${newUser.role.toUpperCase()}</div>
+          <div>🔑 <strong>Temporary Password:</strong> <span style="color: #e53e3e; font-weight: bold; background-color: #fff5f5; padding: 2px 6px; border-radius: 4px;">${plainPassword}</span></div>
+        </div>
+
+        <p style="font-size: 15px; line-height: 1.6; color: #4a5568;">Click the link below to sign in and set up your permanent credentials:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${config.FRONTEND_URL || 'http://localhost:5173'}" style="background-color: #4f63ff; color: #ffffff; padding: 12px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(79, 99, 255, 0.2);">Go to Login</a>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 25px 0;" />
+        <p style="font-size: 12px; color: #a0aec0; text-align: center; margin: 0;">This email was sent to ${newUser.email} because a new account was registered on EduMentor AI.</p>
+      </div>
+    `
+  }).catch(err => console.error('Failed to send manually created user email:', err));
 
   await AuditLog.create({
     action: 'USER_CREATED',
@@ -164,6 +198,39 @@ export const bulkCreateUsers = asyncHandler(async (req: AuthRequest, res: Respon
     }
 
     await newUser.save();
+
+    // Send credentials email to the newly created user
+    sendEmail({
+      email: newUser.email,
+      subject: 'Welcome to EduMentor AI! - Your Account Credentials 🎓',
+      text: `Hello ${newUser.name},\n\nAn account has been created for you on EduMentor AI via spreadsheet import.\n\nYour temporary login credentials are:\nEmail: ${newUser.email}\nTemporary Password: ${plainPassword}\n\nPlease sign in at ${config.FRONTEND_URL || 'http://localhost:5173'} and update your password on first login.\n\nBest regards,\nThe EduMentor AI Team`,
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 550px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1a202c;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #4f63ff; margin: 0; font-size: 28px; font-weight: 800;">Welcome to EduMentor AI! 🎓</h2>
+            <p style="color: #718096; margin: 5px 0 0 0; font-size: 14px;">Your Personalized AI Learning Companion</p>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;" />
+          <p style="font-size: 16px; line-height: 1.6;">Hello <strong>${newUser.name}</strong>,</p>
+          <p style="font-size: 16px; line-height: 1.6;">An account has been successfully created for you on EduMentor AI. Below are your temporary login credentials. You will be prompted to set a permanent password when you sign in for the first time.</p>
+          
+          <div style="background-color: #f7fafc; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #edf2f7; font-family: monospace; font-size: 14px; line-height: 1.8;">
+            <div style="margin-bottom: 6px;">📧 <strong>Email Address:</strong> ${newUser.email}</div>
+            <div style="margin-bottom: 6px;">👥 <strong>User Role:</strong> ${newUser.role.toUpperCase()}</div>
+            <div>🔑 <strong>Temporary Password:</strong> <span style="color: #e53e3e; font-weight: bold; background-color: #fff5f5; padding: 2px 6px; border-radius: 4px;">${plainPassword}</span></div>
+          </div>
+
+          <p style="font-size: 15px; line-height: 1.6; color: #4a5568;">Click the link below to sign in and set up your permanent credentials:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${config.FRONTEND_URL || 'http://localhost:5173'}" style="background-color: #4f63ff; color: #ffffff; padding: 12px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(79, 99, 255, 0.2);">Go to Login</a>
+          </div>
+          
+          <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 25px 0;" />
+          <p style="font-size: 12px; color: #a0aec0; text-align: center; margin: 0;">This email was sent to ${newUser.email} because a new account was registered on EduMentor AI.</p>
+        </div>
+      `
+    }).catch(err => console.error('Failed to send manually created user email:', err));
+
     createdCredentials.push({
       Name,
       Email,
