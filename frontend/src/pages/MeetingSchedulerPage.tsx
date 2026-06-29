@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth.store';
 import { appointmentService } from '../services/appointment.service';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths } from 'date-fns';
 import toast from 'react-hot-toast';
+import { Loader } from '../components/common/Loader';
 
 const STATUS_COLOR: Record<string, string> = {
   Pending: '#f6ad55',
@@ -255,7 +256,7 @@ export const MeetingSchedulerPage: React.FC = () => {
       {/* Appointments List Tab */}
       {activeTab === 'appointments' && (
         <div className="space-y-3">
-          {loading && <div className="text-center py-8 text-white/20 text-sm">Loading appointments…</div>}
+          {loading && <Loader small message="Retrieving appointments..." />}
           {!loading && appointments.length === 0 && (
             <div className="text-center py-12 text-white/20 text-xs">No appointments found</div>
           )}

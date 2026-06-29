@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import api from '../services/api';
+import { Loader } from '../components/common/Loader';
 
 type ToolType = 'question_paper' | 'assignment' | 'mcq' | 'rubric' | 'lab_exercise';
 
@@ -372,10 +373,7 @@ export const FacultyAIAssistantPage: React.FC = () => {
 
           <div className="flex-1 overflow-y-auto min-h-0 text-left bg-white/[0.01] border border-white/5 rounded-xl p-6">
             {isGenerating ? (
-              <div className="h-full flex flex-col justify-center items-center text-white/40 gap-3">
-                <div className="h-8 w-8 border-4 border-white/15 border-t-primary-500 rounded-full animate-spin" />
-                <span className="text-xs font-semibold animate-pulse">EduMentor AI is constructing your customized curriculum materials...</span>
-              </div>
+              <Loader message="EduMentor AI is constructing your customized curriculum materials..." />
             ) : generatedContent ? (
               <div className="prose prose-invert prose-sm max-w-none">
                 <ReactMarkdown>{generatedContent}</ReactMarkdown>

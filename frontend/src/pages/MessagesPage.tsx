@@ -24,6 +24,7 @@ import { DiscussionThread } from '../components/messaging/DiscussionThread';
 import { DiscussionComposer } from '../components/messaging/DiscussionComposer';
 import { AdminModerationPanel } from '../components/messaging/AdminModerationPanel';
 import toast from 'react-hot-toast';
+import { Loader } from '../components/common/Loader';
 
 export const MessagesPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -386,9 +387,7 @@ export const MessagesPage: React.FC = () => {
               style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
             >
               {messagesLoading ? (
-                <div className="flex items-center justify-center h-full text-white/20 text-sm">
-                  Loading messages…
-                </div>
+                <div className="flex items-center justify-center h-full"><Loader small message="Retrieving chat history..." /></div>
               ) : messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">

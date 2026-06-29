@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth.store';
 import { officeHoursService } from '../services/officeHours.service';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
+import { Loader } from '../components/common/Loader';
 
 const STATUS_CONFIG = {
   Available: { color: '#48bb78', bg: 'rgba(72,187,120,0.12)', icon: '🟢' },
@@ -204,7 +205,7 @@ export const OfficeHoursPage: React.FC = () => {
       {/* Faculty Directory */}
       {activeTab === 'directory' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loading && <div className="col-span-3 text-center py-8 text-white/20 text-sm">Loading…</div>}
+          {loading && <div className="col-span-3 py-4"><Loader small message="Retrieving faculty availability..." /></div>}
           {facultyList.map(({ faculty, officeHours }) => {
             const s = (officeHours?.status as keyof typeof STATUS_CONFIG) || 'Offline';
             const cfg = STATUS_CONFIG[s];
