@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/auth.store';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { FirstLoginChangePage } from './pages/FirstLoginChangePage';
@@ -70,7 +71,7 @@ const App: React.FC = () => {
           isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <LoginPage />
         } />
         <Route path="/register" element={
-          <Navigate to="/login" replace />
+          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <RegisterPage />
         } />
         <Route path="/first-login-change" element={
           <FirstLoginRoute>
