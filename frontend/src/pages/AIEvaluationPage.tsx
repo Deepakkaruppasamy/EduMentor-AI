@@ -9,6 +9,7 @@ import { aiEvaluationService } from '../services/ai-evaluation.service';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
+import { Loader } from '../components/common/Loader';
 
 // ── Constants ────────────────────────────────────────────────
 const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
@@ -101,9 +102,7 @@ const SectionHeader: React.FC<{ icon: string; title: string; subtitle?: string }
 );
 
 const Spinner: React.FC = () => (
-  <div className="flex items-center justify-center py-16">
-    <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-  </div>
+  <Loader message="Aggregating performance metrics..." />
 );
 
 // ── Export utilities ─────────────────────────────────────────

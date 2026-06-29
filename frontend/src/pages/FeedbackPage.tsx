@@ -6,6 +6,7 @@ import { courseService } from '../services/course.service';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import { Loader } from '../components/common/Loader';
 
 interface FeedbackItem {
   _id: string;
@@ -549,7 +550,7 @@ export const FeedbackPage: React.FC = () => {
         {activeTab === 'my' && (
           <div className="space-y-3">
             {loading ? (
-              <div className="text-center py-12 text-white/30 text-sm">Loading your feedback…</div>
+              <Loader small message="Loading your feedback..." />
             ) : feedbackList.length === 0 ? (
               <div className="rounded-2xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <div className="text-4xl mb-3">📭</div>
@@ -566,7 +567,7 @@ export const FeedbackPage: React.FC = () => {
         {activeTab === 'received' && (
           <div className="space-y-3">
             {loading ? (
-              <div className="text-center py-12 text-white/30 text-sm">Loading feedback…</div>
+              <Loader small message="Loading received feedback..." />
             ) : feedbackList.length === 0 ? (
               <div className="rounded-2xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <div className="text-4xl mb-3">📭</div>
@@ -615,7 +616,7 @@ export const FeedbackPage: React.FC = () => {
             </div>
 
             {loading ? (
-              <div className="text-center py-12 text-white/30 text-sm">Loading…</div>
+              <Loader small message="Loading all platform feedback..." />
             ) : feedbackList.length === 0 ? (
               <div className="rounded-2xl p-12 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <div className="text-4xl mb-3">📭</div>
@@ -630,7 +631,7 @@ export const FeedbackPage: React.FC = () => {
         {/* Analytics (Admin) */}
         {activeTab === 'analytics' && (
           loading ? (
-            <div className="text-center py-12 text-white/30 text-sm">Loading analytics…</div>
+            <Loader small message="Aggregating feedback analytics..." />
           ) : analytics ? (
             <AdminAnalytics analytics={analytics} />
           ) : null
