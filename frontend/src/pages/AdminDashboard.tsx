@@ -9,6 +9,7 @@ import { useAuthStore } from '../store/auth.store';
 import toast from 'react-hot-toast';
 import { WeeklyDigestCard } from '../components/dashboard/WeeklyDigestCard';
 import { Loader } from '../components/common/Loader';
+import { AIEvaluationPage } from './AIEvaluationPage';
 
 const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
 
@@ -35,7 +36,7 @@ export const AdminDashboard: React.FC = () => {
 // 1. SUPER ADMIN ANALYTICS DASHBOARD VIEW
 // ==========================================
 const SuperAdminDashboardView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'users' | 'students' | 'faculty' | 'chatbot' | 'courses' | 'system' | 'security'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'students' | 'faculty' | 'chatbot' | 'courses' | 'system' | 'security' | 'ai-evaluation'>('users');
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -408,6 +409,8 @@ const SuperAdminDashboardView: React.FC = () => {
             </div>
           </div>
         );
+      case 'ai-evaluation':
+        return <AIEvaluationPage />;
       default:
         return null;
     }
@@ -430,6 +433,7 @@ const SuperAdminDashboardView: React.FC = () => {
           { id: 'courses', label: '📚 Course Analytics' },
           { id: 'system', label: '⚙️ System Metrics' },
           { id: 'security', label: '🛡️ Security Dashboard' },
+          { id: 'ai-evaluation', label: '🧪 AI Evaluation' },
         ].map(tab => (
           <button
             key={tab.id}
