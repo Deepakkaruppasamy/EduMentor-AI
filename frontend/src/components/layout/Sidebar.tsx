@@ -31,6 +31,8 @@ const STUDENT_LINKS = [
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
   { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
+  { to: '/feedback', icon: '💬', label: 'Feedback Center' },
+  { to: '/rate-platform', icon: '⭐', label: 'Rate Platform' },
 ];
 
 const FACULTY_LINKS = [
@@ -53,6 +55,8 @@ const FACULTY_LINKS = [
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
   { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
+  { to: '/feedback', icon: '💬', label: 'Feedback Center' },
+  { to: '/rate-platform', icon: '⭐', label: 'Rate Platform' },
 ];
 
 const ADMIN_LINKS = [
@@ -77,6 +81,8 @@ const ADMIN_LINKS = [
   { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
   { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
+  { to: '/feedback', icon: '💬', label: 'Feedback Center' },
+  { to: '/ai-evaluation', icon: '🧪', label: 'AI Evaluation' },
 ];
 
 export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {

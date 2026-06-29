@@ -240,7 +240,7 @@ export const ChatPage: React.FC = () => {
 
       {/* Chat Area */}
       <div className="flex flex-1 overflow-hidden min-w-0">
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           {activeChatTab === 'lobby' ? (
             <div className="p-6 overflow-y-auto w-full">
               <StudyLobbyScreen

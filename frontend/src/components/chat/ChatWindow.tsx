@@ -343,7 +343,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
   ];
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col min-w-0 overflow-hidden">
       {/* Course Header */}
       <div className="flex items-center gap-2 px-3 py-3 md:gap-3 md:px-6 md:py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,11,15,0.4)', backdropFilter: 'blur(10px)' }}>
         {onToggleLeftPanel && (

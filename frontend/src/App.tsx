@@ -32,6 +32,9 @@ import { AcademicCalendarPage } from './pages/AcademicCalendarPage';
 import { NotesGeneratorPage } from './pages/NotesGeneratorPage';
 import { ResearchAssistantPage } from './pages/ResearchAssistantPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
+import { FeedbackPage } from './pages/FeedbackPage';
+import { AIEvaluationPage } from './pages/AIEvaluationPage';
+import { TAMSurveyPage } from './pages/TAMSurveyPage';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -172,6 +175,21 @@ const App: React.FC = () => {
         <Route path="/avatar-settings" element={
           <ProtectedRoute>
             <AppPage><AvatarSettingsPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/feedback" element={
+          <ProtectedRoute>
+            <AppPage><FeedbackPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/ai-evaluation" element={
+          <ProtectedRoute roles={['admin']}>
+            <AppPage><AIEvaluationPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/rate-platform" element={
+          <ProtectedRoute>
+            <AppPage><TAMSurveyPage /></AppPage>
           </ProtectedRoute>
         } />
 

@@ -29,6 +29,8 @@ import notesRoutes from './routes/notes.routes';
 import researchRoutes from './routes/research.routes';
 import searchRoutes from './routes/search.routes';
 import announcementRoutes from './routes/announcement.routes';
+import feedbackRoutes from './routes/feedback.routes';
+import aiEvaluationRoutes from './routes/ai-evaluation.routes';
 import { initMessagingSocketServer } from './services/messaging-socket.service';
 import { initSupportSocketServer } from './services/support-socket.service';
 import { errorHandler } from './middleware/errorHandler';
@@ -88,6 +90,8 @@ app.use('/api/notes', notesRoutes);
 app.use('/api/research', researchRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/ai-evaluation', aiEvaluationRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
