@@ -5,7 +5,7 @@ import Analytics from '../models/Analytics';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
-import { generateResponse, generateResponseStream, extractConceptGraph, generateWithoutContext } from '../services/ai/groq.service';
+import { generateResponse, generateResponseStream, extractConceptGraph, generateWithoutContext, isQuestionRelevantToCourse } from '../services/ai/groq.service';
 import { detectHallucination } from '../services/hallucination/hallucination.service';
 import { buildExplainableResult } from '../services/explainability/explainability.service';
 import { trackStudentQuery } from '../services/recommendations/recommendation.service';
@@ -21,6 +21,18 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
   const course = await Course.findById(courseId);
   if (!course) {
     return res.status(404).json({ success: false, message: 'Course not found' });
+  }
+
+  // 0. Subject-scope gate: reject off-topic questions before doing expensive RAG
+  const relevanceCheck = await isQuestionRelevantToCourse(question, course.title, course.description);
+  if (!relevanceCheck.relevant) {
+    return res.status(200).json({
+      success: true,
+      offTopic: true,
+      answer: `I'm your AI tutor for the **${course.title}** course. Your question appears to be outside this subject's scope — ${relevanceCheck.reason}\n\nPlease ask questions related to **${course.title}** topics, and I'll be happy to help! 📚`,
+      hallucination: { trustScore: 100, status: 'clean', verdict: 'Off-topic refusal', flags: [] },
+      explainability: { sources: [], overallConfidence: 1, retrievalMethod: 'N/A', explanationSummary: 'Question was off-topic for the selected course.' },
+    });
   }
 
   // 1. Hybrid RAG retrieval
@@ -46,7 +58,7 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
   const preferredLanguage = req.user?.preferredLanguage || 'English';
 
   // 3. Generate LLM response
-  const llmResponse = await generateResponse(recentHistory, ragResult.context, 0.3, preferredLanguage);
+  const llmResponse = await generateResponse(recentHistory, ragResult.context, 0.3, preferredLanguage, course.title);
 
   // 4. Hallucination detection
   const chunkTexts = ragResult.chunks.map((c) => c.text);
@@ -132,6 +144,31 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
     return res.status(404).json({ success: false, message: 'Course not found' });
   }
 
+  // 0. Subject-scope gate: reject off-topic questions before doing expensive RAG
+  const relevanceCheck = await isQuestionRelevantToCourse(question, course.title, course.description);
+  if (!relevanceCheck.relevant) {
+    // For streaming endpoint, set SSE headers and send a structured refusal
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const refusalText = `I'm your AI tutor for the **${course.title}** course. Your question appears to be outside this subject's scope — ${relevanceCheck.reason}\n\nPlease ask questions related to **${course.title}** topics, and I'll be happy to help! 📚`;
+
+    // Stream the refusal token by token for consistent UX
+    for (const char of refusalText) {
+      res.write(`data: ${JSON.stringify({ type: 'token', text: char })}\n\n`);
+    }
+    res.write(`data: ${JSON.stringify({
+      type: 'done',
+      offTopic: true,
+      hallucination: { trustScore: 100, status: 'clean', verdict: 'Off-topic refusal', flags: [] },
+      explainability: { sources: [], overallConfidence: 1, retrievalMethod: 'N/A', explanationSummary: 'Question was off-topic for the selected course.' },
+    })}\n\n`);
+    res.end();
+    return;
+  }
+
   // 1. Hybrid RAG retrieval
   const ragResult = await hybridRetrieve(question, course.chromaCollection);
 
@@ -168,7 +205,7 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
   const preferredLanguage = req.user?.preferredLanguage || 'English';
 
   try {
-    await generateResponseStream(recentHistory, ragResult.context, onToken, 0.3, preferredLanguage);
+    await generateResponseStream(recentHistory, ragResult.context, onToken, 0.3, preferredLanguage, course.title);
 
     // 4. Hallucination detection
     const chunkTexts = ragResult.chunks.map((c) => c.text);

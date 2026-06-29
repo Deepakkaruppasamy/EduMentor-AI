@@ -20,7 +20,7 @@ export interface LLMResponse {
   model: string;
 }
 
-const SYSTEM_PROMPT = `You are EduMentor AI, an expert educational assistant for higher education students. 
+const BASE_SYSTEM_PROMPT = `You are EduMentor AI, an expert educational assistant for higher education students. 
 You provide clear, accurate, and pedagogically sound explanations based on the provided course materials.
 Always:
 - Be precise and factual, citing concepts from the provided context
@@ -29,11 +29,35 @@ Always:
 - Admit when something is outside the scope of the provided materials
 - Encourage deeper learning by suggesting related topics when appropriate`;
 
+// Keep SYSTEM_PROMPT as an alias for backward compatibility (used by generateWithoutContext)
+const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT;
+
+function buildCourseSystemPrompt(courseName: string, languagePrompt: string, context: string): string {
+  return `${BASE_SYSTEM_PROMPT}
+
+🎓 ACTIVE COURSE: "${courseName}"
+
+CRITICAL SUBJECT SCOPE RULE:
+You are currently acting as the AI tutor EXCLUSIVELY for the "${courseName}" course.
+- You MUST ONLY answer questions that are directly related to the subject matter of "${courseName}".
+- If a student asks a question that is NOT related to "${courseName}", you MUST politely decline and remind them that you can only help with "${courseName}" topics in this session.
+- Do NOT answer general knowledge questions, questions about other subjects, personal questions, or anything outside the scope of "${courseName}".
+- When declining, use this format: "I'm your AI tutor for the **${courseName}** course. Your question appears to be outside this subject's scope. Please ask questions related to ${courseName} topics."
+${languagePrompt}
+
+--- COURSE MATERIAL CONTEXT ---
+${context}
+--- END CONTEXT ---
+
+Base your answer primarily on the above context. If the context doesn't contain enough information about a ${courseName} topic, say so clearly.`;
+}
+
 export async function generateResponse(
   messages: LLMMessage[],
   context: string,
   temperature = 0.3,
-  preferredLanguage = 'English'
+  preferredLanguage = 'English',
+  courseName?: string
 ): Promise<LLMResponse> {
   if (!config.GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
@@ -43,9 +67,13 @@ export async function generateResponse(
     ? `\n- IMPORTANT: You MUST answer the user's question and explain all concepts natively in ${preferredLanguage}. Make the translation natural and preserve all academic definitions.`
     : '';
 
+  const systemContent = courseName
+    ? buildCourseSystemPrompt(courseName, languagePrompt, context)
+    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`;
+
   const systemMessage: LLMMessage = {
     role: 'system',
-    content: `${SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
+    content: systemContent,
   };
 
   const allMessages = [systemMessage, ...messages];
@@ -111,7 +139,8 @@ export async function generateResponseStream(
   context: string,
   onToken: (token: string) => void,
   temperature = 0.3,
-  preferredLanguage = 'English'
+  preferredLanguage = 'English',
+  courseName?: string
 ): Promise<{ model: string }> {
   if (!config.GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
@@ -121,9 +150,13 @@ export async function generateResponseStream(
     ? `\n- IMPORTANT: You MUST answer the user's question and explain all concepts natively in ${preferredLanguage}. Make the translation natural and preserve all academic definitions.`
     : '';
 
+  const systemContent = courseName
+    ? buildCourseSystemPrompt(courseName, languagePrompt, context)
+    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`;
+
   const systemMessage: LLMMessage = {
     role: 'system',
-    content: `${SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`,
+    content: systemContent,
   };
 
   const allMessages = [systemMessage, ...messages];
@@ -147,6 +180,61 @@ export async function generateResponseStream(
   return {
     model: LLM_MODEL,
   };
+}
+
+/**
+ * Lightweight check: uses a fast LLM call to determine if a question
+ * is relevant to the specified course/subject.
+ * Returns true if relevant, false if off-topic.
+ */
+export async function isQuestionRelevantToCourse(
+  question: string,
+  courseName: string,
+  courseDescription?: string
+): Promise<{ relevant: boolean; reason: string }> {
+  if (!config.GROQ_API_KEY) {
+    // Fail open — let the main prompt handle it
+    return { relevant: true, reason: 'API key not configured, skipping relevance check.' };
+  }
+
+  const descriptionHint = courseDescription
+    ? `\nCourse Description: ${courseDescription}`
+    : '';
+
+  const systemPrompt = `You are a strict academic subject classifier. Your ONLY job is to determine if a student's question is relevant to the specified university course. Respond with ONLY a valid JSON object — no extra text.`;
+
+  const userPrompt = `Course Name: ${courseName}${descriptionHint}
+
+Student Question: "${question}"
+
+Is this question relevant to the course "${courseName}"? A question is relevant if it relates to the topics, concepts, theories, methods, tools, or subject matter taught in this course.
+
+Respond with ONLY this JSON format:
+{"relevant": true/false, "reason": "one sentence explanation"}`;
+
+  try {
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant', // Use a faster, smaller model for this check
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ] as any,
+      temperature: 0.0,
+      max_tokens: 100,
+      top_p: 1,
+      response_format: { type: 'json_object' },
+    });
+
+    const raw = response.choices[0]?.message?.content || '{}';
+    const parsed = JSON.parse(raw);
+    return {
+      relevant: parsed.relevant === true,
+      reason: parsed.reason || 'No reason provided.',
+    };
+  } catch (err) {
+    console.warn('Subject relevance check failed, failing open:', err);
+    return { relevant: true, reason: 'Relevance check failed, proceeding.' };
+  }
 }
 
 export async function transcribeAudioFile(filePath: string): Promise<string> {
