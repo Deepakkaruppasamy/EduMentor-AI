@@ -88,11 +88,6 @@ export const RegisterPage: React.FC = () => {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center p-4 py-12">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -243,11 +238,11 @@ export const RegisterPage: React.FC = () => {
               className="glass-card w-full max-w-md p-6 border border-white/15 text-center space-y-5"
             >
               <div className="h-12 w-12 bg-primary-500/10 border border-primary-500/20 text-primary-400 rounded-full flex items-center justify-center mx-auto text-xl">
-                🔑
+                ✉️
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Temporary Credentials Generated</h3>
-                <p className="text-xs text-white/40 mt-1">Copy these details or access them in your email to log in.</p>
+                <h3 className="text-lg font-bold text-white">Account Created Successfully</h3>
+                <p className="text-xs text-white/40 mt-1">A secure temporary login password has been sent to your email address.</p>
               </div>
 
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-3 text-left text-xs font-mono">
@@ -256,25 +251,12 @@ export const RegisterPage: React.FC = () => {
                   <span className="text-white font-semibold">{genCredentials.name}</span>
                 </div>
                 <div>
-                  <span className="text-white/40 block">EMAIL:</span>
+                  <span className="text-white/40 block">REGISTERED EMAIL:</span>
                   <span className="text-white">{genCredentials.email}</span>
                 </div>
                 <div>
                   <span className="text-white/40 block">ROLE:</span>
                   <span className="text-white capitalize">{genCredentials.role}</span>
-                </div>
-                <div>
-                  <span className="text-white/40 block">TEMPORARY PASSWORD:</span>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-emerald-400 font-bold bg-white/5 px-2 py-1 rounded text-sm break-all">{genCredentials.password}</span>
-                    <button 
-                      type="button"
-                      onClick={() => copyToClipboard(genCredentials.password)} 
-                      className="text-[10px] bg-primary-600 hover:bg-primary-500 text-white font-bold px-2 py-1 rounded transition-colors"
-                    >
-                      Copy
-                    </button>
-                  </div>
                 </div>
               </div>
 
