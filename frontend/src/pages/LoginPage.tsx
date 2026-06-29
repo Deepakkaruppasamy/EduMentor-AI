@@ -140,7 +140,10 @@ export const LoginPage: React.FC = () => {
         </form>
 
         <p className="mt-6 text-center text-xs text-white/40 font-medium">
-          Access is restricted to pre-approved university accounts. Please contact the system administrator to request access.
+          Don't have an account?{' '}
+          <Link to="/register" className="text-primary-400 hover:text-primary-300 transition-colors font-semibold">
+            Sign up
+          </Link>
         </p>
       </motion.div>
     </div>
