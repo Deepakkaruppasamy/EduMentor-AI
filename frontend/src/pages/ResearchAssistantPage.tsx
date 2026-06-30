@@ -20,7 +20,7 @@ const FEATURES = [
 
 export const ResearchAssistantPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'analyze' | 'history'>('analyze');
-  const [uploadedPapers, setUploadedPapers] = useState<{ name: string; text: string }[]>([]);
+  const [uploadedPapers, setUploadedPapers] = useState<{ name: string; file: File }[]>([]);
   const [selectedFeature, setSelectedFeature] = useState('Summarize');
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -43,11 +43,7 @@ export const ResearchAssistantPage: React.FC = () => {
 
     if (validFiles.length === 0) { toast.error('Please upload PDF, DOCX, or TXT files'); return; }
 
-    const newPapers: { name: string; text: string }[] = [];
-    for (const file of validFiles) {
-      const text = await file.text();
-      newPapers.push({ name: file.name, text });
-    }
+    const newPapers = validFiles.map(file => ({ name: file.name, file }));
     setUploadedPapers(prev => [...prev, ...newPapers]);
     toast.success(`${validFiles.length} paper(s) loaded`);
   };
@@ -62,11 +58,13 @@ export const ResearchAssistantPage: React.FC = () => {
     if (uploadedPapers.length === 0) { toast.error('Please upload at least one paper'); return; }
     setAnalyzing(true);
     try {
-      const res = await researchService.analyze({
-        feature: selectedFeature,
-        paperTexts: uploadedPapers.map(p => p.text),
-        paperMeta: uploadedPapers.map(p => ({ filename: p.name, originalName: p.name, filePath: '', uploadedAt: new Date() })),
+      const formData = new FormData();
+      formData.append('feature', selectedFeature);
+      uploadedPapers.forEach(p => {
+        formData.append('files', p.file);
       });
+
+      const res = await researchService.analyze(formData);
       setResult(res.data.data);
       setHistory(prev => [res.data.data, ...prev]);
       toast.success('Analysis complete!');

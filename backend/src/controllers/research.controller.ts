@@ -5,6 +5,7 @@ import { generateWithoutContext } from '../services/ai/groq.service';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { extractText, cleanText } from '../utils/document-processor';
 
 // Multer config for research paper uploads
 const storage = multer.diskStorage({
@@ -51,12 +52,44 @@ const RESEARCH_SYSTEM_PROMPT = `You are an expert academic research assistant he
 Provide thorough, accurate, and well-structured responses in Markdown format.`;
 
 export const analyzeResearch = async (req: AuthRequest, res: Response): Promise<void> => {
+  const files = req.files as Express.Multer.File[];
   try {
     const userId = req.user!._id;
-    const { feature, paperTexts, paperMeta } = req.body;
+    const { feature } = req.body;
 
-    if (!feature || !paperTexts?.length) {
-      res.status(400).json({ success: false, message: 'feature and paperTexts are required.' });
+    let paperTexts: string[] = [];
+    let paperMeta: any[] = [];
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const fileExtension = path.extname(file.originalname).substring(1);
+        try {
+          const parsed = await extractText(file.path, fileExtension);
+          const cleaned = cleanText(parsed.text);
+          if (cleaned && cleaned.trim().length > 0) {
+            paperTexts.push(cleaned);
+            paperMeta.push({
+              filename: file.filename,
+              originalName: file.originalname,
+              filePath: file.path,
+              extractedText: cleaned,
+              uploadedAt: new Date(),
+            });
+          }
+        } catch (err: any) {
+          console.error(`Failed to extract text from ${file.originalname}:`, err.message);
+        }
+      }
+    } else {
+      const { paperTexts: bodyPaperTexts, paperMeta: bodyPaperMeta } = req.body;
+      if (bodyPaperTexts && bodyPaperTexts.length) {
+        paperTexts = bodyPaperTexts;
+        paperMeta = bodyPaperMeta || [];
+      }
+    }
+
+    if (!feature || !paperTexts.length) {
+      res.status(400).json({ success: false, message: 'feature and files/paperTexts are required.' });
       return;
     }
 
@@ -79,7 +112,7 @@ ${truncated}`;
     // Save history
     const history = await ResearchHistory.create({
       user: userId,
-      papers: paperMeta || [],
+      papers: paperMeta,
       feature,
       result: response.content,
     });
@@ -87,6 +120,18 @@ ${truncated}`;
     res.status(201).json({ success: true, data: history });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
+  } finally {
+    if (files && files.length > 0) {
+      for (const file of files) {
+        try {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        } catch (cleanupErr: any) {
+          console.error(`Failed to delete temp file ${file.path}:`, cleanupErr.message);
+        }
+      }
+    }
   }
 };
 
