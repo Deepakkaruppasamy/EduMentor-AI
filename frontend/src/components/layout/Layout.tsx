@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { Logo } from '../common/Logo';
 import { useNotificationStore } from '../../store/notification.store';
+import { useThemeStore } from '../../store/theme.store';
+import { CommandPalette } from './CommandPalette';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,6 +22,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { addNotification } = useNotificationStore();
+  const { theme } = useThemeStore();
+
+  // Sync theme class on <html>
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+    } else {
+      root.classList.remove('light');
+    }
+  }, [theme]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -156,7 +169,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, [user]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0a0b0f]">
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+      {/* Global Command Palette — available on all pages */}
+      <CommandPalette />
       {/* Desktop Sidebar */}
       <aside className="hidden w-60 flex-shrink-0 lg:flex lg:flex-col"
         style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>

@@ -10,6 +10,7 @@ import { NotificationDrawer } from './NotificationDrawer';
 import { AvatarFrame } from '../avatar/AvatarFrame';
 import { AnimatePresence } from 'framer-motion';
 import { GlobalSearchBar } from './GlobalSearchBar';
+import { useThemeStore } from '../../store/theme.store';
 
 const STUDENT_LINKS = [
   { to: '/dashboard', icon: '📊', label: 'Dashboard' },
@@ -91,6 +92,7 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const { notifications } = useNotificationStore();
+  const { theme, toggleTheme } = useThemeStore();
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -107,7 +109,7 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className="flex h-full flex-col" style={{ background: 'rgba(10,11,15,0.95)' }}>
+    <div className="flex h-full flex-col" style={{ background: 'var(--bg-sidebar)' }}>
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-6">
         <Logo size="sm" />
@@ -132,25 +134,47 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
             <div className="truncate text-[10px] capitalize text-white/40 font-medium mt-0.5">{user?.role}</div>
           </div>
 
-          {/* Notification Bell with Badge */}
-          <div className="relative">
+          {/* Theme Toggle + Notification Bell */}
+          <div className="flex items-center gap-1.5">
+            {/* Theme toggle */}
             <button
-              onClick={() => setNotifOpen(!notifOpen)}
-              className="h-8 w-8 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-white/50 hover:text-white transition-all flex items-center justify-center relative focus:outline-none"
-              title="Notifications"
+              onClick={toggleTheme}
+              className="h-8 w-8 rounded-xl border flex items-center justify-center transition-all"
+              style={{
+                background: 'var(--bg-input)',
+                borderColor: 'var(--border-subtle)',
+                color: 'var(--text-muted)',
+              }}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
-              <span className="text-sm leading-none">🔔</span>
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
-                  {unreadCount}
-                </span>
-              )}
+              <span className="text-sm leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
             </button>
-            <AnimatePresence>
-              {notifOpen && (
-                <NotificationDrawer onClose={() => setNotifOpen(false)} />
-              )}
-            </AnimatePresence>
+
+            {/* Notification Bell with Badge */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="h-8 w-8 rounded-xl border flex items-center justify-center relative focus:outline-none transition-all"
+                style={{
+                  background: 'var(--bg-input)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--text-muted)',
+                }}
+                title="Notifications"
+              >
+                <span className="text-sm leading-none">🔔</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+              <AnimatePresence>
+                {notifOpen && (
+                  <NotificationDrawer onClose={() => setNotifOpen(false)} />
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
         <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">

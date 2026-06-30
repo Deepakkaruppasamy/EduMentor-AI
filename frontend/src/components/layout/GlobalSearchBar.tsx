@@ -72,19 +72,7 @@ export const GlobalSearchBar: React.FC = () => {
     doSearch(query);
   }, [query]);
 
-  // Ctrl+K shortcut
-  useEffect(() => {
-    const handleKeydown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setOpen(true);
-        setTimeout(() => inputRef.current?.focus(), 50);
-      }
-      if (e.key === 'Escape') setOpen(false);
-    };
-    window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
-  }, []);
+  // Ctrl+K is handled globally by CommandPalette — no duplicate listener needed here
 
   const handleSelect = (item: SearchResult) => {
     setOpen(false);
