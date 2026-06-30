@@ -310,44 +310,42 @@
    Automatically converts tailwind dark-mode utilities (like text-white/50, bg-white/5)
    to appropriate high-contrast values in light mode.
    ───────────────────────────────────────────────────────────── */
-html.light {
-  /* Text overrides */
-  .text-white { color: #0f1117 !important; }
-  .text-white\/90 { color: rgba(15, 17, 23, 0.9) !important; }
-  .text-white\/85 { color: rgba(15, 17, 23, 0.85) !important; }
-  .text-white\/80 { color: rgba(15, 17, 23, 0.8) !important; }
-  .text-white\/75 { color: rgba(15, 17, 23, 0.75) !important; }
-  .text-white\/70 { color: rgba(15, 17, 23, 0.7) !important; }
-  .text-white\/60 { color: rgba(15, 17, 23, 0.6) !important; }
-  .text-white\/50 { color: rgba(15, 17, 23, 0.5) !important; }
-  .text-white\/45 { color: rgba(15, 17, 23, 0.45) !important; }
-  .text-white\/40 { color: rgba(15, 17, 23, 0.4) !important; }
-  .text-white\/35 { color: rgba(15, 17, 23, 0.35) !important; }
-  .text-white\/30 { color: rgba(15, 17, 23, 0.3) !important; }
-  .text-white\/25 { color: rgba(15, 17, 23, 0.25) !important; }
-  .text-white\/20 { color: rgba(15, 17, 23, 0.2) !important; }
-  .text-white\/15 { color: rgba(15, 17, 23, 0.15) !important; }
-  .text-white\/10 { color: rgba(15, 17, 23, 0.1) !important; }
-  .text-white\/5 { color: rgba(15, 17, 23, 0.05) !important; }
-  
-  /* Border overrides */
-  .border-white\/5 { border-color: rgba(15, 17, 23, 0.06) !important; }
-  .border-white\/10 { border-color: rgba(15, 17, 23, 0.1) !important; }
-  .border-white\/15 { border-color: rgba(15, 17, 23, 0.15) !important; }
-  .border-white\/20 { border-color: rgba(15, 17, 23, 0.2) !important; }
+/* Text overrides */
+html.light .text-white { color: #0f1117 !important; }
+html.light .text-white\/90 { color: rgba(15, 17, 23, 0.9) !important; }
+html.light .text-white\/85 { color: rgba(15, 17, 23, 0.85) !important; }
+html.light .text-white\/80 { color: rgba(15, 17, 23, 0.8) !important; }
+html.light .text-white\/75 { color: rgba(15, 17, 23, 0.75) !important; }
+html.light .text-white\/70 { color: rgba(15, 17, 23, 0.7) !important; }
+html.light .text-white\/60 { color: rgba(15, 17, 23, 0.6) !important; }
+html.light .text-white\/50 { color: rgba(15, 17, 23, 0.5) !important; }
+html.light .text-white\/45 { color: rgba(15, 17, 23, 0.45) !important; }
+html.light .text-white\/40 { color: rgba(15, 17, 23, 0.4) !important; }
+html.light .text-white\/35 { color: rgba(15, 17, 23, 0.35) !important; }
+html.light .text-white\/30 { color: rgba(15, 17, 23, 0.3) !important; }
+html.light .text-white\/25 { color: rgba(15, 17, 23, 0.25) !important; }
+html.light .text-white\/20 { color: rgba(15, 17, 23, 0.2) !important; }
+html.light .text-white\/15 { color: rgba(15, 17, 23, 0.15) !important; }
+html.light .text-white\/10 { color: rgba(15, 17, 23, 0.1) !important; }
+html.light .text-white\/5 { color: rgba(15, 17, 23, 0.05) !important; }
 
-  /* Background overrides */
-  .bg-white\/5 { background-color: rgba(0, 0, 0, 0.03) !important; }
-  .bg-white\/10 { background-color: rgba(0, 0, 0, 0.06) !important; }
-  .bg-white\/20 { background-color: rgba(0, 0, 0, 0.1) !important; }
-  .bg-white\/80 { background-color: rgba(255, 255, 255, 0.8) !important; }
-  .bg-white\/90 { background-color: rgba(255, 255, 255, 0.9) !important; }
-  .bg-black\/60 { background-color: rgba(0, 0, 0, 0.15) !important; }
-  .bg-black\/70 { background-color: rgba(0, 0, 0, 0.25) !important; }
+/* Border overrides */
+html.light .border-white\/5 { border-color: rgba(15, 17, 23, 0.06) !important; }
+html.light .border-white\/10 { border-color: rgba(15, 17, 23, 0.1) !important; }
+html.light .border-white\/15 { border-color: rgba(15, 17, 23, 0.15) !important; }
+html.light .border-white\/20 { border-color: rgba(15, 17, 23, 0.2) !important; }
 
-  /* Subtly tint specific containers */
-  .glass-card {
-    background-color: var(--bg-card);
-    border-color: var(--border-subtle);
-  }
+/* Background overrides */
+html.light .bg-white\/5 { background-color: rgba(0, 0, 0, 0.03) !important; }
+html.light .bg-white\/10 { background-color: rgba(0, 0, 0, 0.06) !important; }
+html.light .bg-white\/20 { background-color: rgba(0, 0, 0, 0.1) !important; }
+html.light .bg-white\/80 { background-color: rgba(255, 255, 255, 0.8) !important; }
+html.light .bg-white\/90 { background-color: rgba(255, 255, 255, 0.9) !important; }
+html.light .bg-black\/60 { background-color: rgba(0, 0, 0, 0.15) !important; }
+html.light .bg-black\/70 { background-color: rgba(0, 0, 0, 0.25) !important; }
+
+/* Subtly tint specific containers */
+html.light .glass-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-subtle);
 }
