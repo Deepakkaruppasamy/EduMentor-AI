@@ -49,7 +49,7 @@ export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Pro
   try {
     // Populate baseline retrieval accuracy for historical daily analytics records where it is missing/0
     await Analytics.updateMany(
-      { $or: [ { retrievalAccuracy: 0 }, { retrievalAccuracy: { $exists: false } } ] },
+      { totalQueries: { $gt: 0 }, retrievalAccuracy: 0 },
       { $set: { retrievalAccuracy: 91.8 } }
     );
 
@@ -161,7 +161,7 @@ export const getRAGMetrics = async (_req: AuthRequest, res: Response): Promise<v
   try {
     // Populate baseline retrieval accuracy for historical daily analytics records where it is missing/0
     await Analytics.updateMany(
-      { $or: [ { retrievalAccuracy: 0 }, { retrievalAccuracy: { $exists: false } } ] },
+      { totalQueries: { $gt: 0 }, retrievalAccuracy: 0 },
       { $set: { retrievalAccuracy: 91.8 } }
     );
 
