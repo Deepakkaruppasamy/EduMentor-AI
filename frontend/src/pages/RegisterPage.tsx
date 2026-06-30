@@ -25,7 +25,6 @@ export const RegisterPage: React.FC = () => {
     name: string;
     email: string;
     role: string;
-    password: string;
   } | null>(null);
 
   const navigate = useNavigate();
@@ -72,12 +71,11 @@ export const RegisterPage: React.FC = () => {
         courses: selectedCourses
       });
 
-      // Trigger credentials display modal instead of automatic login
+      // Show email-confirmation modal (no password displayed)
       setGenCredentials({
         name: res.user.name,
         email: res.user.email,
         role: res.user.role,
-        password: res.generatedPassword || '',
       });
 
       toast.success('Registration request complete!');
@@ -230,48 +228,55 @@ export const RegisterPage: React.FC = () => {
         </p>
       </motion.div>
 
-      {/* GENERATED CREDENTIALS MODAL */}
+      {/* ACCOUNT CREATED MODAL */}
       <AnimatePresence>
         {genCredentials && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="glass-card w-full max-w-md p-6 border border-white/15 text-center space-y-5"
             >
-              <div className="h-12 w-12 bg-primary-500/10 border border-primary-500/20 text-primary-400 rounded-full flex items-center justify-center mx-auto text-xl">
+              <div className="h-14 w-14 bg-green-500/10 border border-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto text-2xl">
                 ✉️
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Account Created Successfully</h3>
-                <p className="text-xs text-white/40 mt-1">A secure temporary login password has been sent to your email address.</p>
+                <h3 className="text-lg font-bold text-white">Account Created! Check Your Email</h3>
+                <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
+                  Hi <span className="text-white/80 font-semibold">{genCredentials.name}</span>, your{' '}
+                  <span className="capitalize text-white/80">{genCredentials.role}</span> account has been created.
+                </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-3 text-left text-xs font-mono">
-                <div>
-                  <span className="text-white/40 block">NAME:</span>
-                  <span className="text-white font-semibold">{genCredentials.name}</span>
+              <div className="p-4 rounded-xl space-y-2 text-left" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">📧</span>
+                  <div>
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider font-semibold">Email sent to</div>
+                    <div className="text-xs text-white font-mono mt-0.5">{genCredentials.email}</div>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-white/40 block">REGISTERED EMAIL:</span>
-                  <span className="text-white">{genCredentials.email}</span>
-                </div>
-                <div>
-                  <span className="text-white/40 block">ROLE:</span>
-                  <span className="text-white capitalize">{genCredentials.role}</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">🔑</span>
+                  <div>
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider font-semibold">Temporary password</div>
+                    <div className="text-xs text-white/60 mt-0.5">Sent securely to your email address</div>
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-2">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setGenCredentials(null);
-                    navigate('/login');
-                  }} 
-                  className="btn-primary w-full py-2.5 text-xs font-bold"
-                >
-                  Proceed to Sign In
-                </button>
-              </div>
+              <p className="text-[11px] text-white/30 leading-relaxed">
+                Open your inbox, copy the temporary password, and sign in. You'll be prompted to set a permanent password on first login.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setGenCredentials(null);
+                  navigate('/login');
+                }}
+                className="btn-primary w-full py-2.5 text-xs font-bold"
+              >
+                Go to Sign In →
+              </button>
             </motion.div>
           </div>
         )}

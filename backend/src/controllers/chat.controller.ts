@@ -108,7 +108,13 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
 
   // 8. Update analytics
   const responseTime = Date.now() - startTime;
-  await updateDailyAnalytics(hallucinationResult.trustScore, responseTime, courseId);
+  // Compute retrieval accuracy from top chunk scores (rrfScore ~0–0.1, scale to 0–100)
+  const retrievalAcc = ragResult.chunks.length > 0
+    ? Math.min(100, Math.round(
+        (ragResult.chunks.reduce((s, c) => s + c.finalScore, 0) / ragResult.chunks.length) * 1000
+      ))
+    : 0;
+  await updateDailyAnalytics(hallucinationResult.trustScore, responseTime, courseId, retrievalAcc);
 
   res.json({
     success: true,
@@ -255,7 +261,12 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
 
     // 8. Update analytics
     const responseTime = Date.now() - startTime;
-    await updateDailyAnalytics(hallucinationResult.trustScore, responseTime, courseId);
+    const retrievalAcc = ragResult.chunks.length > 0
+      ? Math.min(100, Math.round(
+          (ragResult.chunks.reduce((s, c) => s + c.finalScore, 0) / ragResult.chunks.length) * 1000
+        ))
+      : 0;
+    await updateDailyAnalytics(hallucinationResult.trustScore, responseTime, courseId, retrievalAcc);
 
     // Send final analysis payload
     const finalPayload = {
@@ -330,7 +341,12 @@ export const renameChat = asyncHandler(async (req: AuthRequest, res: Response) =
   res.json({ success: true, chat });
 });
 
-async function updateDailyAnalytics(trustScore: number, responseTime: number, courseId: string): Promise<void> {
+async function updateDailyAnalytics(
+  trustScore: number,
+  responseTime: number,
+  courseId: string,
+  retrievalAccuracy: number = 0
+): Promise<void> {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -364,6 +380,18 @@ async function updateDailyAnalytics(trustScore: number, responseTime: number, co
                   $add: [
                     { $multiply: [ { $ifNull: [ "$avgResponseTime", 0 ] }, { $ifNull: [ "$totalQueries", 0 ] } ] },
                     responseTime
+                  ]
+                },
+                { $add: [ { $ifNull: [ "$totalQueries", 0 ] }, 1 ] }
+              ]
+            },
+            // Running average of retrieval accuracy across all queries today
+            retrievalAccuracy: {
+              $divide: [
+                {
+                  $add: [
+                    { $multiply: [ { $ifNull: [ "$retrievalAccuracy", 0 ] }, { $ifNull: [ "$totalQueries", 0 ] } ] },
+                    retrievalAccuracy
                   ]
                 },
                 { $add: [ { $ifNull: [ "$totalQueries", 0 ] }, 1 ] }

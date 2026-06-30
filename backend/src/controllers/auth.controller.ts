@@ -150,7 +150,6 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       preferredLanguage: user.preferredLanguage,
       isFirstLogin: user.isFirstLogin,
     },
-    generatedPassword: plainPassword
   });
 });
 
