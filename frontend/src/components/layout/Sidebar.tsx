@@ -31,6 +31,9 @@ const STUDENT_LINKS = [
   { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/plagiarism-checker', icon: '🔍', label: 'Plagiarism Checker' },
+  { to: '/activity', icon: '📅', label: 'Activity Timeline' },
+  { to: '/sessions', icon: '🛡️', label: 'Active Sessions' },
+  { to: '/privacy-security', icon: '🔒', label: 'Privacy & Security' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
   { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
   { to: '/feedback', icon: '💬', label: 'Feedback Center' },
@@ -56,6 +59,9 @@ const FACULTY_LINKS = [
   { to: '/reports', icon: '🖨️', label: 'AI Reports' },
   { to: '/assignment-evaluator', icon: '📋', label: 'Assignment Evaluator' },
   { to: '/plagiarism-checker', icon: '🔍', label: 'Plagiarism Checker' },
+  { to: '/activity', icon: '📅', label: 'Activity Timeline' },
+  { to: '/sessions', icon: '🛡️', label: 'Active Sessions' },
+  { to: '/privacy-security', icon: '🔒', label: 'Privacy & Security' },
   { to: '/profile', icon: '👤', label: 'My Profile' },
   { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
   { to: '/feedback', icon: '💬', label: 'Feedback Center' },
@@ -87,6 +93,11 @@ const ADMIN_LINKS = [
   { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
   { to: '/feedback', icon: '💬', label: 'Feedback Center' },
   { to: '/ai-evaluation', icon: '🧪', label: 'AI Evaluation' },
+  { to: '/activity', icon: '📅', label: 'Activity Timeline' },
+  { to: '/sessions', icon: '🛡️', label: 'Active Sessions' },
+  { to: '/privacy-security', icon: '🔒', label: 'Privacy & Security' },
+  { to: '/system-health', icon: '🟢', label: 'System Health' },
+  { to: '/maintenance', icon: '🛠️', label: 'Maintenance Manager' },
 ];
 
 export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {

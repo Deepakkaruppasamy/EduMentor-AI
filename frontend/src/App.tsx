@@ -37,6 +37,14 @@ import { FeedbackPage } from './pages/FeedbackPage';
 import { AIEvaluationPage } from './pages/AIEvaluationPage';
 import { TAMSurveyPage } from './pages/TAMSurveyPage';
 import { PlagiarismCheckerPage } from './pages/PlagiarismCheckerPage';
+import { ActivityTimelinePage } from './pages/ActivityTimelinePage';
+import { SessionsPage } from './pages/SessionsPage';
+import { SystemHealthPage } from './pages/SystemHealthPage';
+import { MaintenancePage } from './pages/MaintenancePage';
+import { MaintenanceControlPage } from './pages/MaintenanceControlPage';
+import { PrivacySecurityPage } from './pages/PrivacySecurityPage';
+import { maintenanceService } from './services/maintenance.service';
+import { useEffect } from 'react';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -62,6 +70,34 @@ const AppPage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 const App: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
+  const [isUnderMaintenance, setIsUnderMaintenance] = React.useState(false);
+
+  useEffect(() => {
+    const checkMaintenance = async () => {
+      try {
+        const res = await maintenanceService.getStatus();
+        if (res.isEnabled) {
+          if (isAuthenticated && user?.role === 'admin') {
+            setIsUnderMaintenance(false);
+          } else {
+            setIsUnderMaintenance(true);
+          }
+        } else {
+          setIsUnderMaintenance(false);
+        }
+      } catch {
+        setIsUnderMaintenance(false);
+      }
+    };
+
+    checkMaintenance();
+    const interval = setInterval(checkMaintenance, 15000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
+
+  if (isUnderMaintenance) {
+    return <MaintenancePage />;
+  }
 
   return (
     <BrowserRouter>
@@ -197,6 +233,31 @@ const App: React.FC = () => {
         <Route path="/plagiarism-checker" element={
           <ProtectedRoute>
             <AppPage><PlagiarismCheckerPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/activity" element={
+          <ProtectedRoute>
+            <AppPage><ActivityTimelinePage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/sessions" element={
+          <ProtectedRoute>
+            <AppPage><SessionsPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/privacy-security" element={
+          <ProtectedRoute>
+            <AppPage><PrivacySecurityPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/system-health" element={
+          <ProtectedRoute roles={['admin']}>
+            <AppPage><SystemHealthPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/maintenance" element={
+          <ProtectedRoute roles={['admin']}>
+            <AppPage><MaintenanceControlPage /></AppPage>
           </ProtectedRoute>
         } />
 

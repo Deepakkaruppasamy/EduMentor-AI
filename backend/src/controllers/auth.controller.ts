@@ -10,6 +10,8 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '../utils/email';
+import UserSession from '../models/UserSession';
+import { logActivity, hashToken, parseBrowser, parseOS, parseDeviceName } from '../utils/activity-logger';
 
 const generateToken = (id: string): string => {
   return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRE as any });
@@ -334,6 +336,36 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   const token = generateToken(user._id.toString());
 
+  // Create UserSession
+  try {
+    const ua = req.headers['user-agent'] || '';
+    await UserSession.create({
+      userId: user._id,
+      userEmail: user.email,
+      tokenHash: hashToken(token),
+      deviceName: parseDeviceName(ua),
+      browser: parseBrowser(ua),
+      os: parseOS(ua),
+      ipAddress: req.ip || req.socket.remoteAddress || '',
+      isActive: true,
+      loginTime: new Date(),
+      lastActive: new Date()
+    });
+
+    // Log Activity
+    await logActivity(req, {
+      userId: user._id.toString(),
+      userEmail: user.email,
+      userRole: user.role,
+      action: 'LOGIN',
+      module: 'Authentication',
+      details: 'User logged in successfully.',
+      status: 'success'
+    });
+  } catch (sessErr) {
+    console.error('Failed to create login session or log activity:', sessErr);
+  }
+
   res.json({
     success: true,
     message: 'Login successful',
@@ -368,6 +400,17 @@ export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) =
   );
   
   if (user) {
+    // Log Activity
+    await logActivity(req, {
+      userId: user._id.toString(),
+      userEmail: user.email,
+      userRole: user.role,
+      action: 'PROFILE_UPDATED',
+      module: 'User Profile',
+      details: 'User updated profile details.',
+      status: 'success'
+    });
+    
     sendEmail({
       email: user.email,
       subject: 'EduMentor AI - Profile Information Updated',
@@ -455,6 +498,26 @@ export const changePassword = asyncHandler(async (req: AuthRequest, res: Respons
   user.password = newPassword;
   await user.save();
 
+  // Terminate all sessions on password change
+  try {
+    await UserSession.updateMany(
+      { userId: user._id, isActive: true },
+      { $set: { isActive: false, logoutTime: new Date() } }
+    );
+    // Log Activity
+    await logActivity(req, {
+      userId: user._id.toString(),
+      userEmail: user.email,
+      userRole: user.role,
+      action: 'PASSWORD_CHANGED',
+      module: 'Authentication',
+      details: 'User changed password.',
+      status: 'success'
+    });
+  } catch (sessErr) {
+    console.error('Failed to revoke sessions or log activity on changePassword:', sessErr);
+  }
+
   // Send security alert
   sendEmail({
     email: user.email,
@@ -500,6 +563,26 @@ export const firstLoginChangePassword = asyncHandler(async (req: Request, res: R
   user.password = newPassword;
   user.isFirstLogin = false; // toggle first login off
   await user.save();
+
+  // Terminate all sessions
+  try {
+    await UserSession.updateMany(
+      { userId: user._id, isActive: true },
+      { $set: { isActive: false, logoutTime: new Date() } }
+    );
+    // Log Activity
+    await logActivity(req, {
+      userId: user._id.toString(),
+      userEmail: user.email,
+      userRole: user.role,
+      action: 'PASSWORD_CHANGED',
+      module: 'Authentication',
+      details: 'User changed password on first login.',
+      status: 'success'
+    });
+  } catch (sessErr) {
+    console.error('Failed to revoke sessions or log activity on firstLoginChangePassword:', sessErr);
+  }
 
   await AuditLog.create({
     action: 'PASSWORD_RESET_COMPLETED',
@@ -755,6 +838,26 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
   // Save new password
   user.password = newPassword;
   await user.save();
+
+  // Terminate all sessions on password reset
+  try {
+    await UserSession.updateMany(
+      { userId: user._id, isActive: true },
+      { $set: { isActive: false, logoutTime: new Date() } }
+    );
+    // Log Activity
+    await logActivity(req, {
+      userId: user._id.toString(),
+      userEmail: user.email,
+      userRole: user.role,
+      action: 'PASSWORD_CHANGED',
+      module: 'Authentication',
+      details: 'User reset password via OTP.',
+      status: 'success'
+    });
+  } catch (sessErr) {
+    console.error('Failed to revoke sessions or log activity on resetPassword:', sessErr);
+  }
 
   // Invalidate OTP record
   await Otp.deleteOne({ email });

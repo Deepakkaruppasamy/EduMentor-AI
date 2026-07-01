@@ -33,6 +33,12 @@ import feedbackRoutes from './routes/feedback.routes';
 import aiEvaluationRoutes from './routes/ai-evaluation.routes';
 import plagiarismRoutes from './routes/plagiarism.routes';
 import assistantRoutes from './routes/assistant.routes';
+import activityRoutes from './routes/activity.routes';
+import sessionRoutes from './routes/sessions.routes';
+import healthRoutes from './routes/health.routes';
+import maintenanceRoutes from './routes/maintenance.routes';
+import privacyRoutes from './routes/privacy.routes';
+import { checkMaintenanceMW } from './controllers/maintenance.controller';
 import { initMessagingSocketServer } from './services/messaging-socket.service';
 import { initSupportSocketServer } from './services/support-socket.service';
 import { errorHandler } from './middleware/errorHandler';
@@ -69,6 +75,13 @@ app.use(morgan('combined'));
 // Static uploads
 app.use('/uploads', express.static('uploads'));
 
+// Global maintenance mode check middleware
+app.use('/api', checkMaintenanceMW);
+
+// Global activity timeline interceptor middleware
+import { activityTimelineMW } from './utils/activity-logger';
+app.use('/api', activityTimelineMW);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
@@ -96,6 +109,11 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/ai-evaluation', aiEvaluationRoutes);
 app.use('/api/plagiarism', plagiarismRoutes);
 app.use('/api/assistant', assistantRoutes);
+app.use('/api/activity', activityRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/health', healthRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/privacy', privacyRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
