@@ -36,6 +36,7 @@ import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { FeedbackPage } from './pages/FeedbackPage';
 import { AIEvaluationPage } from './pages/AIEvaluationPage';
 import { TAMSurveyPage } from './pages/TAMSurveyPage';
+import { PlagiarismCheckerPage } from './pages/PlagiarismCheckerPage';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -191,6 +192,11 @@ const App: React.FC = () => {
         <Route path="/rate-platform" element={
           <ProtectedRoute>
             <AppPage><TAMSurveyPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/plagiarism-checker" element={
+          <ProtectedRoute>
+            <AppPage><PlagiarismCheckerPage /></AppPage>
           </ProtectedRoute>
         } />
 

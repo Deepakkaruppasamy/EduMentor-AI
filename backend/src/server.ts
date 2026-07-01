@@ -31,6 +31,8 @@ import searchRoutes from './routes/search.routes';
 import announcementRoutes from './routes/announcement.routes';
 import feedbackRoutes from './routes/feedback.routes';
 import aiEvaluationRoutes from './routes/ai-evaluation.routes';
+import plagiarismRoutes from './routes/plagiarism.routes';
+import assistantRoutes from './routes/assistant.routes';
 import { initMessagingSocketServer } from './services/messaging-socket.service';
 import { initSupportSocketServer } from './services/support-socket.service';
 import { errorHandler } from './middleware/errorHandler';
@@ -92,6 +94,8 @@ app.use('/api/search', searchRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/ai-evaluation', aiEvaluationRoutes);
+app.use('/api/plagiarism', plagiarismRoutes);
+app.use('/api/assistant', assistantRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

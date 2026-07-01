@@ -11,6 +11,7 @@ import { Logo } from '../common/Logo';
 import { useNotificationStore } from '../../store/notification.store';
 import { useThemeStore } from '../../store/theme.store';
 import { CommandPalette } from './CommandPalette';
+import { AIAssistantWidget } from '../assistant/AIAssistantWidget';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -238,6 +239,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           error: { iconTheme: { primary: '#fc8181', secondary: 'transparent' } },
         }}
       />
+      {/* Global AI Learning Assistant Widget — floats on every authenticated page */}
+      <AIAssistantWidget />
     </div>
   );
 };
