@@ -1,7 +1,6 @@
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import os from 'os';
 import fs from 'fs';
-import path from 'path';
 import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
