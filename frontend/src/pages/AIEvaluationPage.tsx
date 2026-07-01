@@ -209,21 +209,55 @@ const RAGPanel: React.FC<{ data: any }> = ({ data }) => (
       <MetricCard icon="🧲" label="Vector Retrieval" value={`${data.vectorRetrievalAccuracy}%`} color="#4f63ff" />
       <MetricCard icon="📚" label="BM25 Retrieval" value={`${data.bm25RetrievalAccuracy}%`} color="#9f7aea" />
       <MetricCard icon="🔀" label="Hybrid Retrieval" value={`${data.hybridRetrievalAccuracy}%`} color="#48bb78" />
-      <MetricCard icon="⚡" label="Avg Retrieval Time" value={`${data.avgRetrievalTime}ms`} color="#f6ad55" />
+      <MetricCard icon="⚡" label="Avg Retrieval Time" value={`${data.avgRetrievalTime}s`} color="#f6ad55" />
       <MetricCard icon="🎯" label="Top-K Accuracy" value={`${data.topKAccuracy}%`} color="#06b6d4" />
       <MetricCard icon="📏" label="Context Relevance" value={`${data.contextRelevanceScore}%`} color="#e879f9" />
     </div>
     <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
-      <h4 className="text-xs font-bold text-white/50 mb-4">⚡ Retrieval Latency Trend (30 days)</h4>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data.latencyTrend}>
+      <h4 className="text-xs font-bold text-white/50 mb-1">⚡ Retrieval Latency Trend (30 days)</h4>
+      <p className="text-[10px] text-white/25 mb-4">
+        Left axis: avg response latency (seconds) · Right axis: retrieval accuracy (%)
+      </p>
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={data.latencyTrend} margin={{ top: 4, right: 40, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
           <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
-          <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
-          <Tooltip contentStyle={TOOLTIP_STYLE} />
+          {/* Left Y-axis — latency in seconds */}
+          <YAxis
+            yAxisId="latency"
+            domain={[0, 'auto']}
+            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }}
+            tickFormatter={(v) => `${v}s`}
+            label={{ value: 'Latency (s)', angle: -90, position: 'insideLeft', fill: 'rgba(255,255,255,0.2)', fontSize: 9, dx: 10 }}
+          />
+          {/* Right Y-axis — accuracy % */}
+          <YAxis
+            yAxisId="accuracy"
+            orientation="right"
+            domain={[0, 100]}
+            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }}
+            tickFormatter={(v) => `${v}%`}
+          />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            formatter={(value: any, name: string) => {
+              if (name === 'Latency (s)') return [`${value}s`, name];
+              return [`${value}%`, name];
+            }}
+          />
           <Legend wrapperStyle={{ fontSize: 10 }} />
-          <Line type="monotone" dataKey="latency" stroke="#f6ad55" strokeWidth={2} dot={false} name="Latency (ms)" />
-          <Line type="monotone" dataKey="retrievalAccuracy" stroke="#48bb78" strokeWidth={2} dot={false} name="Accuracy %" />
+          <Line
+            yAxisId="latency"
+            type="monotone" dataKey="latency"
+            stroke="#f6ad55" strokeWidth={2} dot={{ r: 3, fill: '#f6ad55' }}
+            name="Latency (s)"
+          />
+          <Line
+            yAxisId="accuracy"
+            type="monotone" dataKey="retrievalAccuracy"
+            stroke="#48bb78" strokeWidth={2} dot={{ r: 3, fill: '#48bb78' }}
+            name="Accuracy %"
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -237,6 +271,7 @@ const RAGPanel: React.FC<{ data: any }> = ({ data }) => (
     </div>
   </div>
 );
+
 
 const ExplainPanel: React.FC<{ data: any }> = ({ data }) => (
   <div className="space-y-6">
