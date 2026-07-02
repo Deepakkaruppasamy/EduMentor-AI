@@ -163,7 +163,7 @@ export const StudentDashboard: React.FC = () => {
 
   // Pinned widgets bubble up to the top automatically
   const displayWidgets = [...(prefs.dashboard?.widgets || [])].sort(
-    (a, b) => Number(b.isPinned || false) - Number(a.isPinned || false)
+    (a: any, b: any) => Number(b.isPinned || false) - Number(a.isPinned || false)
   );
 
   /* ─────────────────────────────────────────────────────────────────────────────

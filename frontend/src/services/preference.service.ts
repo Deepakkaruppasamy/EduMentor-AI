@@ -9,6 +9,7 @@ export interface UserPreferences {
     defaultLandingPage: string;
     timezone: string;
     dateFormat: string;
+    shortcutsEnabled?: boolean;
   };
   notifications: Record<string, { browser: boolean; inApp: boolean; email: boolean }>;
   email: Record<string, boolean>;
@@ -38,6 +39,9 @@ export interface UserPreferences {
       title: string;
       visible: boolean;
       gridSpan: string;
+      isPinned?: boolean;
+      isCollapsed?: boolean;
+      height?: string;
     }>;
   };
 }

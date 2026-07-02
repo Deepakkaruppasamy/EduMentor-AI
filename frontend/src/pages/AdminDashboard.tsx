@@ -125,6 +125,10 @@ const SuperAdminDashboardView: React.FC = () => {
     setActiveTouchIndex(index);
   };
 
+  const handleTouchMove = (e: React.TouchEvent, index: number) => {
+    // Touch movement check
+  };
+
   const handleTouchEnd = async (e: React.TouchEvent, index: number) => {
     if (activeTouchIndex === null || !prefs) return;
 
@@ -162,7 +166,7 @@ const SuperAdminDashboardView: React.FC = () => {
 
   // Pinned widgets first
   const displayWidgets = [...(prefs.dashboard?.widgets || [])].sort(
-    (a, b) => Number(b.isPinned || false) - Number(a.isPinned || false)
+    (a: any, b: any) => Number(b.isPinned || false) - Number(a.isPinned || false)
   );
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -540,6 +544,10 @@ const FacultyDashboardView: React.FC = () => {
     setActiveTouchIndex(index);
   };
 
+  const handleTouchMove = (e: React.TouchEvent, index: number) => {
+    // Touch movement check
+  };
+
   const handleTouchEnd = async (e: React.TouchEvent, index: number) => {
     if (activeTouchIndex === null || !prefs) return;
 
@@ -697,7 +705,7 @@ const FacultyDashboardView: React.FC = () => {
   };
 
   const displayWidgets = [...(prefs.dashboard?.widgets || [])].sort(
-    (a, b) => Number(b.isPinned || false) - Number(a.isPinned || false)
+    (a: any, b: any) => Number(b.isPinned || false) - Number(a.isPinned || false)
   );
 
   return (

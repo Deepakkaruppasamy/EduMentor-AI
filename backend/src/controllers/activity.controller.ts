@@ -174,7 +174,7 @@ export const exportTimeline = asyncHandler(async (req: AuthRequest, res: Respons
         `"${String(log.action || '').replace(/"/g, '""')}"`,
         log.status || 'success',
         log.ipAddress || '',
-        `"${String(log.userAgent || '').replace(/"/g, '""')}"`,
+        `"${String(log.device || '').replace(/"/g, '""')}"`,
         `"${detailsStr}"`,
         log.createdAt ? new Date(log.createdAt).toISOString() : '',
       ];
