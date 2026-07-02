@@ -124,3 +124,69 @@ export const getModules = asyncHandler(async (req: AuthRequest, res: Response) =
   const modules = await ActivityLog.distinct('module', filter);
   res.json({ modules });
 });
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   GET /api/activity/export
+   Exports timeline logs to JSON or CSV format
+───────────────────────────────────────────────────────────────────────────── */
+export const exportTimeline = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const {
+    module,
+    action,
+    status,
+    from,
+    to,
+    format = 'json',
+  } = req.query as Record<string, string>;
+
+  const filter: Record<string, any> = {};
+
+  if (req.user!.role === 'admin') {
+    if (req.query.userId) filter.userId = req.query.userId;
+  } else {
+    filter.userId = req.user!._id;
+  }
+
+  if (module) filter.module = { $regex: module, $options: 'i' };
+  if (action) filter.action = { $regex: action, $options: 'i' };
+  if (status) filter.status = status;
+  if (from || to) {
+    filter.createdAt = {};
+    if (from) filter.createdAt.$gte = new Date(from);
+    if (to) filter.createdAt.$lte = new Date(new Date(to).setHours(23, 59, 59, 999));
+  }
+
+  const logs = await ActivityLog.find(filter).sort({ createdAt: -1 }).limit(5000).lean();
+
+  if (format === 'csv') {
+    const headers = ['ID', 'User ID', 'Module', 'Action', 'Status', 'IP Address', 'User Agent', 'Details', 'Timestamp'];
+    const csvRows = [headers.join(',')];
+
+    for (const log of logs) {
+      const detailsStr = typeof log.details === 'object'
+        ? JSON.stringify(log.details).replace(/"/g, '""')
+        : String(log.details || '').replace(/"/g, '""');
+
+      const values = [
+        log._id,
+        log.userId,
+        `"${String(log.module || '').replace(/"/g, '""')}"`,
+        `"${String(log.action || '').replace(/"/g, '""')}"`,
+        log.status || 'success',
+        log.ipAddress || '',
+        `"${String(log.userAgent || '').replace(/"/g, '""')}"`,
+        `"${detailsStr}"`,
+        log.createdAt ? new Date(log.createdAt).toISOString() : '',
+      ];
+      csvRows.push(values.join(','));
+    }
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=activity_export_${Date.now()}.csv`);
+    return res.send(csvRows.join('\n'));
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename=activity_export_${Date.now()}.json`);
+  res.json(logs);
+});

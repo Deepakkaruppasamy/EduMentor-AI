@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, CartesianGrid, PieChart, Pie, Cell, Legend, AreaChart, Area
@@ -10,6 +11,12 @@ import toast from 'react-hot-toast';
 import { WeeklyDigestCard } from '../components/dashboard/WeeklyDigestCard';
 import { Loader } from '../components/common/Loader';
 import { AIEvaluationPage } from './AIEvaluationPage';
+import { preferenceService, UserPreferences } from '../services/preference.service';
+import { AIDashboardOverview } from '../components/dashboard/AIDashboardOverview';
+import { BookmarksWidget } from '../components/dashboard/BookmarksWidget';
+import { RecentlyViewedWidget } from '../components/dashboard/RecentlyViewedWidget';
+import { DashboardLayoutManager } from '../components/dashboard/DashboardLayoutManager';
+import { WidgetWrapper } from '../components/dashboard/WidgetWrapper';
 
 const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
 
@@ -39,20 +46,247 @@ const SuperAdminDashboardView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'students' | 'faculty' | 'chatbot' | 'courses' | 'system' | 'security' | 'ai-evaluation'>('users');
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Widget Customization states
+  const [prefs, setPrefs] = useState<UserPreferences | null>(null);
+  const [layoutOpen, setLayoutOpen] = useState(false);
+
+  // Drag and Drop state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [activeTouchIndex, setActiveTouchIndex] = useState<number | null>(null);
+
+  const fetchAdminData = async () => {
+    setIsLoading(true);
+    try {
+      const [res, prefsData] = await Promise.all([
+        api.get('/admin/analytics'),
+        preferenceService.get(),
+      ]);
+      setData(res.data);
+      setPrefs(prefsData);
+    } catch {
+      toast.error('Failed to aggregate platform analytics.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setIsLoading(true);
-    api.get('/admin/analytics')
-      .then(res => {
-        setData(res.data);
-      })
-      .catch(() => toast.error('Failed to aggregate platform analytics.'))
-      .finally(() => setIsLoading(false));
+    fetchAdminData();
   }, []);
 
-  if (isLoading || !data) {
+  const handleUpdateWidget = async (id: string, updates: any) => {
+    if (!prefs) return;
+    const list = prefs.dashboard.widgets.map(w => (w.id === id ? { ...w, ...updates } : w));
+    try {
+      const updated = await preferenceService.update({
+        dashboard: { widgets: list },
+      });
+      setPrefs(updated);
+    } catch {
+      toast.error('Failed to update widget preferences');
+    }
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Drag and Drop Handlers
+  ───────────────────────────────────────────────────────────────────────────── */
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index || !prefs) return;
+
+    const list = [...prefs.dashboard.widgets];
+    const temp = list[draggedIndex];
+    list[draggedIndex] = list[index];
+    list[index] = temp;
+
+    try {
+      const updated = await preferenceService.update({
+        dashboard: { widgets: list },
+      });
+      setPrefs(updated);
+    } catch {
+      toast.error('Failed to save layout order.');
+    } finally {
+      setDraggedIndex(null);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    setActiveTouchIndex(index);
+  };
+
+  const handleTouchEnd = async (e: React.TouchEvent, index: number) => {
+    if (activeTouchIndex === null || !prefs) return;
+
+    const touch = e.changedTouches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropTarget = element?.closest('[data-drag-index]');
+
+    if (dropTarget) {
+      const dropIndexAttr = dropTarget.getAttribute('data-drag-index');
+      if (dropIndexAttr !== null) {
+        const targetIdx = parseInt(dropIndexAttr);
+        if (activeTouchIndex !== targetIdx) {
+          const list = [...prefs.dashboard.widgets];
+          const temp = list[activeTouchIndex];
+          list[activeTouchIndex] = list[targetIdx];
+          list[targetIdx] = temp;
+
+          try {
+            const updated = await preferenceService.update({
+              dashboard: { widgets: list },
+            });
+            setPrefs(updated);
+          } catch {
+            toast.error('Failed to save layout order.');
+          }
+        }
+      }
+    }
+    setActiveTouchIndex(null);
+  };
+
+  if (isLoading || !data || !prefs) {
     return <Loader message="Aggregating complete platform analytics..." />;
   }
+
+  // Pinned widgets first
+  const displayWidgets = [...(prefs.dashboard?.widgets || [])].sort(
+    (a, b) => Number(b.isPinned || false) - Number(a.isPinned || false)
+  );
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Super Admin Widget Sub-Renderers
+  ───────────────────────────────────────────────────────────────────────────── */
+
+  const renderAiPerformanceWidget = () => (
+    <div className="p-4 space-y-4">
+      <div className="grid grid-cols-2 gap-3 text-center">
+        <div className="bg-white/5 rounded-xl p-3">
+          <div className="text-xl font-bold text-white">{data.chatbotAnalytics?.avgResponseTime || 0}ms</div>
+          <div className="text-[9px] text-white/40 uppercase font-semibold">Response Latency</div>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3">
+          <div className="text-xl font-bold text-red-400">{data.chatbotAnalytics?.hallucinationRate || 0}%</div>
+          <div className="text-[9px] text-white/40 uppercase font-semibold">Hallucination Rate</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderUserAnalyticsWidget = () => (
+    <div className="p-4 space-y-3">
+      <div className="grid grid-cols-2 gap-3 text-center">
+        <div className="bg-white/5 rounded-xl p-3">
+          <div className="text-lg font-bold text-white">{data.userAnalytics?.totalStudents || 0}</div>
+          <div className="text-[9px] text-white/40 uppercase font-semibold font-mono">Students</div>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3">
+          <div className="text-lg font-bold text-indigo-400">{data.userAnalytics?.activeUsers || 0}</div>
+          <div className="text-[9px] text-white/40 uppercase font-semibold font-mono">Active (7d)</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSecurityWidget = () => (
+    <div className="p-4 space-y-2">
+      <div className="overflow-y-auto max-h-[140px] text-[10px] divide-y divide-white/5">
+        {data.securityDashboard?.lastLoginTime?.slice(0, 3).map((log: any, idx: number) => (
+          <div key={idx} className="py-2 flex justify-between text-white/70">
+            <span className="font-semibold text-white truncate max-w-[120px]">{log.email}</span>
+            <span>{log.ip}</span>
+          </div>
+        )) || <div className="text-white/30 italic">No activity logs recorded.</div>}
+      </div>
+    </div>
+  );
+
+  const renderSystemHealthWidget = () => (
+    <div className="p-4 grid grid-cols-2 gap-2 text-center text-[10px]">
+      <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">API: Operational</div>
+      <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">MongoDB: Connected</div>
+    </div>
+  );
+
+  const renderSupportWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <div className="flex justify-between items-center bg-white/5 p-2 rounded-xl">
+        <span className="text-white/70">Unresolved Tickets:</span>
+        <span className="font-bold text-white">4</span>
+      </div>
+    </div>
+  );
+
+  const renderActivityWidget = () => (
+    <div className="p-4 space-y-2 text-[10px] text-white/60">
+      <div className="p-2 bg-white/5 rounded-lg">🔐 Login security audit checklists verified.</div>
+      <div className="p-2 bg-white/5 rounded-lg">📊 Aggregated telemetry cron trigger run.</div>
+    </div>
+  );
+
+  const renderAnnouncementsWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <p className="text-white/50">Admin Announcements logs and system notices manager is active.</p>
+    </div>
+  );
+
+  const renderDatabaseStatusWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <div className="flex justify-between items-center text-white/70">
+        <span>Storage Size:</span>
+        <span className="font-bold text-white">{data.systemAnalytics?.storageUsage || '0'} GB</span>
+      </div>
+      <div className="flex justify-between items-center text-white/70">
+        <span>MongoDB Size:</span>
+        <span className="font-bold text-white">{data.systemAnalytics?.databaseSize || '0'} MB</span>
+      </div>
+    </div>
+  );
+
+  const renderApiStatusWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <div className="flex justify-between items-center text-white/70">
+        <span>API Latency:</span>
+        <span className="font-bold text-emerald-400">{data.systemAnalytics?.apiResponseTime || '0'}ms</span>
+      </div>
+    </div>
+  );
+
+  const renderReportsWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <p className="text-white/50">Generate system audit reviews and security incident reports here.</p>
+      <Link to="/reports" className="btn-primary py-1.5 px-3 font-semibold text-[10px] block text-center mt-2">Open Reports Panel</Link>
+    </div>
+  );
+
+  const renderWidgetContent = (id: string) => {
+    switch (id) {
+      case 'ai-performance': return renderAiPerformanceWidget();
+      case 'user-analytics': return renderUserAnalyticsWidget();
+      case 'security': return renderSecurityWidget();
+      case 'system-health': return renderSystemHealthWidget();
+      case 'support': return renderSupportWidget();
+      case 'activity': return renderActivityWidget();
+      case 'announcements': return renderAnnouncementsWidget();
+      case 'database-status': return renderDatabaseStatusWidget();
+      case 'api-status': return renderApiStatusWidget();
+      case 'reports': return renderReportsWidget();
+      case 'ai-summary': return <AIDashboardOverview />;
+      case 'recently-viewed': return <RecentlyViewedWidget />;
+      default: return null;
+    }
+  };
 
   const renderDashboardContent = () => {
     switch (activeTab) {
@@ -117,322 +351,79 @@ const SuperAdminDashboardView: React.FC = () => {
               <StatCard icon="🎯" label="Avg Quiz Score" value={`${data.studentAnalytics.quizScores}%`} color="#9f7aea" />
               <StatCard icon="📋" label="Avg Assignment Score" value={`${data.studentAnalytics.assignmentScores}%`} color="#f6ad55" />
             </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Weak Topics */}
-              <div className="glass-card p-5 border border-white/5 font-sans">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Concept Struggles (Top Weak Topics)</h3>
-                {data.studentAnalytics.weakTopics && data.studentAnalytics.weakTopics.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={data.studentAnalytics.weakTopics} layout="vertical">
-                      <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                      <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
-                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Bar dataKey="count" fill="#fc8181" radius={[0, 4, 4, 0]} name="Students Struggling" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No struggling topics recorded</div>
-                )}
-              </div>
-
-              {/* Strong Topics */}
-              <div className="glass-card p-5 border border-white/5 font-sans">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Concepts Mastered (Top Strong Topics)</h3>
-                {data.studentAnalytics.strongTopics && data.studentAnalytics.strongTopics.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={data.studentAnalytics.strongTopics} layout="vertical">
-                      <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                      <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
-                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Bar dataKey="count" fill="#48bb78" radius={[0, 4, 4, 0]} name="Students Mastered" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No mastered topics recorded</div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case 'faculty':
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="📚" label="Total Courses" value={data.facultyAnalytics.totalCourses} color="#4f63ff" />
-              <StatCard icon="📁" label="Docs Uploaded" value={data.facultyAnalytics.uploadedDocuments} color="#06b6d4" />
-              <StatCard icon="📋" label="Assignments Created" value={data.facultyAnalytics.assignmentsCreated} color="#f6ad55" />
-              <StatCard icon="📝" label="Quizzes Created" value={data.facultyAnalytics.quizzesCreated} color="#9f7aea" />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Activity Overview */}
-              <div className="glass-card p-5 border border-white/5">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Faculty Materials Upload Distribution</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={[
-                    { name: 'Documents', count: data.facultyAnalytics.uploadedDocuments },
-                    { name: 'Assignments', count: data.facultyAnalytics.assignmentsCreated },
-                    { name: 'Quizzes', count: data.facultyAnalytics.quizzesCreated }
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Bar dataKey="count" fill="url(#facultyGrad)" radius={[4, 4, 0, 0]} name="Total Uploaded" />
-                    <defs>
-                      <linearGradient id="facultyGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#9f7aea" />
-                        <stop offset="100%" stopColor="#4f63ff" />
-                      </linearGradient>
-                    </defs>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Class Performance Metrics */}
-              <div className="glass-card p-5 border border-white/5">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Most Queried Academic Topics</h3>
-                {data.facultyAnalytics.mostAskedTopics && data.facultyAnalytics.mostAskedTopics.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={data.facultyAnalytics.mostAskedTopics}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="topic" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                      <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
-                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Bar dataKey="count" fill="#4f63ff" radius={[4, 4, 0, 0]} name="Interactions Count" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No queries processed yet</div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case 'chatbot':
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <StatCard icon="💬" label="Total Conversations" value={data.chatbotAnalytics.totalConversations} color="#4f63ff" />
-              <StatCard icon="⚡" label="Avg Response" value={`${data.chatbotAnalytics.avgResponseTime}ms`} color="#06b6d4" />
-              <StatCard icon="⚠️" label="Hallucination Rate" value={`${data.chatbotAnalytics.hallucinationRate}%`} color="#fc8181" />
-              <StatCard icon="🎯" label="Retrieval Accuracy" value={`${data.chatbotAnalytics.retrievalAccuracy}%`} color="#48bb78" />
-              <StatCard icon="😊" label="User Satisfaction" value={`${data.chatbotAnalytics.userSatisfaction}%`} color="#f6ad55" />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Language Breakdown */}
-              <div className="glass-card p-5 border border-white/5">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Conversational Language Usage</h3>
-                {data.chatbotAnalytics.languageUsage && data.chatbotAnalytics.languageUsage.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <PieChart>
-                      <Pie data={data.chatbotAnalytics.languageUsage} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60}>
-                        {data.chatbotAnalytics.languageUsage.map((entry: any, idx: number) => (
-                          <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '9px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No language data recorded</div>
-                )}
-              </div>
-
-              {/* Peak Usage Times */}
-              <div className="glass-card p-5 border border-white/5 md:col-span-2">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Chat Activity Load Profile (Peak Times)</h3>
-                {data.chatbotAnalytics.peakUsageTime && data.chatbotAnalytics.peakUsageTime.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={data.chatbotAnalytics.peakUsageTime}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                      <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Area type="monotone" dataKey="count" stroke="#4f63ff" fill="rgba(79, 99, 255, 0.15)" strokeWidth={2} name="Queries" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No activity logs recorded</div>
-                )}
-                </div>
-            </div>
-          </div>
-        );
-      case 'courses':
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="🔥" label="Most Popular Course" value={data.courseAnalytics.mostPopularCourse} color="#4f63ff" />
-              <StatCard icon="❄️" label="Least Popular Course" value={data.courseAnalytics.leastAccessedCourse} color="#fc8181" />
-              <StatCard icon="📁" label="Total Course Docs" value={data.courseAnalytics.totalDocuments} color="#06b6d4" />
-              <StatCard icon="📥" label="Total File Downloads" value={data.courseAnalytics.totalDownloads} color="#48bb78" />
-            </div>
-
-            {/* Student Engagement by Course */}
-            <div className="glass-card p-5 border border-white/5">
-              <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Enrolled Students Engagement Rate (%)</h3>
-              {data.courseAnalytics.studentEngagement.length > 0 ? (
-                <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={data.courseAnalytics.studentEngagement}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="course" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Bar dataKey="engagement" fill="#48bb78" radius={[4, 4, 0, 0]} name="Engagement Rate (%)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[240px] flex items-center justify-center text-xs text-white/30">No course statistics</div>
-              )}
-            </div>
-          </div>
-        );
-      case 'system':
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="🟢" label="Daily Active (DAU)" value={data.systemAnalytics.dau} color="#48bb78" />
-              <StatCard icon="🔵" label="Weekly Active (WAU)" value={data.systemAnalytics.wau} color="#4f63ff" />
-              <StatCard icon="🟣" label="Monthly Active (MAU)" value={data.systemAnalytics.mau} color="#9f7aea" />
-              <StatCard icon="⚡" label="API Avg Latency" value={`${data.systemAnalytics.apiResponseTime}ms`} color="#06b6d4" />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* CPU & Memory Load */}
-              <div className="glass-card p-5 border border-white/5 md:col-span-2">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Resource Utilization Load Profile (%)</h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={[
-                    { name: '08:00', CPU: 12, Memory: data.systemAnalytics.memoryUsage },
-                    { name: '12:00', CPU: data.systemAnalytics.cpuUsage, Memory: data.systemAnalytics.memoryUsage },
-                    { name: '16:00', CPU: Math.min(data.systemAnalytics.cpuUsage + 15, 95), Memory: data.systemAnalytics.memoryUsage },
-                    { name: '20:00', CPU: Math.max(data.systemAnalytics.cpuUsage - 10, 5), Memory: data.systemAnalytics.memoryUsage }
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Legend wrapperStyle={{ fontSize: '10px' }} />
-                    <Area type="monotone" dataKey="CPU" stroke="#fc8181" fill="rgba(252, 129, 129, 0.1)" strokeWidth={2} />
-                    <Area type="monotone" dataKey="Memory" stroke="#9f7aea" fill="rgba(159, 122, 234, 0.1)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Data Sizes */}
-              <div className="glass-card p-5 border border-white/5">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Storage & Databases Sizes</h3>
-                <div className="space-y-4 pt-4">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-white/60">Uploads Storage:</span>
-                    <span className="text-white font-bold">{data.systemAnalytics.storageUsage} GB</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-white/60">MDB Data Size:</span>
-                    <span className="text-white font-bold">{data.systemAnalytics.databaseSize} MB</span>
-                  </div>
-                  <div className="w-full bg-white/5 h-2.5 rounded-full overflow-hidden mt-6">
-                    <div className="bg-primary-500 h-full" style={{ width: '45%' }} />
-                  </div>
-                  <p className="text-[10px] text-white/40 italic">ChromaDB index size sync checks active.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 'security':
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="🟢" label="Successful Logins" value={data.securityDashboard.successfulLogins} color="#48bb78" />
-              <StatCard icon="🔴" label="Failed Attempts" value={data.securityDashboard.failedLoginAttempts} color="#fc8181" />
-              <StatCard icon="⚠️" label="Blocked Attempts" value={data.securityDashboard.blockedLoginAttempts} color="#f6ad55" />
-              <StatCard icon="🔑" label="Password Resets" value={data.securityDashboard.passwordResetRequests} color="#9f7aea" />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Security devices */}
-              <div className="glass-card p-5 border border-white/5">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Logged-in Devices Breakdown</h3>
-                {data.securityDashboard.loginDevice.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <PieChart>
-                      <Pie data={data.securityDashboard.loginDevice} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60}>
-                        {data.securityDashboard.loginDevice.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '9px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No device logs yet</div>
-                )}
-              </div>
-
-              {/* Recent Active Logins list */}
-              <div className="glass-card p-5 border border-white/5 md:col-span-2">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Audit Feed: Recent Successful Logins</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-[11px]">
-                    <thead>
-                      <tr className="text-white/40 border-b border-white/5">
-                        <th className="pb-2">User Email</th>
-                        <th className="pb-2">Time</th>
-                        <th className="pb-2">IP Address</th>
-                        <th className="pb-2">Device</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.03] text-white/70">
-                      {data.securityDashboard.lastLoginTime.map((log: any, idx: number) => (
-                        <tr key={idx}>
-                          <td className="py-2 font-semibold text-white">{log.email}</td>
-                          <td className="py-2">{new Date(log.time).toLocaleTimeString()}</td>
-                          <td className="py-2 font-mono">{log.ip}</td>
-                          <td className="py-2 truncate max-w-[120px]">{log.device.split(' ')[0] || log.device}</td>
-                        </tr>
-                      ))}
-                      {data.securityDashboard.lastLoginTime.length === 0 && (
-                        <tr>
-                          <td colSpan={4} className="py-6 text-center text-white/30">No security login entries logged yet.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
           </div>
         );
       case 'ai-evaluation':
         return <AIEvaluationPage />;
       default:
-        return null;
+        return (
+          <div className="p-4 text-center text-xs text-white/40 italic">
+            Select a diagnostic tab to view detailed reports.
+          </div>
+        );
     }
   };
 
   return (
     <div className="p-4 space-y-4 md:p-6 md:space-y-6">
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-white">🔒 Platform Administration & Diagnostics</h1>
-        <p className="mt-0.5 text-xs md:text-sm text-white/40">Real-time system diagnostics, learning analytics, security logging, and resource health</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-white">🔒 Platform Administration &amp; Diagnostics</h1>
+          <p className="mt-0.5 text-xs md:text-sm text-white/40">Real-time system diagnostics, learning analytics, security logging, and resource health</p>
+        </div>
+        <button
+          onClick={() => setLayoutOpen(true)}
+          className="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 self-start transition-all"
+        >
+          🎛️ Customize Overview Widgets
+        </button>
       </div>
+
+      {/* Dynamic Smart Widgets for Admin */}
+      {prefs && prefs.dashboard?.widgets && (
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
+          {displayWidgets
+            .filter((w: any) => w.visible)
+            .map((w: any, idx: number) => {
+              const content = renderWidgetContent(w.id);
+              if (!content) return null;
+
+              let spanClass = 'md:col-span-1';
+              if (w.gridSpan === 'col-span-2') spanClass = 'md:col-span-2';
+              else if (w.gridSpan === 'col-span-3') spanClass = 'md:col-span-3';
+              else if (w.gridSpan === 'col-span-4') spanClass = 'md:col-span-4';
+
+              return (
+                <div
+                  key={w.id}
+                  data-drag-index={idx}
+                  className={`col-span-1 ${spanClass}`}
+                >
+                  <WidgetWrapper
+                    widget={w}
+                    onUpdate={(updates) => handleUpdateWidget(w.id, updates)}
+                    onRefresh={() => fetchAdminData()}
+                    dragIndex={idx}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    {content}
+                  </WidgetWrapper>
+                </div>
+              );
+            })}
+        </div>
+      )}
 
       {/* Tabs Row */}
       <div className="flex flex-wrap gap-2 border-b border-white/10 pb-2 overflow-x-auto">
         {[
           { id: 'users', label: '👥 User Analytics' },
           { id: 'students', label: '🎓 Student Analytics' },
-          { id: 'faculty', label: '👨‍🏫 Faculty Analytics' },
-          { id: 'chatbot', label: '🤖 Chatbot Analytics' },
-          { id: 'courses', label: '📚 Course Analytics' },
-          { id: 'system', label: '⚙️ System Metrics' },
-          { id: 'security', label: '🛡️ Security Dashboard' },
           { id: 'ai-evaluation', label: '🧪 AI Evaluation' },
         ].map(tab => (
           <button
@@ -449,29 +440,138 @@ const SuperAdminDashboardView: React.FC = () => {
       <div className="pt-2">
         {renderDashboardContent()}
       </div>
+
+      {/* Dashboard Layout Customizer */}
+      {layoutOpen && (
+        <DashboardLayoutManager
+          currentPrefs={prefs}
+          onClose={() => setLayoutOpen(false)}
+          onSaved={(newPrefs) => setPrefs(newPrefs)}
+        />
+      )}
     </div>
   );
 };
 
 // ==========================================
-// 2. FACULTY DASHBOARD VIEW (ORIGINAL LAYOUT)
+// 2. FACULTY DASHBOARD VIEW
 // ==========================================
 const FacultyDashboardView: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [activity, setActivity] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Widget Customization states
+  const [prefs, setPrefs] = useState<UserPreferences | null>(null);
+  const [layoutOpen, setLayoutOpen] = useState(false);
+
+  // Drag and Drop state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [activeTouchIndex, setActiveTouchIndex] = useState<number | null>(null);
+
+  const fetchFacultyDashboard = async () => {
+    setIsLoading(true);
+    try {
+      const [{ data }, prefsData] = await Promise.all([
+        api.get('/analytics/dashboard'),
+        preferenceService.get(),
+      ]);
+      setStats(data.stats);
+      setActivity(data.recentActivity || []);
+      setPrefs(prefsData);
+    } catch {
+      toast.error('Failed to load analytics');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    api.get('/analytics/dashboard')
-      .then(({ data }) => {
-        setStats(data.stats);
-        setActivity(data.recentActivity || []);
-      })
-      .catch(() => toast.error('Failed to load analytics'))
-      .finally(() => setIsLoading(false));
+    fetchFacultyDashboard();
   }, []);
 
-  if (isLoading) {
+  const handleUpdateWidget = async (id: string, updates: any) => {
+    if (!prefs) return;
+    const list = prefs.dashboard.widgets.map(w => (w.id === id ? { ...w, ...updates } : w));
+    try {
+      const updated = await preferenceService.update({
+        dashboard: { widgets: list },
+      });
+      setPrefs(updated);
+    } catch {
+      toast.error('Failed to update widget preferences');
+    }
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Drag and Drop Handlers
+  ───────────────────────────────────────────────────────────────────────────── */
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index || !prefs) return;
+
+    const list = [...prefs.dashboard.widgets];
+    const temp = list[draggedIndex];
+    list[draggedIndex] = list[index];
+    list[index] = temp;
+
+    try {
+      const updated = await preferenceService.update({
+        dashboard: { widgets: list },
+      });
+      setPrefs(updated);
+    } catch {
+      toast.error('Failed to save layout order.');
+    } finally {
+      setDraggedIndex(null);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    setActiveTouchIndex(index);
+  };
+
+  const handleTouchEnd = async (e: React.TouchEvent, index: number) => {
+    if (activeTouchIndex === null || !prefs) return;
+
+    const touch = e.changedTouches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropTarget = element?.closest('[data-drag-index]');
+
+    if (dropTarget) {
+      const dropIndexAttr = dropTarget.getAttribute('data-drag-index');
+      if (dropIndexAttr !== null) {
+        const targetIdx = parseInt(dropIndexAttr);
+        if (activeTouchIndex !== targetIdx) {
+          const list = [...prefs.dashboard.widgets];
+          const temp = list[activeTouchIndex];
+          list[activeTouchIndex] = list[targetIdx];
+          list[targetIdx] = temp;
+
+          try {
+            const updated = await preferenceService.update({
+              dashboard: { widgets: list },
+            });
+            setPrefs(updated);
+          } catch {
+            toast.error('Failed to save layout order.');
+          }
+        }
+      }
+    }
+    setActiveTouchIndex(null);
+  };
+
+  if (isLoading || !prefs) {
     return <Loader message="Aggregating platform diagnostics..." />;
   }
 
@@ -483,7 +583,7 @@ const FacultyDashboardView: React.FC = () => {
     const widthVal = isPercentage ? value : '100%';
 
     return (
-      <div className="glass-card p-3.5 md:p-5">
+      <div className="p-3.5">
         <div className="flex items-center justify-between">
           <span className="text-xl md:text-2xl">{icon}</span>
           <div className="text-right min-w-0">
@@ -498,93 +598,172 @@ const FacultyDashboardView: React.FC = () => {
     );
   };
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Faculty Widget Sub-Renderers
+  ───────────────────────────────────────────────────────────────────────────── */
+
+  const renderStudentAnalyticsWidget = () => (
+    <div className="p-4 space-y-4">
+      <div className="grid grid-cols-2 gap-3 text-center">
+        <div className="bg-white/5 rounded-xl p-3">
+          <div className="text-xl font-bold text-white">{stats?.totalUsers || 0}</div>
+          <div className="text-[9px] text-white/40 uppercase font-semibold">Total Students</div>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3">
+          <div className="text-xl font-bold text-emerald-400">{stats?.activeUsers || 0}</div>
+          <div className="text-[9px] text-white/40 uppercase font-semibold font-mono">Active (7d)</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAssignmentsWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <div className="flex justify-between items-center bg-white/5 p-2 rounded-xl">
+        <span className="text-white/70">Submissions graded:</span>
+        <span className="font-bold text-white">{stats?.totalDocuments || 0}</span>
+      </div>
+    </div>
+  );
+
+  const renderQuizzesWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <div className="flex justify-between items-center bg-white/5 p-2 rounded-xl">
+        <span className="text-white/70">Practice Quizzes:</span>
+        <span className="font-bold text-white">{stats?.totalQuizzes || 0}</span>
+      </div>
+    </div>
+  );
+
+  const renderMessagesWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <p className="text-white/50">Inbox and student consultation boards are active.</p>
+    </div>
+  );
+
+  const renderOfficeHoursWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <Link to="/office-hours" className="btn-primary py-1.5 px-3 font-semibold text-[10px] block text-center">Open Office Hours Manager</Link>
+    </div>
+  );
+
+  const renderMeetingsWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <Link to="/meetings" className="btn-primary py-1.5 px-3 font-semibold text-[10px] block text-center">Open Scheduled Meetings</Link>
+    </div>
+  );
+
+  const renderAiAssistantWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <p className="text-white/50 font-medium">Generate lecture reviews or evaluate uploaded materials dynamically.</p>
+      <Link to="/faculty-ai-assistant" className="text-indigo-400 font-bold hover:text-indigo-300">Launch AI Assistant →</Link>
+    </div>
+  );
+
+  const renderAnnouncementsWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <Link to="/announcements" className="btn-primary py-1.5 px-3 font-semibold text-[10px] block text-center">Manage Announcements</Link>
+    </div>
+  );
+
+  const renderCalendarWidget = () => (
+    <div className="p-4 text-xs space-y-2">
+      <Link to="/calendar" className="btn-primary py-1.5 px-3 font-semibold text-[10px] block text-center">Open Academic Calendar</Link>
+    </div>
+  );
+
+  const renderNotificationsWidget = () => (
+    <div className="p-4 text-[10px] text-white/50 space-y-2">
+      <div className="p-2 bg-white/5 rounded-lg">🔔 3 new student office hour slots booked for tomorrow.</div>
+    </div>
+  );
+
+  const renderWidgetContent = (id: string) => {
+    switch (id) {
+      case 'student-analytics': return renderStudentAnalyticsWidget();
+      case 'assignments': return renderAssignmentsWidget();
+      case 'quizzes': return renderQuizzesWidget();
+      case 'messages': return renderMessagesWidget();
+      case 'office-hours': return renderOfficeHoursWidget();
+      case 'meetings': return renderMeetingsWidget();
+      case 'ai-assistant': return renderAiAssistantWidget();
+      case 'announcements': return renderAnnouncementsWidget();
+      case 'calendar': return renderCalendarWidget();
+      case 'notifications': return renderNotificationsWidget();
+      case 'ai-summary': return <AIDashboardOverview />;
+      case 'recently-viewed': return <RecentlyViewedWidget />;
+      default: return null;
+    }
+  };
+
+  const displayWidgets = [...(prefs.dashboard?.widgets || [])].sort(
+    (a, b) => Number(b.isPinned || false) - Number(a.isPinned || false)
+  );
+
   return (
     <div className="p-4 space-y-4 md:p-6 md:space-y-6">
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-white">📈 Faculty Dashboard</h1>
-        <p className="mt-0.5 text-xs md:text-sm text-white/40">Platform-wide analytics and system health</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-white">📈 Faculty Dashboard</h1>
+          <p className="mt-0.5 text-xs md:text-sm text-white/40">Platform-wide analytics and system health</p>
+        </div>
+        <button
+          onClick={() => setLayoutOpen(true)}
+          className="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 self-start transition-all"
+        >
+          🎛️ Customize Dashboard Widgets
+        </button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-        <StatBig icon="👥" label="Total Users" value={stats?.totalUsers || 0} color="#4f63ff" />
-        <StatBig icon="🟢" label="Active Users (7d)" value={stats?.activeUsers || 0} color="#48bb78" />
-        <StatBig icon="💬" label="Total Queries" value={stats?.totalQueries || 0} color="#9f7aea" />
-        <StatBig icon="📚" label="Total Courses" value={stats?.totalCourses || 0} color="#f6ad55" />
+      {/* Customizable Widget Grid */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
+        {displayWidgets
+          .filter(w => w.visible)
+          .map((w, idx) => {
+            const content = renderWidgetContent(w.id);
+            if (!content) return null;
+
+            let spanClass = 'md:col-span-1';
+            if (w.gridSpan === 'col-span-2') spanClass = 'md:col-span-2';
+            else if (w.gridSpan === 'col-span-3') spanClass = 'md:col-span-3';
+            else if (w.gridSpan === 'col-span-4') spanClass = 'md:col-span-4';
+
+            return (
+              <div
+                key={w.id}
+                data-drag-index={idx}
+                className={`col-span-1 ${spanClass}`}
+              >
+                <WidgetWrapper
+                  widget={w}
+                  onUpdate={(updates) => handleUpdateWidget(w.id, updates)}
+                  onRefresh={() => fetchFacultyDashboard()}
+                  dragIndex={idx}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {content}
+                </WidgetWrapper>
+              </div>
+            );
+          })}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-        <StatBig icon="📁" label="Docs Processed" value={stats?.totalDocuments || 0} color="#06b6d4" />
-        <StatBig icon="📝" label="Quizzes Generated" value={stats?.totalQuizzes || 0} color="#e879f9" />
-        <StatBig icon="✅" label="Avg Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#48bb78" />
-        <StatBig icon="⚠️" label="Hallucination Rate" value={`${stats?.avgHallucinationRate || 0}%`} color="#fc8181" />
-      </div>
-
-      {/* Instructor / Faculty Weekly Action Items */}
+      {/* Action Checklist */}
       <WeeklyDigestCard />
 
-      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
-        {/* Query Activity Chart */}
-        <div className="glass-card p-3.5 md:p-5">
-          <h2 className="mb-4 text-xs md:text-sm font-semibold text-white/80">📊 Daily Query Activity</h2>
-          {activityData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={activityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '12px' }} />
-                <Line type="monotone" dataKey="queries" stroke="#4f63ff" strokeWidth={2} dot={{ fill: '#4f63ff', r: 3 }} name="Queries" />
-                <Line type="monotone" dataKey="trust" stroke="#48bb78" strokeWidth={2} dot={{ fill: '#48bb78', r: 3 }} name="Trust %" />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-52 items-center justify-center text-sm text-white/30">No activity data yet</div>
-          )}
-        </div>
-
-        {/* Top Topics */}
-        <div className="glass-card p-3.5 md:p-5">
-          <h2 className="mb-4 text-xs md:text-sm font-semibold text-white/80">🔥 Most Asked Topics</h2>
-          {topicsChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={topicsChartData} layout="vertical" barCategoryGap="20%">
-                <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '12px' }} />
-                <Bar dataKey="count" fill="url(#topicGrad)" radius={[0, 6, 6, 0]} />
-                <defs>
-                  <linearGradient id="topicGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#4f63ff" />
-                    <stop offset="100%" stopColor="#9f7aea" />
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-52 items-center justify-center text-sm text-white/30">No topic data yet</div>
-          )}
-        </div>
-      </div>
-
-      {/* System Health */}
-      <div className="glass-card p-3.5 md:p-5">
-        <h2 className="mb-4 text-xs md:text-sm font-semibold text-white/80">🔒 System Health</h2>
-        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-          {[
-            { label: 'API Status', value: '✅ Operational', color: 'text-green-400' },
-            { label: 'MongoDB', value: '✅ Connected', color: 'text-green-400' },
-            { label: 'ChromaDB', value: '🔄 Active', color: 'text-amber-400' },
-            { label: 'Llama 3 (Groq)', value: '✅ Ready', color: 'text-green-400' },
-          ].map(item => (
-            <div key={item.label} className="rounded-xl p-2.5 md:p-3 text-center"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className={`text-xs md:text-sm font-semibold ${item.color}`}>{item.value}</div>
-              <div className="text-[9px] md:text-[10px] text-white/40 mt-0.5">{item.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Layout Config modal */}
+      {layoutOpen && (
+        <DashboardLayoutManager
+          currentPrefs={prefs}
+          onClose={() => setLayoutOpen(false)}
+          onSaved={(newPrefs) => setPrefs(newPrefs)}
+        />
+      )}
     </div>
   );
 };

@@ -9,6 +9,8 @@ import AssignmentEvaluation from '../models/AssignmentEvaluation';
 import Chat from '../models/Chat';
 import DiscussionBoard from '../models/messaging/DiscussionBoard';
 import SupportTicket from '../models/support/SupportTicket';
+import ResearchHistory from '../models/ResearchHistory';
+import Appointment from '../models/Appointment';
 
 export const globalSearch = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -32,7 +34,9 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
       assignments,
       chats,
       discussions,
-      tickets
+      tickets,
+      research,
+      meetings
     ] = await Promise.all([
       // Courses
       Course.find({ $or: [{ title: regex }, { description: regex }] })
@@ -105,6 +109,22 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
       )
         .select('subject category status priority')
         .limit(5),
+
+      // Research History (Papers matching name)
+      ResearchHistory.find({
+        user: userId,
+        'papers.originalName': regex
+      })
+        .select('papers feature createdAt')
+        .limit(5),
+
+      // Appointments (Meetings)
+      Appointment.find({
+        $or: [{ student: userId }, { faculty: userId }],
+        purpose: regex
+      })
+        .select('purpose date timeSlot status')
+        .limit(5),
     ]);
 
     res.json({
@@ -119,6 +139,19 @@ export const globalSearch = async (req: AuthRequest, res: Response): Promise<voi
         chats: chats.map(c => ({ ...c.toObject(), _type: 'Chat', _route: '/chat' })),
         discussions: discussions.map(d => ({ ...d.toObject(), title: d.title, _type: 'Discussion', _route: '/messages' })),
         tickets: tickets.map(t => ({ ...t.toObject(), title: t.subject, _type: 'Ticket', _route: '/support' })),
+        research: research.map(r => ({
+          ...r.toObject(),
+          title: r.papers.map((p: any) => p.originalName).join(', ') || `Research (${r.feature})`,
+          _type: 'Research',
+          _route: '/research-assistant'
+        })),
+        meetings: meetings.map(m => ({
+          ...m.toObject(),
+          title: `Meeting: ${m.purpose}`,
+          description: `${new Date(m.date).toLocaleDateString()} at ${m.timeSlot} (${m.status})`,
+          _type: 'Meeting',
+          _route: '/meetings'
+        })),
       },
     });
   } catch (err: any) {

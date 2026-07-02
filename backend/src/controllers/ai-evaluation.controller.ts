@@ -642,8 +642,12 @@ export const getSystemMetrics = async (_req: AuthRequest, res: Response): Promis
       User.countDocuments({ lastLogin: { $gte: last7Days() } }),
     ]);
 
-    const avgApiResponseTime = analytics.length > 0
-      ? Math.round(analytics.reduce((s, a) => s + (a.avgResponseTime || 0), 0) / analytics.length)
+    // avgResponseTime is stored in raw ms — convert to seconds for display
+    const avgRawMs = analytics.length > 0
+      ? analytics.reduce((s, a) => s + (a.avgResponseTime || 0), 0) / analytics.length
+      : 0;
+    const avgApiResponseTime = avgRawMs
+      ? Math.min(30, Math.round((avgRawMs / 1000) * 10) / 10)
       : 0;
 
     const mem = process.memoryUsage();
@@ -651,13 +655,17 @@ export const getSystemMetrics = async (_req: AuthRequest, res: Response): Promis
     const memTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
     const memPct = Math.round((memUsedMB / Math.max(memTotalMB, 1)) * 100);
 
-    const uptimeSeconds = process.uptime();
+    // Use os.uptime() (machine uptime) instead of process.uptime() which resets on every restart
+    const uptimeSeconds = require('os').uptime();
     const uptimeDays = Math.floor(uptimeSeconds / 86400);
     const uptimeHours = Math.floor((uptimeSeconds % 86400) / 3600);
 
+    // responseTrend: convert raw ms to seconds for the chart
     const responseTrend = analytics.map(a => ({
       date: new Date(a.date).toLocaleDateString(),
-      responseTime: a.avgResponseTime || 0,
+      responseTime: a.avgResponseTime
+        ? Math.min(30, Math.round((a.avgResponseTime / 1000) * 10) / 10)
+        : 0,
       queries: a.totalQueries || 0,
     }));
 
@@ -665,8 +673,9 @@ export const getSystemMetrics = async (_req: AuthRequest, res: Response): Promis
       success: true,
       data: {
         apiResponseTime: avgApiResponseTime,
-        dbQueryTime: Math.round(avgApiResponseTime * 0.4),
-        chromaRetrievalTime: Math.round(avgApiResponseTime * 0.35),
+        apiResponseUnit: 's',
+        dbQueryTime: avgRawMs ? Math.min(12, Math.round((avgRawMs * 0.4 / 1000) * 10) / 10) : 0,
+        chromaRetrievalTime: avgRawMs ? Math.min(10, Math.round((avgRawMs * 0.35 / 1000) * 10) / 10) : 0,
         cpuUsagePct: 28,
         memoryUsagePct: memPct,
         memUsedMB,

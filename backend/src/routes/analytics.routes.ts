@@ -7,6 +7,7 @@ import {
   getStudentsAtRisk,
   sendIntervention,
   getWeeklyDigest,
+  getAIDashboardOverview,
 } from '../controllers/analytics.controller';
 import { protect, authorize } from '../middleware/auth';
 
@@ -15,6 +16,7 @@ const router = Router();
 router.get('/dashboard', protect, authorize('admin', 'faculty'), getDashboardStats);
 router.get('/progress', protect, getStudentProgress);
 router.get('/weekly-digest', protect, getWeeklyDigest);
+router.get('/ai-overview', protect, getAIDashboardOverview);
 router.get('/faculty/gradebook', protect, authorize('admin', 'faculty'), getFacultyGradebook);
 router.get('/leaderboard', protect, getLeaderboard);
 

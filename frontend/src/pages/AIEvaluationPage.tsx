@@ -827,8 +827,20 @@ const OverviewPanel: React.FC<{ allData: any }> = ({ allData }) => {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricCard icon="💬" label="Total AI Queries" value={chatbot ? chatbot.totalQueries.toLocaleString() : '—'} />
-        <MetricCard icon="⚡" label="Avg API Response" value={system ? `${system.apiResponseTime}ms` : '—'} color="#06b6d4" />
-        <MetricCard icon="🟢" label="System Uptime" value={system ? `${system.uptimeDays}d ${system.uptimeHours}h` : '—'} color="#48bb78" />
+        <MetricCard
+          icon="⚡" label="Avg API Response"
+          value={system ? `${system.apiResponseTime}${system.apiResponseUnit || 's'}` : '—'}
+          color="#06b6d4"
+        />
+        <MetricCard
+          icon="🟢" label="System Uptime"
+          value={system
+            ? (system.uptimeDays > 0
+                ? `${system.uptimeDays}d ${system.uptimeHours}h`
+                : `${system.uptimeHours}h`)
+            : '—'}
+          color="#48bb78"
+        />
         <MetricCard icon="📊" label="TAM Overall Score" value={allData.tam?.overallScore ? `${allData.tam.overallScore}/5` : '—'} color="#f6ad55" />
       </div>
       <div className="rounded-2xl p-5" style={{ background: 'rgba(79,99,255,0.04)', border: '1px solid rgba(79,99,255,0.15)' }}>

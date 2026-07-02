@@ -38,6 +38,9 @@ import sessionRoutes from './routes/sessions.routes';
 import healthRoutes from './routes/health.routes';
 import maintenanceRoutes from './routes/maintenance.routes';
 import privacyRoutes from './routes/privacy.routes';
+import preferenceRoutes from './routes/preference.routes';
+import bookmarkRoutes from './routes/bookmark.routes';
+import recentlyViewedRoutes from './routes/recently-viewed.routes';
 import { checkMaintenanceMW } from './controllers/maintenance.controller';
 import { initMessagingSocketServer } from './services/messaging-socket.service';
 import { initSupportSocketServer } from './services/support-socket.service';
@@ -114,6 +117,9 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/privacy', privacyRoutes);
+app.use('/api/preferences', preferenceRoutes);
+app.use('/api/bookmarks', bookmarkRoutes);
+app.use('/api/recently-viewed', recentlyViewedRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

@@ -38,6 +38,38 @@ export const ActivityTimelinePage: React.FC = () => {
   const [searchAction, setSearchAction] = useState('');
   const [selectedRole, setSelectedRole] = useState(''); // Admin only
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async (format: 'json' | 'csv') => {
+    setExporting(true);
+    try {
+      const params = {
+        module: selectedModule || undefined,
+        status: selectedStatus || undefined,
+        from: fromDate || undefined,
+        to: toDate || undefined,
+        action: searchAction || undefined,
+        ...(isAdmin && { role: selectedRole || undefined }),
+        format,
+      };
+
+      const blob = await activityService.exportTimeline(params);
+      
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `activity_export_${Date.now()}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      toast.success(`Exported timeline as ${format.toUpperCase()}`);
+    } catch (err) {
+      toast.error('Failed to export timeline logs.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const fetchLogs = async (pageNum = 1) => {
     setIsLoading(true);
     try {
@@ -262,7 +294,37 @@ export const ActivityTimelinePage: React.FC = () => {
             </div>
 
             {/* Buttons */}
-            <div style={{ display: 'flex', gap: 8, gridColumn: 'span 2', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 8, gridColumn: 'span 2', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => handleExport('json')}
+                disabled={exporting}
+                style={{
+                  padding: '10px 16px', borderRadius: 10,
+                  border: '1px solid rgba(16,185,129,0.3)',
+                  background: 'rgba(16,185,129,0.08)',
+                  color: '#34d399', cursor: 'pointer',
+                  fontSize: 12.5, fontWeight: 600,
+                  opacity: exporting ? 0.6 : 1,
+                }}
+              >
+                📥 Export JSON
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExport('csv')}
+                disabled={exporting}
+                style={{
+                  padding: '10px 16px', borderRadius: 10,
+                  border: '1px solid rgba(99,102,241,0.3)',
+                  background: 'rgba(99,102,241,0.08)',
+                  color: '#a5b4fc', cursor: 'pointer',
+                  fontSize: 12.5, fontWeight: 600,
+                  opacity: exporting ? 0.6 : 1,
+                }}
+              >
+                📥 Export CSV
+              </button>
               <button
                 type="button"
                 onClick={handleReset}

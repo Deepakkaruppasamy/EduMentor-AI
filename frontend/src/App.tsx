@@ -43,6 +43,8 @@ import { SystemHealthPage } from './pages/SystemHealthPage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { MaintenanceControlPage } from './pages/MaintenanceControlPage';
 import { PrivacySecurityPage } from './pages/PrivacySecurityPage';
+import { PreferencesPage } from './pages/PreferencesPage';
+import { BookmarksPage } from './pages/BookmarksPage';
 import { maintenanceService } from './services/maintenance.service';
 import { useEffect } from 'react';
 
@@ -248,6 +250,16 @@ const App: React.FC = () => {
         <Route path="/privacy-security" element={
           <ProtectedRoute>
             <AppPage><PrivacySecurityPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/preferences" element={
+          <ProtectedRoute>
+            <AppPage><PreferencesPage /></AppPage>
+          </ProtectedRoute>
+        } />
+        <Route path="/bookmarks" element={
+          <ProtectedRoute>
+            <AppPage><BookmarksPage /></AppPage>
           </ProtectedRoute>
         } />
         <Route path="/system-health" element={

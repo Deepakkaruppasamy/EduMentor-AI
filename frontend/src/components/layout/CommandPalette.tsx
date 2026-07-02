@@ -27,6 +27,8 @@ const TYPE_ICONS: Record<string, string> = {
   Chat: '💬',
   Discussion: '🗣️',
   Ticket: '🛠️',
+  Research: '🔬',
+  Meeting: '🏫',
 };
 
 // Simple debounce helper
@@ -58,6 +60,23 @@ export const CommandPalette: React.FC = () => {
 
   // Static commands list
   const staticCommands: Command[] = [
+    // Commands List
+    { id: 'cmd-notes-gen', icon: '📓', label: 'Generate AI Notes', category: 'Commands', action: () => go('/notes-generator'), keywords: ['notes', 'generator', 'ai', 'create'] },
+    { id: 'cmd-quiz-gen', icon: '📝', label: 'Generate Quiz', category: 'Commands', action: () => go('/quiz'), keywords: ['quiz', 'mcq', 'test', 'generate'] },
+    { id: 'cmd-open-calendar', icon: '📆', label: 'Open Calendar', category: 'Commands', action: () => go('/calendar'), keywords: ['calendar', 'schedule', 'academic'] },
+    { id: 'cmd-schedule-meeting', icon: '📅', label: 'Schedule Meeting', category: 'Commands', action: () => go('/meetings'), keywords: ['meeting', 'appointment', 'schedule'] },
+    { id: 'cmd-open-tutor', icon: '💬', label: 'Open AI Tutor', category: 'Commands', action: () => go('/chat'), keywords: ['tutor', 'ai', 'chat', 'ask'] },
+    { id: 'cmd-open-research', icon: '🔬', label: 'Open AI Research Assistant', category: 'Commands', action: () => go('/research-assistant'), keywords: ['research', 'assistant', 'pdf', 'paper'] },
+    { id: 'cmd-open-evaluator', icon: '📋', label: 'Open Assignment Evaluator', category: 'Commands', action: () => go('/assignment-evaluator'), keywords: ['assignment', 'evaluator', 'grade'] },
+    { id: 'cmd-create-announcement', icon: '📣', label: 'Create Announcement', category: 'Commands', action: () => go('/announcements'), keywords: ['announcement', 'notice', 'create', 'publish'] },
+    { id: 'cmd-upload-notes', icon: '📁', label: 'Upload Notes', category: 'Commands', action: () => go(user?.role === 'student' ? '/notes-generator' : '/documents'), keywords: ['upload', 'notes', 'files', 'pdf'] },
+    { id: 'cmd-search-student', icon: '👥', label: 'Search Student', category: 'Commands', action: () => { setQuery('student '); inputRef.current?.focus(); }, keywords: ['search', 'student', 'directory'] },
+    { id: 'cmd-search-faculty', icon: '👤', label: 'Search Faculty', category: 'Commands', action: () => { setQuery('faculty '); inputRef.current?.focus(); }, keywords: ['search', 'faculty', 'professor'] },
+    { id: 'cmd-open-analytics', icon: '📊', label: 'Open Analytics', category: 'Commands', action: () => go('/analytics'), keywords: ['analytics', 'stats', 'telemetry'] },
+    { id: 'cmd-open-dashboard', icon: '📈', label: 'Open Dashboard', category: 'Commands', action: () => go(user?.role === 'student' ? '/dashboard' : '/admin'), keywords: ['dashboard', 'home', 'overview'] },
+    { id: 'cmd-open-settings', icon: '⚙️', label: 'Open Settings', category: 'Commands', action: () => go('/preferences'), keywords: ['settings', 'preferences', 'configuration'] },
+    { id: 'cmd-open-profile', icon: '👤', label: 'Open Profile', category: 'Commands', action: () => go('/profile'), keywords: ['profile', 'account', 'me'] },
+
     // Student links
     ...(user?.role === 'student' ? [
       { id: 'nav-dashboard', icon: '📊', label: 'Dashboard', category: 'Pages', action: () => go('/dashboard'), keywords: ['home', 'overview'] },
@@ -193,22 +212,53 @@ export const CommandPalette: React.FC = () => {
   // Global keydown listeners for opening/closing and key nav
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
-      // Toggle palette on Ctrl+K or Cmd+K
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const active = document.activeElement;
+      if (active && (
+        active.tagName === 'INPUT' ||
+        active.tagName === 'TEXTAREA' ||
+        active.tagName === 'SELECT' ||
+        active.hasAttribute('contenteditable') ||
+        active.getAttribute('role') === 'textbox'
+      )) {
+        // Toggle only if it's explicitly the escape key to close
+        if (e.key === 'Escape' && isOpen) {
+          setIsOpen(false);
+          setQuery('');
+        }
+        return;
+      }
+
+      // Toggle palette on Ctrl+K, Cmd+K, or Ctrl+Shift+F
+      const isCtrl = e.ctrlKey || e.metaKey;
+      const isShift = e.shiftKey;
+      
+      if ((isCtrl && e.key.toLowerCase() === 'k') || (isCtrl && isShift && e.key.toLowerCase() === 'f')) {
         e.preventDefault();
         setIsOpen(!isOpen);
         if (!isOpen) {
           setTimeout(() => inputRef.current?.focus(), 50);
         }
       }
+      
       // Close on Escape
       if (e.key === 'Escape') {
         setIsOpen(false);
         setQuery('');
       }
     };
+
+    const handleCustomOpen = () => {
+      setIsOpen(true);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    };
+
     window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
+    window.addEventListener('open-command-palette', handleCustomOpen);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener('open-command-palette', handleCustomOpen);
+    };
   }, [isOpen, setIsOpen]);
 
   const handleKeyNav = (e: React.KeyboardEvent) => {

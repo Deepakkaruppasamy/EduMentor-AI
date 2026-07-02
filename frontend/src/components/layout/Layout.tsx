@@ -12,6 +12,9 @@ import { useNotificationStore } from '../../store/notification.store';
 import { useThemeStore } from '../../store/theme.store';
 import { CommandPalette } from './CommandPalette';
 import { AIAssistantWidget } from '../assistant/AIAssistantWidget';
+import { preferenceService } from '../../services/preference.service';
+import { ShortcutsHelpModal } from '../dashboard/ShortcutsHelpModal';
+import { useAssistantStore } from '../../store/assistant.store';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,16 +27,69 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const { addNotification } = useNotificationStore();
   const { theme } = useThemeStore();
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [shortcutsEnabled, setShortcutsEnabled] = useState(true);
+  const { toggle: toggleAssistant, close: closeAssistant } = useAssistantStore();
 
-  // Sync theme class on <html>
+  // Sync theme class on <html> and apply preferences
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light');
-    } else {
-      root.classList.remove('light');
+    if (!user) {
+      const root = document.documentElement;
+      if (theme === 'light') {
+        root.classList.add('light');
+      } else {
+        root.classList.remove('light');
+      }
+      return;
     }
-  }, [theme]);
+
+    preferenceService.get()
+      .then(prefs => {
+        const root = document.documentElement;
+        
+        // Theme
+        const t = prefs.general.theme;
+        if (t === 'light') {
+          root.classList.add('light');
+        } else if (t === 'dark') {
+          root.classList.remove('light');
+        } else if (t === 'system') {
+          const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (systemIsDark) {
+            root.classList.remove('light');
+          } else {
+            root.classList.add('light');
+          }
+        }
+
+        // Font Size
+        const fs = prefs.general.fontSize;
+        if (fs === 'small') {
+          root.style.fontSize = '14px';
+        } else if (fs === 'large') {
+          root.style.fontSize = '18px';
+        } else {
+          root.style.fontSize = '16px';
+        }
+
+        // Accessibility
+        const acc = prefs.accessibility;
+        if (acc.highContrastMode) root.classList.add('high-contrast');
+        else root.classList.remove('high-contrast');
+
+        if (acc.reducedMotion) root.classList.add('reduced-motion');
+        else root.classList.remove('reduced-motion');
+
+        if (acc.keyboardNavigation) root.classList.add('keyboard-navigation');
+        else root.classList.remove('keyboard-navigation');
+
+        if (acc.colorBlindFriendlyMode) root.classList.add('colorblind-friendly');
+        else root.classList.remove('colorblind-friendly');
+
+        setShortcutsEnabled(prefs.general.shortcutsEnabled !== false);
+      })
+      .catch(() => {});
+  }, [user, theme]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -169,10 +225,116 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, [user]);
 
+  // Global Keyboard Shortcuts Listener
+  useEffect(() => {
+    if (!user || !shortcutsEnabled) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const active = document.activeElement;
+      if (active && (
+        active.tagName === 'INPUT' ||
+        active.tagName === 'TEXTAREA' ||
+        active.tagName === 'SELECT' ||
+        active.hasAttribute('contenteditable') ||
+        active.getAttribute('role') === 'textbox'
+      )) {
+        return;
+      }
+
+      const isCtrl = e.ctrlKey || e.metaKey;
+      const isShift = e.shiftKey;
+
+      if ((e.key === '?' && !isCtrl && !isShift) || (isCtrl && isShift && e.key === '/')) {
+        e.preventDefault();
+        setShowShortcutsModal(prev => !prev);
+        return;
+      }
+
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        setShowShortcutsModal(false);
+        closeAssistant();
+        return;
+      }
+
+      if (isCtrl && isShift) {
+        switch (e.key.toUpperCase()) {
+          case 'N':
+            e.preventDefault();
+            navigate('/notes-generator');
+            break;
+          case 'Q':
+            e.preventDefault();
+            navigate('/quiz');
+            break;
+          case 'M':
+            e.preventDefault();
+            navigate('/meetings');
+            break;
+          case 'A':
+            e.preventDefault();
+            navigate('/chat');
+            break;
+          case 'R':
+            e.preventDefault();
+            navigate('/research-assistant');
+            break;
+          case 'S':
+            e.preventDefault();
+            navigate('/study-planner');
+            break;
+          case 'P':
+            e.preventDefault();
+            navigate('/profile');
+            break;
+          case 'C':
+            e.preventDefault();
+            navigate('/calendar');
+            break;
+          case 'D':
+            e.preventDefault();
+            navigate(user.role === 'student' ? '/dashboard' : '/admin');
+            break;
+          case 'B':
+            e.preventDefault();
+            navigate('/bookmarks');
+            break;
+          case 'H':
+            e.preventDefault();
+            navigate(user.role === 'student' ? '/dashboard' : '/admin');
+            toast.success('💡 Recently viewed history is located on your dashboard.');
+            break;
+          case 'T':
+            e.preventDefault();
+            navigate('/activity');
+            break;
+          case 'U':
+            e.preventDefault();
+            navigate('/support');
+            break;
+          case 'G':
+            e.preventDefault();
+            toast.success('Analyzing context and generating AI Study Notes...');
+            navigate('/notes-generator?generateContext=true');
+            break;
+        }
+      } else if (isCtrl && e.key === '/') {
+        e.preventDefault();
+        toggleAssistant();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [user, navigate, shortcutsEnabled, closeAssistant, toggleAssistant]);
+
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
       {/* Global Command Palette — available on all pages */}
       <CommandPalette />
+      {showShortcutsModal && <ShortcutsHelpModal onClose={() => setShowShortcutsModal(false)} />}
       {/* Desktop Sidebar */}
       <aside className="hidden w-60 flex-shrink-0 lg:flex lg:flex-col"
         style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>

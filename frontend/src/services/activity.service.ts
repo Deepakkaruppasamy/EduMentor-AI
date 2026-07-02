@@ -57,4 +57,17 @@ export const activityService = {
     const res = await api.get('/activity/modules');
     return res.data;
   },
+
+  exportTimeline: async (params?: {
+    module?: string;
+    action?: string;
+    status?: string;
+    from?: string;
+    to?: string;
+    role?: string;
+    format?: 'json' | 'csv';
+  }): Promise<Blob> => {
+    const res = await api.get('/activity/export', { params, responseType: 'blob' });
+    return res.data;
+  },
 };
