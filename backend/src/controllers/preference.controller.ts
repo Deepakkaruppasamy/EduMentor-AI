@@ -48,6 +48,10 @@ const getDefaultWidgets = (role: 'student' | 'faculty' | 'admin') => {
       { id: 'recently-viewed', title: 'Recently Viewed', visible: true, gridSpan: 'col-span-1', isPinned: false, isCollapsed: false, height: 'auto' },
       { id: 'meetings', title: 'Upcoming Meetings', visible: true, gridSpan: 'col-span-1', isPinned: false, isCollapsed: false, height: 'auto' },
       { id: 'activity', title: 'Activity Feed', visible: true, gridSpan: 'col-span-2', isPinned: false, isCollapsed: false, height: 'auto' },
+      { id: 'leaderboard', title: 'Leaderboard & Streaks', visible: true, gridSpan: 'col-span-2', isPinned: false, isCollapsed: false, height: 'auto' },
+      { id: 'quiz-trends', title: 'Quiz Performance Trend', visible: true, gridSpan: 'col-span-2', isPinned: false, isCollapsed: false, height: 'auto' },
+      { id: 'recent-chats', title: 'Recent Chats', visible: true, gridSpan: 'col-span-1', isPinned: false, isCollapsed: false, height: 'auto' },
+      { id: 'quick-actions', title: 'Quick Actions', visible: true, gridSpan: 'col-span-1', isPinned: false, isCollapsed: false, height: 'auto' },
     ];
   }
 };
