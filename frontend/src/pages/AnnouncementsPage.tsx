@@ -4,6 +4,7 @@ import { announcementService } from '../services/announcement.service';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { Loader } from '../components/common/Loader';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 
 const TYPE_CONFIG: Record<string, { color: string; icon: string; bg: string }> = {
   General: { color: '#7c8fff', bg: 'rgba(79,99,255,0.1)', icon: '📢' },
@@ -182,7 +183,19 @@ export const AnnouncementsPage: React.FC = () => {
                     <div className="text-[10px] text-white/30 mt-0.5">By {ann.createdBy?.name} · {format(new Date(ann.createdAt), 'MMM d, yyyy')}</div>
                     <div className={`mt-2 text-xs text-white/65 leading-relaxed ${!isExpanded ? 'line-clamp-2' : ''}`}>{ann.content}</div>
                     {ann.content.length > 200 && (
-                      <button onClick={() => { setExpandedId(isExpanded ? null : ann._id); if (!ann.isRead) handleMarkRead(ann._id); }}
+                      <button onClick={() => {
+                        const nextVal = isExpanded ? null : ann._id;
+                        setExpandedId(nextVal);
+                        if (!ann.isRead) handleMarkRead(ann._id);
+                        if (nextVal) {
+                          recentlyViewedService.record({
+                            itemType: 'announcement',
+                            itemId: ann._id,
+                            title: `Announcement: ${ann.title}`,
+                            url: `/announcements`
+                          }).catch(() => {});
+                        }
+                      }}
                         className="text-[10px] text-[#7c8fff] mt-1 hover:underline">
                         {isExpanded ? 'Show less' : 'Read more'}
                       </button>

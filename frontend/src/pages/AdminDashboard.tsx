@@ -288,6 +288,7 @@ const SuperAdminDashboardView: React.FC = () => {
       case 'reports': return renderReportsWidget();
       case 'ai-summary': return <AIDashboardOverview />;
       case 'recently-viewed': return <RecentlyViewedWidget />;
+      case 'bookmarks': return <BookmarksWidget />;
       default: return null;
     }
   };
@@ -995,6 +996,7 @@ const FacultyDashboardView: React.FC = () => {
       case 'notifications': return renderNotificationsWidget();
       case 'ai-summary': return <AIDashboardOverview />;
       case 'recently-viewed': return <RecentlyViewedWidget />;
+      case 'bookmarks': return <BookmarksWidget />;
       default: return null;
     }
   };

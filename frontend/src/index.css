@@ -349,3 +349,51 @@ html.light .glass-card {
   background-color: var(--bg-card);
   border-color: var(--border-subtle);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   ACCESSIBILITY MODES
+   ───────────────────────────────────────────────────────────── */
+html.high-contrast {
+  --bg-primary: #000000 !important;
+  --bg-secondary: #000000 !important;
+  --bg-tertiary: #111111 !important;
+  --bg-card: #000000 !important;
+  --bg-card-hover: #111111 !important;
+  --bg-input: #000000 !important;
+  --bg-sidebar: #000000 !important;
+  --bg-modal: #000000 !important;
+  --border-subtle: #ffffff !important;
+  --border-medium: #ffffff !important;
+  --border-input: #ffffff !important;
+  --text-primary: #ffffff !important;
+  --text-secondary: #ffffff !important;
+  --text-muted: #ffffff !important;
+  --text-placeholder: #ffffff !important;
+  --accent-blue: #ffffff !important;
+  --accent-purple: #ffffff !important;
+  --accent-green: #ffffff !important;
+  --accent-amber: #ffffff !important;
+  --accent-red: #ffffff !important;
+  --gradient-primary: linear-gradient(135deg, #000 0%, #000 100%) !important;
+}
+html.high-contrast * {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background-image: none !important;
+}
+
+html.reduced-motion * {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+html.keyboard-navigation *:focus {
+  outline: 3px solid var(--accent-blue, #4f63ff) !important;
+  outline-offset: 2px !important;
+}
+
+html.colorblind-friendly {
+  --accent-green: #0ea5e9 !important; /* Sky blue */
+  --accent-red: #f97316 !important;   /* Orange */
+}

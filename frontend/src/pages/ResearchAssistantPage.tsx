@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { researchService } from '../services/research.service';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
+import { BookmarkButton } from '../components/common/BookmarkButton';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 
 const FEATURES = [
   { value: 'Summarize', icon: '📋', label: 'Summarize Paper', desc: 'Comprehensive overview' },
@@ -68,6 +70,12 @@ export const ResearchAssistantPage: React.FC = () => {
       setResult(res.data.data);
       setHistory(prev => [res.data.data, ...prev]);
       toast.success('Analysis complete!');
+      recentlyViewedService.record({
+        itemType: 'research',
+        itemId: res.data.data._id,
+        title: `Research: ${selectedFeature} - ${res.data.data.papers?.map((p: any) => p.originalName).join(', ') || 'Paper'}`,
+        url: `/research-assistant`
+      }).catch(() => {});
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Analysis failed');
     } finally { setAnalyzing(false); }
@@ -165,10 +173,21 @@ export const ResearchAssistantPage: React.FC = () => {
                     <div className="text-xs font-bold text-white/80">{featureData?.icon} {featureData?.label}</div>
                     <div className="text-[10px] text-white/40 mt-0.5">Papers: {result.papers?.map((p: any) => p.originalName).join(', ')}</div>
                   </div>
-                  <button onClick={() => { navigator.clipboard.writeText(result.result); toast.success('Copied!'); }}
-                    className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-white/60 border border-white/10 hover:text-white">
-                    📋 Copy
-                  </button>
+                  <div className="flex gap-2">
+                    {result._id && (
+                      <BookmarkButton
+                        itemType="research"
+                        itemId={result._id}
+                        title={`Research: ${featureData?.label || result.feature} - ${result.papers?.map((p: any) => p.originalName).join(', ')}`}
+                        category="Research Papers"
+                        className="px-3 py-1.5 text-[10px] rounded-lg"
+                      />
+                    )}
+                    <button onClick={() => { navigator.clipboard.writeText(result.result); toast.success('Copied!'); }}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-white/60 border border-white/10 hover:text-white">
+                      📋 Copy
+                    </button>
+                  </div>
                 </div>
                 <div className="flex-1 overflow-y-auto prose prose-invert prose-sm max-w-none" style={{ scrollbarWidth: 'thin' }}>
                   <ReactMarkdown>{result.result}</ReactMarkdown>
@@ -203,9 +222,26 @@ export const ResearchAssistantPage: React.FC = () => {
                     <div className="text-[10px] text-white/30 mt-1 line-clamp-2">{item.result?.replace(/[#*`]/g, '').substring(0, 150)}…</div>
                     <div className="text-[9px] text-white/20 mt-1">{new Date(item.createdAt).toLocaleDateString()}</div>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => { setResult(item); setSelectedFeature(item.feature); setActiveTab('analyze'); }}
+                  <div className="flex gap-2 flex-shrink-0 items-center">
+                    <button onClick={() => {
+                      setResult(item);
+                      setSelectedFeature(item.feature);
+                      setActiveTab('analyze');
+                      recentlyViewedService.record({
+                        itemType: 'research',
+                        itemId: item._id,
+                        title: `Research: ${item.feature} - ${item.papers?.map((p: any) => p.originalName).join(', ') || 'Paper'}`,
+                        url: `/research-assistant`
+                      }).catch(() => {});
+                    }}
                       className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#7c8fff]" style={{ background: 'rgba(79,99,255,0.08)' }}>View</button>
+                    <BookmarkButton
+                      itemType="research"
+                      itemId={item._id}
+                      title={`Research: ${f?.label || item.feature} - ${item.papers?.map((p: any) => p.originalName).join(', ')}`}
+                      category="Research Papers"
+                      className="px-2 py-1 text-[9px] font-semibold"
+                    />
                     <button onClick={() => handleDeleteHistory(item._id)}
                       className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)' }}>Del</button>
                   </div>

@@ -29,6 +29,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { theme } = useThemeStore();
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [shortcutsEnabled, setShortcutsEnabled] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toggle: toggleAssistant, close: closeAssistant } = useAssistantStore();
 
   // Sync theme class on <html> and apply preferences
@@ -87,9 +88,21 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         else root.classList.remove('colorblind-friendly');
 
         setShortcutsEnabled(prefs.general.shortcutsEnabled !== false);
+        setSidebarCollapsed(!!prefs.general.sidebarCollapsed);
       })
       .catch(() => {});
   }, [user, theme]);
+
+  const handleToggleSidebarCollapse = async () => {
+    const nextCollapsed = !sidebarCollapsed;
+    setSidebarCollapsed(nextCollapsed);
+    try {
+      const current = await preferenceService.get();
+      await preferenceService.update({
+        general: { ...current.general, sidebarCollapsed: nextCollapsed }
+      });
+    } catch {}
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -336,9 +349,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <CommandPalette />
       {showShortcutsModal && <ShortcutsHelpModal onClose={() => setShowShortcutsModal(false)} />}
       {/* Desktop Sidebar */}
-      <aside className="hidden w-60 flex-shrink-0 lg:flex lg:flex-col"
+      <aside className={`hidden ${sidebarCollapsed ? 'w-20' : 'w-60'} flex-shrink-0 lg:flex lg:flex-col transition-all duration-300`}
         style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-        <Sidebar />
+        <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebarCollapse} />
       </aside>
 
       {/* Mobile Sidebar Overlay */}

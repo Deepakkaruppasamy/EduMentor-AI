@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { BookmarkButton } from '../components/common/BookmarkButton';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 import { motion } from 'framer-motion';
 import { QuizGenerator } from '../components/quiz/QuizGenerator';
 import { QuizViewer } from '../components/quiz/QuizViewer';
@@ -51,6 +53,12 @@ export const QuizPage: React.FC = () => {
   const handleQuizGenerated = (quiz: Quiz) => {
     setCurrentQuiz(quiz);
     setQuizState('taking');
+    recentlyViewedService.record({
+      itemType: 'quiz',
+      itemId: quiz._id,
+      title: `Quiz: ${quiz.topic || quiz.title}`,
+      url: `/quiz`
+    }).catch(() => {});
   };
 
   const handleQuizComplete = (quiz: Quiz, quizResults: QuizResults) => {
@@ -65,6 +73,12 @@ export const QuizPage: React.FC = () => {
     const loadingToast = toast.loading('Loading quiz...');
     try {
       const fullQuiz = await quizService.getById(quizId);
+      recentlyViewedService.record({
+        itemType: 'quiz',
+        itemId: quizId,
+        title: `Quiz: ${fullQuiz.topic || fullQuiz.title}`,
+        url: `/quiz`
+      }).catch(() => {});
       if (fullQuiz.status === 'completed') {
         const score = fullQuiz.score || 0;
         const maxScore = fullQuiz.maxScore || 0;
@@ -210,14 +224,23 @@ export const QuizPage: React.FC = () => {
                         <p className="truncate text-xs font-medium text-white">{quiz.topic || quiz.title}</p>
                         <p className="text-[10px] text-white/40">{quiz.type.toUpperCase()} · {quiz.difficulty}</p>
                       </div>
-                      {quiz.status === 'completed' && quiz.score !== undefined && (
-                        <span className={`text-sm font-bold flex-shrink-0 ${getGradeColor(quiz.maxScore > 0 ? (quiz.score / quiz.maxScore) * 100 : 0)}`}>
-                          {quiz.maxScore > 0 ? Math.round((quiz.score / quiz.maxScore) * 100) : 0}%
-                        </span>
-                      )}
-                      {quiz.status === 'generated' && (
-                        <span className="text-[10px] text-white/30">Generated</span>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        <BookmarkButton
+                          itemType="quiz"
+                          itemId={quiz._id}
+                          title={`Quiz: ${quiz.topic || quiz.title}`}
+                          category="Quizzes"
+                          className="p-1 rounded bg-transparent border-0 text-[10px]"
+                        />
+                        {quiz.status === 'completed' && quiz.score !== undefined && (
+                          <span className={`text-sm font-bold flex-shrink-0 ${getGradeColor(quiz.maxScore > 0 ? (quiz.score / quiz.maxScore) * 100 : 0)}`}>
+                            {quiz.maxScore > 0 ? Math.round((quiz.score / quiz.maxScore) * 100) : 0}%
+                          </span>
+                        )}
+                        {quiz.status === 'generated' && (
+                          <span className="text-[10px] text-white/30">Generated</span>
+                        )}
+                      </div>
                     </div>
                     <p className="mt-1 text-[10px] text-white/25">{formatDate(quiz.createdAt)}</p>
                   </div>
@@ -281,14 +304,23 @@ export const QuizPage: React.FC = () => {
                       <span className="text-[9px] text-white/30">
                         {quiz.dueDate ? `Due: ${new Date(quiz.dueDate).toLocaleDateString()}` : 'No due date'}
                       </span>
-                      <button
-                        onClick={() => handleSelectPastQuiz(quiz._id)}
-                        className={`py-1.5 px-4 text-xs font-semibold rounded-xl transition-all duration-200 ${
-                          isCompleted ? 'btn-secondary' : 'btn-primary'
-                        }`}
-                      >
-                        {isCompleted ? 'Review' : 'Start Quiz'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <BookmarkButton
+                          itemType="quiz"
+                          itemId={quiz._id}
+                          title={`Quiz: ${quiz.topic || quiz.title}`}
+                          category="Quizzes"
+                          className="py-1 px-1.5 rounded-lg text-xs"
+                        />
+                        <button
+                          onClick={() => handleSelectPastQuiz(quiz._id)}
+                          className={`py-1.5 px-4 text-xs font-semibold rounded-xl transition-all duration-200 ${
+                            isCompleted ? 'btn-secondary' : 'btn-primary'
+                          }`}
+                        >
+                          {isCompleted ? 'Review' : 'Start Quiz'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

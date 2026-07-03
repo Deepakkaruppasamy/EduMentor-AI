@@ -6,6 +6,8 @@ import { documentService } from '../services/document.service';
 import { courseService } from '../services/course.service';
 import { Document, Course } from '../types';
 import { ConceptMap } from '../components/documents/ConceptMap';
+import { BookmarkButton } from '../components/common/BookmarkButton';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 import { formatDate, formatFileSize } from '../utils/uuid';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
@@ -93,6 +95,17 @@ export const DocumentsPage: React.FC = () => {
   const handleUploaded = (doc: Document) => {
     setDocuments(prev => [doc, ...prev]);
   };
+
+  useEffect(() => {
+    if (selectedDocForGuide) {
+      recentlyViewedService.record({
+        itemType: 'summary',
+        itemId: selectedDocForGuide._id,
+        title: `Summary: ${selectedDocForGuide.originalName}`,
+        url: `/documents`
+      }).catch(() => {});
+    }
+  }, [selectedDocForGuide]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -223,7 +236,16 @@ export const DocumentsPage: React.FC = () => {
                 <span className="text-[10px] uppercase font-bold text-primary-400">AI Generated Study Guide</span>
                 <h3 className="text-sm font-bold text-white mt-0.5">{selectedDocForGuide.originalName}</h3>
               </div>
-              <button onClick={() => setSelectedDocForGuide(null)} className="text-white/40 hover:text-white text-lg">✕</button>
+              <div className="flex items-center gap-3">
+                <BookmarkButton
+                  itemType="summary"
+                  itemId={selectedDocForGuide._id}
+                  title={`Summary: ${selectedDocForGuide.originalName}`}
+                  category="Summaries"
+                  className="bg-white/5 border border-white/10 hover:bg-white/10 text-xs px-2.5 py-1.5 rounded-lg flex items-center justify-center"
+                />
+                <button onClick={() => setSelectedDocForGuide(null)} className="text-white/40 hover:text-white text-lg">✕</button>
+              </div>
             </div>
             
             {/* Modal Tabs if transcript exists */}

@@ -106,7 +106,7 @@ const ADMIN_LINKS = [
   { to: '/maintenance', icon: '🛠️', label: 'Maintenance Manager' },
 ];
 
-export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }> = ({ onClose, collapsed = false, onToggleCollapse }) => {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
@@ -131,17 +131,82 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   return (
     <div className="flex h-full flex-col" style={{ background: 'var(--bg-sidebar)' }}>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-6">
+      <div className={`flex items-center px-5 py-6 ${collapsed ? 'justify-center' : 'gap-3'}`}>
         <Logo size="sm" />
-        <div>
-          <div className="text-sm font-bold text-white">EduMentor AI</div>
-          <div className="text-[10px] text-white/40 font-mono">Powered by Llama 3</div>
-        </div>
+        {!collapsed && (
+          <div>
+            <div className="text-sm font-bold text-white">EduMentor AI</div>
+            <div className="text-[10px] text-white/40 font-mono">Powered by Llama 3</div>
+          </div>
+        )}
       </div>
 
       {/* User info */}
-      <div className="mx-4 mb-4 rounded-xl p-3 relative" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="flex items-center gap-3">
+      {!collapsed ? (
+        <div className="mx-4 mb-4 rounded-xl p-3 relative" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center gap-3">
+            {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
+              <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
+            ) : (
+              <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
+                <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-semibold text-white leading-snug">{user?.name}</div>
+              <div className="truncate text-[10px] capitalize text-white/40 font-medium mt-0.5">{user?.role}</div>
+            </div>
+
+            {/* Theme Toggle + Notification Bell */}
+            <div className="flex items-center gap-1.5">
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="h-8 w-8 rounded-xl border flex items-center justify-center transition-all"
+                style={{
+                  background: 'var(--bg-input)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--text-muted)',
+                }}
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                <span className="text-sm leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
+              </button>
+
+              {/* Notification Bell with Badge */}
+              <div className="relative">
+                <button
+                  onClick={() => setNotifOpen(!notifOpen)}
+                  className="h-8 w-8 rounded-xl border flex items-center justify-center relative focus:outline-none transition-all"
+                  style={{
+                    background: 'var(--bg-input)',
+                    borderColor: 'var(--border-subtle)',
+                    color: 'var(--text-muted)',
+                  }}
+                  title="Notifications"
+                >
+                  <span className="text-sm leading-none">🔔</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                <AnimatePresence>
+                  {notifOpen && (
+                    <NotificationDrawer onClose={() => setNotifOpen(false)} />
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+            <span className="text-[10px] text-white/40 font-bold uppercase">Language</span>
+            <LanguageSelector />
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center mb-4">
           {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
             <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
           ) : (
@@ -149,59 +214,8 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
               <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
             </div>
           )}
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-semibold text-white leading-snug">{user?.name}</div>
-            <div className="truncate text-[10px] capitalize text-white/40 font-medium mt-0.5">{user?.role}</div>
-          </div>
-
-          {/* Theme Toggle + Notification Bell */}
-          <div className="flex items-center gap-1.5">
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="h-8 w-8 rounded-xl border flex items-center justify-center transition-all"
-              style={{
-                background: 'var(--bg-input)',
-                borderColor: 'var(--border-subtle)',
-                color: 'var(--text-muted)',
-              }}
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              <span className="text-sm leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
-            </button>
-
-            {/* Notification Bell with Badge */}
-            <div className="relative">
-              <button
-                onClick={() => setNotifOpen(!notifOpen)}
-                className="h-8 w-8 rounded-xl border flex items-center justify-center relative focus:outline-none transition-all"
-                style={{
-                  background: 'var(--bg-input)',
-                  borderColor: 'var(--border-subtle)',
-                  color: 'var(--text-muted)',
-                }}
-                title="Notifications"
-              >
-                <span className="text-sm leading-none">🔔</span>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-              <AnimatePresence>
-                {notifOpen && (
-                  <NotificationDrawer onClose={() => setNotifOpen(false)} />
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
-          <span className="text-[10px] text-white/40 font-bold uppercase">Language</span>
-          <LanguageSelector />
-        </div>
-      </div>
+      )}
 
       {/* Navigation — scrollable */}
       <nav
@@ -212,34 +226,46 @@ export const Sidebar: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
         }}
       >
         {/* Global Search */}
-        <div className="mb-2">
-          <GlobalSearchBar />
-        </div>
+        {!collapsed && (
+          <div className="mb-2">
+            <GlobalSearchBar />
+          </div>
+        )}
         <div className="space-y-1">
           {links.map((link) => (
             <Link
               key={link.to}
               to={link.to}
               onClick={onClose}
-              className={`sidebar-link ${location.pathname === link.to ? 'active' : ''}`}
+              className={`sidebar-link ${location.pathname === link.to ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''}`}
+              title={collapsed ? link.label : undefined}
             >
               <span className="text-base">{link.icon}</span>
-              <span>{link.label}</span>
+              {!collapsed && <span>{link.label}</span>}
             </Link>
           ))}
         </div>
       </nav>
 
-      {/* Logout */}
-      <div className="p-4">
+      {/* Logout / Toggle */}
+      <div className="p-4 flex flex-col items-center gap-2">
         <button
           onClick={handleLogout}
-          className="sidebar-link w-full justify-center"
+          className={`sidebar-link w-full justify-center ${collapsed ? 'px-0' : ''}`}
           style={{ background: 'rgba(252,129,129,0.08)', color: 'rgba(252,129,129,0.8)', border: '1px solid rgba(252,129,129,0.15)' }}
+          title={collapsed ? 'Sign Out' : undefined}
         >
           <span>🚪</span>
-          <span className="text-sm">Sign Out</span>
+          {!collapsed && <span className="text-sm">Sign Out</span>}
         </button>
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="w-full text-center py-2 text-[10px] text-white/40 hover:text-white transition-colors bg-white/5 border border-white/10 rounded-xl mt-1 font-mono uppercase font-bold"
+          >
+            {collapsed ? '▶' : '◀ Collapse'}
+          </button>
+        )}
       </div>
     </div>
   );

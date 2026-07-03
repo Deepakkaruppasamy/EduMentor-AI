@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { courseService } from '../services/course.service';
+import { BookmarkButton } from '../components/common/BookmarkButton';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 import api from '../services/api';
 import { Course } from '../types';
 import { useAuthStore } from '../store/auth.store';
@@ -50,6 +52,21 @@ export const CoursesPage: React.FC = () => {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  useEffect(() => {
+    if (courses.length > 0 && user) {
+      courses.forEach(c => {
+        if (c.students?.includes(user.id)) {
+          recentlyViewedService.record({
+            itemType: 'course',
+            itemId: c._id,
+            title: `Course: ${c.title}`,
+            url: `/courses`
+          }).catch(() => {});
+        }
+      });
+    }
+  }, [courses, user]);
 
   const handleEnroll = async (courseId: string) => {
     try {
@@ -289,13 +306,18 @@ export const CoursesPage: React.FC = () => {
                 className="glass-card flex flex-col overflow-hidden">
                 
                 {/* Cover Banner */}
-                <div className="h-28 w-full overflow-hidden relative border-b border-white/5 bg-[#161922]">
+                <div className="relative aspect-video rounded-t-2xl overflow-hidden bg-white/5 border-b border-white/5 flex items-center justify-center">
+                  <BookmarkButton
+                    itemType="course"
+                    itemId={course._id}
+                    title={`Course: ${course.title}`}
+                    category="Courses"
+                    className="absolute top-2.5 left-2.5 z-10 p-1 border border-white/10 bg-black/60 text-white rounded-lg"
+                  />
                   {course.image ? (
-                    <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
+                    <img src={course.image} alt={course.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-purple-900/40 flex items-center justify-center text-4xl select-none">
-                      {getIcon(course.code)}
-                    </div>
+                    <span className="text-3xl">📚</span>
                   )}
                   {/* Code badge */}
                   <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-mono font-bold text-white border border-white/10 uppercase tracking-wider">

@@ -606,8 +606,39 @@ export const StudentDashboard: React.FC = () => {
     </div>
   );
 
+  const renderWeeklyGoalsWidget = () => {
+    const goals = [
+      { name: 'Study Time', current: 2.5, target: 4, unit: ' hrs', color: 'bg-indigo-500' },
+      { name: 'Quizzes Completed', current: progress?.totalQuizzesTaken || 0, target: 3, unit: '', color: 'bg-emerald-500' },
+      { name: 'AI Tutor Queries', current: progress?.totalQueries || 0, target: 10, unit: '', color: 'bg-blue-500' },
+      { name: 'Avg Quiz Accuracy', current: progress?.avgQuizScore || 0, target: 80, unit: '%', color: 'bg-amber-500' },
+    ];
+    return (
+      <div className="p-4 space-y-3.5">
+        <p className="text-xs text-white/50">Track your learning goals for this week.</p>
+        <div className="space-y-3">
+          {goals.map(g => {
+            const pct = Math.min(100, Math.round((g.current / g.target) * 100));
+            return (
+              <div key={g.name} className="space-y-1 text-xs">
+                <div className="flex justify-between font-medium">
+                  <span className="text-white/80">{g.name}</span>
+                  <span className="text-white/40">{g.current}/{g.target}{g.unit}</span>
+                </div>
+                <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden flex">
+                  <div className={`h-full ${g.color}`} style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderWidgetContent = (id: string) => {
     switch (id) {
+      case 'weekly-goals': return renderWeeklyGoalsWidget();
       case 'ai-tutor': return renderAiTutorWidget();
       case 'ai-explain': return renderAiExplainWidget();
       case 'ai-notes': return renderAiNotesWidget();

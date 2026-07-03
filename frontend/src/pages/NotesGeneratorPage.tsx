@@ -3,6 +3,8 @@ import { notesService } from '../services/notes.service';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
+import { BookmarkButton } from '../components/common/BookmarkButton';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 
 const NOTE_TYPES = [
   { value: 'Revision', icon: '📖', desc: 'Key concepts & definitions' },
@@ -45,6 +47,12 @@ export const NotesGeneratorPage: React.FC = () => {
       setCurrentNote(res.data.data);
       setSavedNotes(prev => [res.data.data, ...prev]);
       toast.success(`${noteType} notes generated!`);
+      recentlyViewedService.record({
+        itemType: 'note',
+        itemId: res.data.data._id,
+        title: `AI Note: ${res.data.data.courseName} - ${res.data.data.topic}`,
+        url: `/notes-generator`
+      }).catch(() => {});
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Generation failed. Please try again.');
     } finally { setGenerating(false); }
@@ -153,6 +161,15 @@ export const NotesGeneratorPage: React.FC = () => {
                   <div className="flex gap-2">
                     <button onClick={handleCopy} className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-white/60 border border-white/10 hover:text-white">📋 Copy</button>
                     <button onClick={handleDownloadPDF} className="btn-primary text-[10px] px-3 py-1.5">📥 PDF</button>
+                    {currentNote._id && (
+                      <BookmarkButton
+                        itemType="note"
+                        itemId={currentNote._id}
+                        title={`AI Note: ${currentNote.courseName} - ${currentNote.topic}`}
+                        category="AI Notes"
+                        className="px-3 py-1.5 text-[10px] rounded-lg"
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto prose prose-invert prose-sm max-w-none" style={{ scrollbarWidth: 'thin' }}>
@@ -191,9 +208,25 @@ export const NotesGeneratorPage: React.FC = () => {
                         <div className="text-[10px] text-white/40">{note.courseName} · {note.noteType}</div>
                       </div>
                     </div>
-                    <div className="flex gap-1.5">
-                      <button onClick={() => { setCurrentNote(note); setActiveTab('generate'); }}
+                    <div className="flex gap-1.5 items-center">
+                      <button onClick={() => {
+                        setCurrentNote(note);
+                        setActiveTab('generate');
+                        recentlyViewedService.record({
+                          itemType: 'note',
+                          itemId: note._id,
+                          title: `AI Note: ${note.courseName} - ${note.topic}`,
+                          url: `/notes-generator`
+                        }).catch(() => {});
+                      }}
                         className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#7c8fff]" style={{ background: 'rgba(79,99,255,0.08)' }}>View</button>
+                      <BookmarkButton
+                        itemType="note"
+                        itemId={note._id}
+                        title={`AI Note: ${note.courseName} - ${note.topic}`}
+                        category="AI Notes"
+                        className="px-2 py-1 text-[9px] font-semibold"
+                      />
                       <button onClick={() => handleDelete(note._id)}
                         className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)' }}>Del</button>
                     </div>

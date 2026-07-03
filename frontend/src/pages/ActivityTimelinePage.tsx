@@ -29,6 +29,7 @@ export const ActivityTimelinePage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [infiniteScroll, setInfiniteScroll] = useState(false);
 
   // Filters
   const [selectedModule, setSelectedModule] = useState('');
@@ -70,7 +71,7 @@ export const ActivityTimelinePage: React.FC = () => {
     }
   };
 
-  const fetchLogs = async (pageNum = 1) => {
+  const fetchLogs = async (pageNum = 1, append = false) => {
     setIsLoading(true);
     try {
       const params = {
@@ -88,7 +89,11 @@ export const ActivityTimelinePage: React.FC = () => {
         ? await activityService.getAllTimeline(params)
         : await activityService.getMyTimeline(params);
 
-      setLogs(res.logs);
+      if (append) {
+        setLogs(prev => [...prev, ...res.logs]);
+      } else {
+        setLogs(res.logs);
+      }
       setTotal(res.total);
       setTotalPages(res.totalPages);
       setPage(pageNum);
@@ -109,9 +114,21 @@ export const ActivityTimelinePage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLogs(1);
+    fetchLogs(1, false);
     loadModules();
   }, [selectedModule, selectedStatus, fromDate, toDate, selectedRole]);
+
+  useEffect(() => {
+    if (!infiniteScroll) return;
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      if (scrollTop + clientHeight >= scrollHeight - 80 && !isLoading && page < totalPages) {
+        fetchLogs(page + 1, true);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [infiniteScroll, page, totalPages, isLoading]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -355,8 +372,46 @@ export const ActivityTimelinePage: React.FC = () => {
           </div>
         </form>
 
+        {/* Infinite Scroll Switcher */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: 'rgba(255,255,255,0.01)',
+          border: '1px solid rgba(255,255,255,0.05)',
+          borderRadius: 14,
+          padding: '12px 18px',
+          marginBottom: 16
+        }}>
+          <div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', block: 'block' }}>🔄 Infinite Scroll</span>
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', display: 'block', marginTop: 2 }}>Auto-append logs when scrolling to the bottom of the timeline</span>
+          </div>
+          <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 22, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={infiniteScroll}
+              onChange={e => {
+                setInfiniteScroll(e.target.checked);
+                if (e.target.checked) fetchLogs(1, false);
+              }}
+              style={{ opacity: 0, width: 0, height: 0 }}
+            />
+            <span style={{
+              position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: infiniteScroll ? '#6366f1' : 'rgba(255,255,255,0.1)',
+              borderRadius: 34, transition: '0.3s',
+            }}>
+              <span style={{
+                position: 'absolute', content: '""', height: 16, width: 16, left: infiniteScroll ? 24 : 3, bottom: 3,
+                backgroundColor: 'white', borderRadius: '50%', transition: '0.3s',
+              }} />
+            </span>
+          </label>
+        </div>
+
         {/* Timeline List */}
-        {isLoading ? (
+        {logs.length === 0 && isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.3)' }}>
             <div style={{ fontSize: 32, marginBottom: 12, animation: 'spin 1.2s linear infinite' }}>⏳</div>
             <div>Loading timeline logs...</div>
@@ -457,8 +512,16 @@ export const ActivityTimelinePage: React.FC = () => {
               ))}
             </div>
 
+            {/* Infinite Scroll loading indicator */}
+            {infiniteScroll && isLoading && (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', marginRight: 8 }}>⏳</span>
+                Loading more logs...
+              </div>
+            )}
+
             {/* Pagination Controls */}
-            {totalPages > 1 && (
+            {!infiniteScroll && totalPages > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
                 <button
                   disabled={page <= 1}

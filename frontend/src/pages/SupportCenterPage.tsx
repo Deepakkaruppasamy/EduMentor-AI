@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { useSupportStore } from '../store/support.store';
+import { BookmarkButton } from '../components/common/BookmarkButton';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 import { supportService, SupportTicketData, SupportMessageData } from '../services/support.service';
 import { connectSupportSocket, disconnectSupportSocket, joinTicketRoom, leaveTicketRoom } from '../services/support-socket';
 import { AdminSupportPanel } from '../components/support/AdminSupportPanel';
@@ -429,7 +431,16 @@ export const SupportCenterPage: React.FC = () => {
                   tickets.map((t) => (
                     <button
                       key={t._id}
-                      onClick={() => { setShowCreateForm(false); setActiveTicket(t); }}
+                      onClick={() => {
+                        setShowCreateForm(false);
+                        setActiveTicket(t);
+                        recentlyViewedService.record({
+                          itemType: 'ticket',
+                          itemId: t._id,
+                          title: `Ticket: ${t.subject}`,
+                          url: `/support`
+                        }).catch(() => {});
+                      }}
                       className={`w-full p-4 border-b border-white/5 text-left transition-all hover:bg-white/[0.015] ${
                         activeTicket?._id === t._id ? 'bg-white/5' : ''
                       }`}
@@ -533,7 +544,16 @@ export const SupportCenterPage: React.FC = () => {
                       <h4 className="text-xs font-bold text-white/80">{activeTicket.ticketId} — {activeTicket.subject}</h4>
                       <div className="text-[10px] text-white/35 mt-1">Category: {activeTicket.category} • Priority: {activeTicket.priority}</div>
                     </div>
-                    <span className="text-[10px] bg-[#4f63ff]/10 border border-[#4f63ff]/25 text-[#7c8fff] px-2.5 py-1 rounded-lg font-bold uppercase">{activeTicket.status}</span>
+                    <div className="flex items-center gap-2">
+                      <BookmarkButton
+                        itemType="ticket"
+                        itemId={activeTicket._id}
+                        title={`Ticket: ${activeTicket.subject}`}
+                        category="Support Tickets"
+                        className="py-1 px-2 rounded-lg text-xs"
+                      />
+                      <span className="text-[10px] bg-[#4f63ff]/10 border border-[#4f63ff]/25 text-[#7c8fff] px-2.5 py-1 rounded-lg font-bold uppercase">{activeTicket.status}</span>
+                    </div>
                   </div>
 
                   {/* Message log thread */}

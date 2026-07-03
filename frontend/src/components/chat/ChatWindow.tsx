@@ -9,6 +9,8 @@ import { Course } from '../../types';
 import { uuidv4 } from '../../utils/uuid';
 import { AIBuddyAvatar } from './AIBuddyAvatar';
 import { LanguageSelector } from '../common/LanguageSelector';
+import { BookmarkButton } from '../common/BookmarkButton';
+import { recentlyViewedService } from '../../services/recently-viewed.service';
 
 interface ChatWindowProps {
   course: Course;
@@ -278,6 +280,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
     const onDone = (doneData: any) => {
       if (!currentChatId && doneData.chatId) {
         setCurrentChatId(doneData.chatId);
+        recentlyViewedService.record({
+          itemType: 'chat',
+          itemId: doneData.chatId,
+          title: `AI Chat: ${course.code} - ${accumulatedContent.substring(0, 30)}`,
+          url: `/chat?chatId=${doneData.chatId}`
+        }).catch(() => {});
       }
  
       updateMessage(loadingId, {
@@ -371,6 +379,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
                 <span className="hidden sm:inline">📥 Export</span>
                 <span className="sm:hidden">📥</span>
               </button>
+              <BookmarkButton
+                itemType="chat"
+                itemId={currentChatId}
+                title={`AI Chat: ${course.code} - Session`}
+                category="AI Chats"
+                className="py-1 px-2 border border-white/10 bg-white/5 text-white hover:bg-white/10 text-[10px] rounded-lg"
+              />
             </div>
           )}
           

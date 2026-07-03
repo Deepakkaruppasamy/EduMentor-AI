@@ -13,6 +13,7 @@ import { AnimatePresence } from 'framer-motion';
 import { CitationViewer } from '../components/chat/CitationViewer';
 import { useAuthStore } from '../store/auth.store';
 import { StudyLobbyScreen } from '../components/chat/StudyLobbyScreen';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 
 export const ChatPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -107,6 +108,12 @@ export const ChatPage: React.FC = () => {
         } : undefined,
       }));
       loadMessages(messages);
+      recentlyViewedService.record({
+        itemType: 'chat',
+        itemId: chatId,
+        title: `AI Chat: ${chat.title || 'Session'}`,
+        url: `/chat?chatId=${chatId}`
+      }).catch(() => {});
     } catch (err) {
       toast.error('Failed to load chat');
     }
