@@ -731,6 +731,36 @@ export const StudentDashboard: React.FC = () => {
           })}
       </div>
 
+      {/* Permanent Learning Analytics & Insights Section */}
+      <div className="space-y-4 pt-4 border-t border-white/5">
+        <div>
+          <h2 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
+            <span>📊</span> Learning Analytics &amp; Insights
+          </h2>
+          <p className="text-xs text-white/40 mt-0.5">Your permanent academic trends, performance indexes, and class standings</p>
+        </div>
+        
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+          {/* Quiz Performance Trends */}
+          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">📈 Quiz Performance Trend</h3>
+              <span className="text-[10px] text-indigo-400 font-semibold font-mono">Accuracy index</span>
+            </div>
+            {renderQuizTrendsWidget()}
+          </div>
+
+          {/* Leaderboard & Streaks */}
+          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">🏆 Class Standings &amp; Rank</h3>
+              <span className="text-[10px] text-amber-400 font-semibold font-mono">Streak points</span>
+            </div>
+            {renderLeaderboardWidget()}
+          </div>
+        </div>
+      </div>
+
       {/* Weekly Digest Summary */}
       <WeeklyDigestCard />
 

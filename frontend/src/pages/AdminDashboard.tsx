@@ -1058,6 +1058,61 @@ const FacultyDashboardView: React.FC = () => {
           })}
       </div>
 
+      {/* Permanent Faculty Analytics & Class Trends Section */}
+      <div className="space-y-4 pt-4 border-t border-white/5">
+        <div>
+          <h2 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
+            <span>📊</span> Faculty Analytics &amp; Class Trends
+          </h2>
+          <p className="text-xs text-white/40 mt-0.5">Permanent indicators of query volume, topic distribution, and user engagement</p>
+        </div>
+
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+          {/* Query Trends Chart */}
+          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">📈 Activity &amp; AI Trust Trend</h3>
+              <span className="text-[10px] text-indigo-400 font-semibold font-mono">Daily log</span>
+            </div>
+            {activityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={activityData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
+                  <Line type="monotone" dataKey="queries" stroke="#4f63ff" strokeWidth={2} name="Queries" />
+                  <Line type="monotone" dataKey="trust" stroke="#48bb78" strokeWidth={2} name="Avg Trust" />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-48 flex items-center justify-center text-xs text-white/30 italic">No query activity recorded.</div>
+            )}
+          </div>
+
+          {/* Top Topics Chart */}
+          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">🗂️ Top Queried Learning Topics</h3>
+              <span className="text-[10px] text-emerald-400 font-semibold font-mono">Topic count</span>
+            </div>
+            {topicsChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={topicsChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 9 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
+                  <Bar dataKey="count" fill="#9f7aea" radius={[4, 4, 0, 0]} name="Queries" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-48 flex items-center justify-center text-xs text-white/30 italic">No queried topics recorded.</div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Action Checklist */}
       <WeeklyDigestCard />
 
