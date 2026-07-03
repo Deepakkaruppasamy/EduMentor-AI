@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { courseService } from '../services/course.service';
-import { BookmarkButton } from '../components/common/BookmarkButton';
 import { recentlyViewedService } from '../services/recently-viewed.service';
 import api from '../services/api';
 import { Course } from '../types';
@@ -307,13 +306,6 @@ export const CoursesPage: React.FC = () => {
                 
                 {/* Cover Banner */}
                 <div className="relative aspect-video rounded-t-2xl overflow-hidden bg-white/5 border-b border-white/5 flex items-center justify-center">
-                  <BookmarkButton
-                    itemType="course"
-                    itemId={course._id}
-                    title={`Course: ${course.title}`}
-                    category="Courses"
-                    className="absolute top-2.5 left-2.5 z-10 p-1 border border-white/10 bg-black/60 text-white rounded-lg"
-                  />
                   {course.image ? (
                     <img src={course.image} alt={course.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
                   ) : (

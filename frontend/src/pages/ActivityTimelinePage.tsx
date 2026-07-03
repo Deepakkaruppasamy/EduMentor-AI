@@ -384,7 +384,7 @@ export const ActivityTimelinePage: React.FC = () => {
           marginBottom: 16
         }}>
           <div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', block: 'block' }}>🔄 Infinite Scroll</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', display: 'block' }}>🔄 Infinite Scroll</span>
             <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', display: 'block', marginTop: 2 }}>Auto-append logs when scrolling to the bottom of the timeline</span>
           </div>
           <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 22, cursor: 'pointer' }}>
