@@ -47,6 +47,7 @@ export const StudentDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [layoutManagerOpen, setLayoutManagerOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
+  const [recommendation, setRecommendation] = useState<any>(null);
 
   // Drag and Drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -77,6 +78,15 @@ export const StudentDashboard: React.FC = () => {
       setCalendarEvents(calRes.data?.data || []);
       setAssignments(assignRes.data || []);
       setActivityLogs(actRes.data?.logs || []);
+
+      // Fetch AI Recommendations based on course progress
+      let recData = null;
+      if (progRes.data?.progress?.courseProgress?.length > 0) {
+        const cId = progRes.data.progress.courseProgress[0].courseId;
+        const recRes = await api.get('/recommendations', { params: { courseId: cId } }).catch(() => null);
+        if (recRes) recData = recRes.data.recommendation;
+      }
+      setRecommendation(recData);
     } catch (err) {
       console.error('Failed to load student dashboard data', err);
     } finally {
@@ -362,18 +372,46 @@ export const StudentDashboard: React.FC = () => {
   };
 
   const renderRecommendationsWidget = () => (
-    <div className="p-4 space-y-2 text-xs">
-      <p className="text-white/70 leading-relaxed">
-        Based on quiz stand, focus on:
-      </p>
-      {progress?.courseProgress && progress.courseProgress.some(c => c.progress < 60) ? (
-        <div className="p-2.5 rounded-xl bg-red-500/5 border border-red-500/15 text-red-400 text-[10px]">
-          ⚠️ DBMS Normalization score trend warrants urgent practice sessions.
+    <div className="p-4 space-y-3.5 text-xs">
+      {recommendation ? (
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <span className="text-[10px] text-white/45 uppercase font-black tracking-wider block">Suggested Focus Topics</span>
+            <div className="flex flex-wrap gap-1.5">
+              {recommendation.suggestedTopics?.slice(0, 3).map((topic: string) => (
+                <span key={topic} className="px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-400 text-[10px] font-medium border border-indigo-500/15">
+                  🎯 {topic}
+                </span>
+              ))}
+              {(!recommendation.suggestedTopics || recommendation.suggestedTopics.length === 0) && (
+                <span className="text-white/40 italic text-[11px]">No specific topic recommendations.</span>
+              )}
+            </div>
+          </div>
+          
+          {recommendation.resourceRecommendations?.length > 0 && (
+            <div className="space-y-1.5">
+              <span className="text-[10px] text-white/45 uppercase font-black tracking-wider block">Recommended Resources</span>
+              <div className="space-y-1.5">
+                {recommendation.resourceRecommendations.slice(0, 2).map((res: any, idx: number) => (
+                  <div key={idx} className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-bold text-white/80 truncate text-[11px]">{res.title}</div>
+                      <div className="text-[9px] text-white/35 capitalize mt-0.5">{res.type}</div>
+                    </div>
+                    {res.url && (
+                      <a href={res.url} target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold text-indigo-400 hover:underline flex-shrink-0 font-mono">
+                        OPEN ↗
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 text-emerald-400 text-[10px]">
-          ✅ Solid mastery. Maintain consistency by answering daily concept queries.
-        </div>
+        <div className="text-center py-4 text-xs text-white/30 italic">No recommendations. Start taking quizzes!</div>
       )}
     </div>
   );
