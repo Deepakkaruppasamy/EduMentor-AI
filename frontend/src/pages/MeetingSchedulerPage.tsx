@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { appointmentService } from '../services/appointment.service';
+import { BookmarkButton } from '../components/common/BookmarkButton';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths } from 'date-fns';
 import toast from 'react-hot-toast';
 import { Loader } from '../components/common/Loader';
@@ -274,7 +275,14 @@ export const MeetingSchedulerPage: React.FC = () => {
                 {a.facultyNotes && <div className="text-xs text-[#7c8fff] mt-1">Note: {a.facultyNotes}</div>}
                 {a.rescheduledDate && <div className="text-xs text-[#f6ad55] mt-1">Rescheduled to: {format(new Date(a.rescheduledDate), 'MMM d, yyyy')} {a.rescheduledSlot}</div>}
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0 items-center">
+                <BookmarkButton
+                  itemType="meeting"
+                  itemId={a._id}
+                  title={`Meeting: ${isStudent ? 'Faculty ' + (a.faculty?.name || '') : 'Student ' + (a.student?.name || '')}`}
+                  category="Meetings"
+                  className="p-1 border-0 bg-transparent text-white/40 hover:text-white"
+                />
                 {isStudent && ['Pending', 'Approved'].includes(a.status) && (
                   <button onClick={() => handleCancel(a._id)}
                     className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)', border: '1px solid rgba(252,129,129,0.15)' }}>

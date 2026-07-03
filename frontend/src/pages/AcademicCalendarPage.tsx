@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { calendarService } from '../services/calendar.service';
+import { BookmarkButton } from '../components/common/BookmarkButton';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, isSameMonth } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -167,11 +168,20 @@ export const AcademicCalendarPage: React.FC = () => {
             const tc = EVENT_TYPE_CONFIG[ev.type];
             return (
               <div key={ev._id} className="mb-3 p-3 rounded-xl" style={{ background: `${tc?.color || '#4f63ff'}08`, border: `1px solid ${tc?.color || '#4f63ff'}20` }}>
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start gap-2">
                   <div className="text-[10px] font-bold" style={{ color: tc?.color || '#7c8fff' }}>{tc?.icon} {ev.type}</div>
-                  {canCreate && (
-                    <button onClick={e => handleDelete(ev._id, e)} className="text-[10px] text-[#fc8181] opacity-60 hover:opacity-100">✕</button>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    <BookmarkButton
+                      itemType="calendar"
+                      itemId={ev._id}
+                      title={`Calendar: ${ev.title}`}
+                      category="Calendar"
+                      className="p-1 border-0 bg-transparent text-white/40 hover:text-white"
+                    />
+                    {canCreate && (
+                      <button onClick={e => handleDelete(ev._id, e)} className="text-[10px] text-[#fc8181] opacity-60 hover:opacity-100">✕</button>
+                    )}
+                  </div>
                 </div>
                 <div className="text-xs font-semibold text-white/80 mt-1">{ev.title}</div>
                 {ev.description && <div className="text-[10px] text-white/50 mt-0.5">{ev.description}</div>}

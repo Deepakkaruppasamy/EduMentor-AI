@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/auth.store';
 import { useMessagingStore } from '../../store/messaging.store';
 import { messagingService } from '../../services/messaging.service';
+import { BookmarkButton } from '../common/BookmarkButton';
+import { recentlyViewedService } from '../../services/recently-viewed.service';
 import { MsgDiscussion, MsgDiscussionReply } from '../../types/messaging.types';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -22,6 +24,12 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({ discussion }
 
   useEffect(() => {
     loadReplies();
+    recentlyViewedService.record({
+      itemType: 'thread',
+      itemId: discussion._id,
+      title: `Thread: ${discussion.title}`,
+      url: `/messages`
+    }).catch(() => {});
   }, [discussion._id]);
 
   const loadReplies = async () => {
@@ -133,18 +141,27 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({ discussion }
               by {discussion.author?.name} • {format(new Date(discussion.createdAt), 'MMM d, yyyy')} • {discussion.replyCount} replies
             </div>
           </div>
-          {(isFaculty || discussion.author?._id === user?.id) && (
-            <button
-              onClick={handleResolve}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                discussion.isResolved
-                  ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
-                  : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-              }`}
-            >
-              {discussion.isResolved ? '↩ Reopen' : '✓ Resolve'}
-            </button>
-          )}
+          <div className="flex gap-2 flex-shrink-0 items-center">
+            <BookmarkButton
+              itemType="thread"
+              itemId={discussion._id}
+              title={`Thread: ${discussion.title}`}
+              category="Discussions"
+              className="p-1 border border-white/5 bg-transparent text-white/40 hover:text-white"
+            />
+            {(isFaculty || discussion.author?._id === user?.id) && (
+              <button
+                onClick={handleResolve}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  discussion.isResolved
+                    ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
+                    : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                }`}
+              >
+                {discussion.isResolved ? '↩ Reopen' : '✓ Resolve'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

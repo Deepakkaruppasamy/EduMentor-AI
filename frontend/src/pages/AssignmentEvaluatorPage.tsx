@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/auth.store';
 import { courseService } from '../services/course.service';
 import { assignmentEvaluationService } from '../services/assignment-evaluation.service';
+import { BookmarkButton } from '../components/common/BookmarkButton';
+import { recentlyViewedService } from '../services/recently-viewed.service';
 import { Course } from '../types';
 import { jsPDF } from 'jspdf';
 
@@ -93,7 +95,16 @@ export const AssignmentEvaluatorPage: React.FC = () => {
       setFile(null);
     }
   }, [selectedCourseId, loadHistory]);
-
+  useEffect(() => {
+    if (selectedReport) {
+      recentlyViewedService.record({
+        itemType: 'assignment',
+        itemId: selectedReport._id,
+        title: `Assignment: ${selectedReport.fileName}`,
+        url: `/assignments`
+      }).catch(() => {});
+    }
+  }, [selectedReport]);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles[0]);
@@ -627,25 +638,35 @@ export const AssignmentEvaluatorPage: React.FC = () => {
 
             <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
               {history.map((report) => (
-                <button
-                  key={report._id}
-                  onClick={() => setSelectedReport(report)}
-                  className={`w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center gap-2
-                    ${selectedReport?._id === report._id
-                      ? 'bg-primary-500/15 border-primary-500/40'
-                      : 'bg-white/[0.01] border-white/[0.04] hover:border-white/10 hover:bg-white/[0.02]'}`}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-white truncate max-w-[130px]">{report.fileName}</p>
-                    {report.studentId && (
-                      <p className="text-[10px] text-primary-300 font-semibold truncate">By: {report.studentId.name}</p>
-                    )}
-                    <p className="text-[9px] text-white/30 mt-0.5">{new Date(report.createdAt).toLocaleDateString()}</p>
+                <div key={report._id} className="relative group">
+                  <button
+                    onClick={() => setSelectedReport(report)}
+                    className={`w-full text-left p-3 pr-10 rounded-xl border transition-all flex justify-between items-center gap-2
+                      ${selectedReport?._id === report._id
+                        ? 'bg-primary-500/15 border-primary-500/40'
+                        : 'bg-white/[0.01] border-white/[0.04] hover:border-white/10 hover:bg-white/[0.02]'}`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-white truncate max-w-[130px]">{report.fileName}</p>
+                      {report.studentId && (
+                        <p className="text-[10px] text-primary-300 font-semibold truncate">By: {report.studentId.name}</p>
+                      )}
+                      <p className="text-[9px] text-white/30 mt-0.5">{new Date(report.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <span className="text-xs font-black px-2 py-1 rounded bg-white/5 text-white/80" style={{ color: getScoreColor(report.evaluation.score) }}>
+                      {report.evaluation.score}%
+                    </span>
+                  </button>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+                    <BookmarkButton
+                      itemType="assignment"
+                      itemId={report._id}
+                      title={`Assignment: ${report.fileName}`}
+                      category="Assignments"
+                      className="p-1 border-0 bg-transparent text-white/40 hover:text-white"
+                    />
                   </div>
-                  <span className="text-xs font-black px-2 py-1 rounded bg-white/5 text-white/80" style={{ color: getScoreColor(report.evaluation.score) }}>
-                    {report.evaluation.score}%
-                  </span>
-                </button>
+                </div>
               ))}
 
               {history.length === 0 && (

@@ -54,6 +54,8 @@ export const BookmarksWidget: React.FC = () => {
     if (type === 'calendar') return `/calendar`;
     if (type === 'meeting') return `/meetings`;
     if (type === 'ticket') return `/support`;
+    if (type === 'assignment') return `/assignment-evaluator`;
+    if (type === 'thread' || type === 'post') return `/messages`;
     return '/dashboard';
   };
 

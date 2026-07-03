@@ -37,6 +37,9 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     };
     if (itemId) {
       checkStatus();
+    } else {
+      setBookmarkId(null);
+      setLoading(false);
     }
     return () => {
       active = false;

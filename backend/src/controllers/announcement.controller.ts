@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Announcement from '../models/Announcement';
 import AnnouncementRead from '../models/AnnouncementRead';
+import Bookmark from '../models/Bookmark';
 import User from '../models/User';
 import { sendEmail } from '../utils/email';
 import { sendInAppNotification } from '../services/socket.service';
@@ -187,15 +188,34 @@ export const toggleBookmark = async (req: AuthRequest, res: Response): Promise<v
     const userId = req.user!._id;
     const { id } = req.params;
 
+    const ann = await Announcement.findById(id);
+    if (!ann) {
+      res.status(404).json({ success: false, message: 'Announcement not found' });
+      return;
+    }
+
     const existing = await AnnouncementRead.findOne({ announcement: id, user: userId });
+    let isBookmarkedNow = true;
+
     if (existing) {
       existing.isBookmarked = !existing.isBookmarked;
+      isBookmarkedNow = existing.isBookmarked;
       await existing.save();
-      res.json({ success: true, isBookmarked: existing.isBookmarked });
     } else {
       await AnnouncementRead.create({ announcement: id, user: userId, isBookmarked: true });
-      res.json({ success: true, isBookmarked: true });
     }
+
+    if (isBookmarkedNow) {
+      await Bookmark.findOneAndUpdate(
+        { userId, itemType: 'announcement', itemId: id },
+        { title: ann.title, category: 'Announcements' },
+        { upsert: true, new: true }
+      );
+    } else {
+      await Bookmark.findOneAndDelete({ userId, itemType: 'announcement', itemId: id });
+    }
+
+    res.json({ success: true, isBookmarked: isBookmarkedNow });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
