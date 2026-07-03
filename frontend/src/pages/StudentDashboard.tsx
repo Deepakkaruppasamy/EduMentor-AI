@@ -778,7 +778,7 @@ export const StudentDashboard: React.FC = () => {
           <p className="text-xs text-white/40 mt-0.5">Your permanent academic trends, performance indexes, and class standings</p>
         </div>
         
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {/* Quiz Performance Trends */}
           <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
             <div className="flex items-center justify-between">
@@ -788,8 +788,31 @@ export const StudentDashboard: React.FC = () => {
             {renderQuizTrendsWidget()}
           </div>
 
-          {/* Leaderboard & Streaks */}
+          {/* Topic Mastery Breakdown */}
           <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">🔬 Topic Strength Breakdown</h3>
+              <span className="text-[10px] text-emerald-400 font-semibold font-mono">Mastery level</span>
+            </div>
+            {recommendation?.topicProgress?.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={recommendation.topicProgress.slice(0, 4)} layout="vertical" margin={{ left: -10, right: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} width={70} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
+                  <Bar dataKey="avgScore" fill="#38b2ac" radius={[0, 4, 4, 0]} name="Avg Score %" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[200px] flex items-center justify-center text-xs text-white/30 italic text-center px-4">
+                No topic details yet. Complete a quiz to analyze concept strength!
+              </div>
+            )}
+          </div>
+
+          {/* Leaderboard & Streaks */}
+          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01] md:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between">
               <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">🏆 Class Standings &amp; Rank</h3>
               <span className="text-[10px] text-amber-400 font-semibold font-mono">Streak points</span>

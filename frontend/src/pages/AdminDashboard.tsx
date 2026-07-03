@@ -759,6 +759,7 @@ const SuperAdminDashboardView: React.FC = () => {
 const FacultyDashboardView: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [activity, setActivity] = useState<any[]>([]);
+  const [deptStats, setDeptStats] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Widget Customization states
@@ -778,6 +779,7 @@ const FacultyDashboardView: React.FC = () => {
       ]);
       setStats(data.stats);
       setActivity(data.recentActivity || []);
+      setDeptStats(data.departmentAnalytics || []);
       setPrefs(prefsData);
     } catch {
       toast.error('Failed to load analytics');
@@ -1067,7 +1069,7 @@ const FacultyDashboardView: React.FC = () => {
           <p className="text-xs text-white/40 mt-0.5">Permanent indicators of query volume, topic distribution, and user engagement</p>
         </div>
 
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {/* Query Trends Chart */}
           <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
             <div className="flex items-center justify-between">
@@ -1086,7 +1088,7 @@ const FacultyDashboardView: React.FC = () => {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-48 flex items-center justify-center text-xs text-white/30 italic">No query activity recorded.</div>
+              <div className="h-[220px] flex items-center justify-center text-xs text-white/30 italic">No query activity recorded.</div>
             )}
           </div>
 
@@ -1107,7 +1109,28 @@ const FacultyDashboardView: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-48 flex items-center justify-center text-xs text-white/30 italic">No queried topics recorded.</div>
+              <div className="h-[220px] flex items-center justify-center text-xs text-white/30 italic">No queried topics recorded.</div>
+            )}
+          </div>
+
+          {/* Departmental Comparison */}
+          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01] md:col-span-2 lg:col-span-1">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">🏢 Departmental AI Usage</h3>
+              <span className="text-[10px] text-amber-400 font-semibold font-mono">Total Queries</span>
+            </div>
+            {deptStats.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={deptStats}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="department" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
+                  <Bar dataKey="aiUsage" fill="#06b6d4" radius={[4, 4, 0, 0]} name="Queries" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[220px] flex items-center justify-center text-xs text-white/30 italic">No departmental records found.</div>
             )}
           </div>
         </div>
