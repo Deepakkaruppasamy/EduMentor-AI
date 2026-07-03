@@ -1022,6 +1022,14 @@ const FacultyDashboardView: React.FC = () => {
         </button>
       </div>
 
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard icon="👥" label="Total Students" value={stats?.totalUsers || 0} color="#4f63ff" />
+        <StatCard icon="💬" label="Total Queries" value={stats?.totalQueries || 0} color="#9f7aea" />
+        <StatCard icon="📋" label="Quizzes Assigned" value={stats?.totalQuizzes || 0} color="#48bb78" />
+        <StatCard icon="🎯" label="AI Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#f6ad55" />
+      </div>
+
       {/* Customizable Widget Grid */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
         {displayWidgets
