@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, AreaChart } from 'recharts';
 import { useAuthStore } from '../store/auth.store';
 import api from '../services/api';
 import { StudentProgress } from '../types';
@@ -17,8 +17,9 @@ import { RecentlyViewedWidget } from '../components/dashboard/RecentlyViewedWidg
 import { DashboardLayoutManager } from '../components/dashboard/DashboardLayoutManager';
 import { WidgetWrapper } from '../components/dashboard/WidgetWrapper';
 import toast from 'react-hot-toast';
+
 const StatCard: React.FC<{ icon: string; label: string; value: string | number; sub?: string; gradient: string }> = ({ icon, label, value, sub, gradient }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5">
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5 hover:scale-[1.02] transition-transform duration-200">
     <div className="flex items-start gap-4">
       <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl ${gradient}`}>
         {icon}
@@ -31,6 +32,99 @@ const StatCard: React.FC<{ icon: string; label: string; value: string | number; 
     </div>
   </motion.div>
 );
+
+type HeatmapView = 'instant' | 'weakness' | 'map';
+
+const HeatmapSection: React.FC<{ courseProgress: { courseId: string; title: string; code: string; progress: number }[] }> = ({ courseProgress }) => {
+  const [view, setView] = useState<HeatmapView>('instant');
+
+  const getTheme = (val: number) => {
+    if (val >= 85) return { badge: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', bar: 'bg-emerald-500', blockColor: 'text-emerald-400' };
+    if (val >= 60) return { badge: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30', bar: 'bg-indigo-500', blockColor: 'text-indigo-400' };
+    return { badge: 'bg-rose-500/20 text-rose-400 border-rose-500/30', bar: 'bg-rose-500', blockColor: 'text-rose-400' };
+  };
+
+  const filtered = view === 'weakness'
+    ? [...courseProgress].sort((a, b) => a.progress - b.progress)
+    : view === 'map'
+    ? [...courseProgress].sort((a, b) => b.progress - a.progress)
+    : courseProgress;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-bold text-white flex items-center gap-2">
+          <span>🧠</span> Learning Heatmap &amp; Subject Mastery
+        </h2>
+        <div className="flex items-center gap-1">
+          {(['instant', 'weakness', 'map'] as HeatmapView[]).map(v => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                view === v
+                  ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40'
+                  : 'text-white/25 hover:text-white/50'
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {courseProgress.length === 0 ? (
+        <div className="text-center py-6 text-xs text-white/30 italic">No active courses enrolled yet.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((course) => {
+              const theme = getTheme(course.progress);
+              const totalBlocks = 10;
+              const filled = Math.round((course.progress / 100) * totalBlocks);
+              return (
+                <motion.div
+                  key={course.courseId}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex flex-col gap-3 hover:bg-white/[0.04] transition-colors"
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <span className="text-[9px] uppercase font-bold text-white/35 tracking-wider font-mono block">{course.code}</span>
+                      <h3 className="text-xs font-semibold text-white truncate" title={course.title}>{course.title}</h3>
+                    </div>
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border flex-shrink-0 whitespace-nowrap ${theme.badge}`}>
+                      {course.progress}% Mastery
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="font-mono text-xs tracking-wider select-none">
+                      <span className={theme.blockColor}>{'█'.repeat(filled)}</span>
+                      <span className="text-white/10">{'░'.repeat(totalBlocks - filled)}</span>
+                    </div>
+                    <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                      <motion.div
+                        className={`h-full ${theme.bar}`}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${course.progress}%` }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
+    </motion.div>
+  );
+};
 
 export const StudentDashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -731,6 +825,222 @@ export const StudentDashboard: React.FC = () => {
         <StatCard icon="🔥" label="Active Courses" value={user?.courses?.length || 0} gradient="stat-gradient-amber" />
       </div>
 
+      {/* ── Learning Heatmap & Subject Mastery ── */}
+      {progress?.courseProgress && (
+        <HeatmapSection courseProgress={progress.courseProgress} />
+      )}
+
+      {/* ── Quiz Performance Trend + Quick Actions ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Quiz Performance Trend */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card p-5 space-y-4 lg:col-span-2"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <span>📈</span> Quiz Performance Trend
+            </h2>
+            <span className="text-[10px] text-indigo-400 font-bold font-mono uppercase tracking-wider">Accuracy Index</span>
+          </div>
+          {quizScoreData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={quizScoreData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                <defs>
+                  <linearGradient id="quizAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4f63ff" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#4f63ff" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} domain={[0, 100]} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: 'rgba(20,22,32,0.97)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '12px' }}
+                  formatter={(v: any) => [`${v}%`, 'Score']}
+                />
+                <Area type="monotone" dataKey="score" stroke="#4f63ff" strokeWidth={2} fill="url(#quizAreaGrad)" dot={{ fill: '#4f63ff', r: 4 }} activeDot={{ r: 6 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-48 items-center justify-center">
+              <div className="text-center">
+                <div className="text-3xl mb-2">📊</div>
+                <p className="text-sm text-white/30">No quiz data yet. Take your first quiz!</p>
+                <Link to="/quiz" className="mt-3 inline-block text-xs text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Start a Quiz →</Link>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="glass-card p-5 space-y-3"
+        >
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <span>⚡</span> Quick Actions
+          </h2>
+          <div className="space-y-2">
+            {[
+              { to: '/chat', icon: '💬', label: 'Start Chat Session', sub: 'Ask the AI tutor', color: 'hover:bg-indigo-500/10 hover:border-indigo-500/25' },
+              { to: '/quiz', icon: '📋', label: 'Generate Quiz', sub: 'Test your knowledge', color: 'hover:bg-violet-500/10 hover:border-violet-500/25' },
+              { to: '/courses', icon: '📚', label: 'Browse Courses', sub: 'Enroll in courses', color: 'hover:bg-emerald-500/10 hover:border-emerald-500/25' },
+              { to: '/recommendations', icon: '🎯', label: 'View Plan', sub: 'Personalized learning', color: 'hover:bg-amber-500/10 hover:border-amber-500/25' },
+            ].map((item, i) => (
+              <motion.div key={item.to} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
+                <Link
+                  to={item.to}
+                  className={`flex items-center gap-3 rounded-xl p-3 transition-all border border-white/5 bg-white/[0.02] ${item.color} group`}
+                >
+                  <span className="text-lg group-hover:scale-110 transition-transform duration-200">{item.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-white">{item.label}</div>
+                    <div className="text-[10px] text-white/40">{item.sub}</div>
+                  </div>
+                  <span className="text-white/20 group-hover:text-white/50 transition-colors">›</span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ── Student Leaderboard + Recent Chats ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Student Leaderboard & Streaks */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card p-5 space-y-4 lg:col-span-2"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <span>🏆</span> Student Leaderboard &amp; Streaks
+            </h2>
+            <span className="text-[10px] text-amber-400 font-bold font-mono uppercase tracking-wider">Weekly Rankings</span>
+          </div>
+
+          {/* Top 3 Podium Cards */}
+          {leaderboard.length > 0 ? (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                {leaderboard.slice(0, 3).map((student, idx) => {
+                  const badges = ['🥇', '🥈', '🥉'];
+                  const gradients = [
+                    'linear-gradient(135deg, rgba(217,119,6,0.18) 0%, rgba(252,211,77,0.06) 100%)',
+                    'linear-gradient(135deg, rgba(75,85,99,0.18) 0%, rgba(209,213,219,0.06) 100%)',
+                    'linear-gradient(135deg, rgba(180,83,9,0.18) 0%, rgba(253,186,116,0.06) 100%)',
+                  ];
+                  const borders = ['rgba(217,119,6,0.3)', 'rgba(75,85,99,0.3)', 'rgba(180,83,9,0.3)'];
+                  return (
+                    <motion.div
+                      key={student.name + idx}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.25 + idx * 0.08 }}
+                      className="rounded-2xl p-3 flex flex-col items-center text-center relative border"
+                      style={{ background: gradients[idx], borderColor: borders[idx] }}
+                    >
+                      <div className="absolute top-2.5 left-2.5 text-base">{badges[idx]}</div>
+                      <div className="h-9 w-9 rounded-full bg-white/5 flex items-center justify-center font-bold text-white mb-1.5 text-xs border border-white/10">
+                        {student.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                      </div>
+                      <div className="text-[11px] font-bold text-white truncate max-w-full">{student.name}</div>
+                      <div className="text-[9px] text-white/40 mt-0.5">{student.learningStreak} day streak 🔥</div>
+                      <div className="mt-2 flex items-center justify-between w-full border-t border-white/5 pt-2">
+                        <div className="text-center flex-1">
+                          <div className="text-[10px] font-bold text-white">{student.avgQuizScore}%</div>
+                          <div className="text-[9px] text-white/40">Quiz Avg</div>
+                        </div>
+                        <div className="w-px h-6 bg-white/5" />
+                        <div className="text-center flex-1">
+                          <div className="text-[10px] font-bold text-white">{student.totalQueries}</div>
+                          <div className="text-[9px] text-white/40">Queries</div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Remaining Leaderboard List */}
+              <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+                {leaderboard.slice(3).map((student, idx) => (
+                  <motion.div
+                    key={student.name + (idx + 3)}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + idx * 0.04 }}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2 border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-colors text-xs"
+                  >
+                    <span className="font-bold text-white/35 w-4 text-center">{idx + 4}</span>
+                    <div className="h-6 w-6 rounded-full bg-white/5 flex items-center justify-center font-bold text-white/60 text-[10px] border border-white/10 flex-shrink-0">
+                      {student.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <div className="font-semibold text-white min-w-0 truncate flex-1">{student.name}</div>
+                    <div className="flex items-center gap-3 text-[10px] text-white/45 flex-shrink-0">
+                      <span>🔥 <strong className="text-white">{student.learningStreak}d</strong></span>
+                      <span>Score: <strong className="text-white">{student.avgQuizScore}%</strong></span>
+                      <span>Queries: <strong className="text-white">{student.totalQueries}</strong></span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8 text-xs text-white/30 italic">No leaderboard data yet.</div>
+          )}
+        </motion.div>
+
+        {/* Recent Chat Sessions */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="glass-card p-5 space-y-3"
+        >
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <span>💬</span> Recent Chat Sessions
+          </h2>
+          {progress?.recentChats && progress.recentChats.length > 0 ? (
+            <div className="space-y-1.5 max-h-[360px] overflow-y-auto">
+              {progress.recentChats.map((chat, i) => (
+                <motion.div
+                  key={chat._id}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.05 }}
+                >
+                  <Link
+                    to={`/chat?chatId=${chat._id}`}
+                    className="flex items-center gap-3 rounded-xl px-3 py-3 transition-all border border-white/5 bg-white/[0.02] hover:bg-indigo-500/10 hover:border-indigo-500/20 group"
+                  >
+                    <span className="text-sm flex-shrink-0 group-hover:scale-110 transition-transform">💬</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-xs font-medium text-white">{chat.title}</p>
+                      <p className="text-[10px] text-white/35 mt-0.5">{chat.totalMessages} messages · {formatDate(chat.updatedAt)}</p>
+                    </div>
+                    <span className="text-white/20 group-hover:text-white/50 transition-colors flex-shrink-0">›</span>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="text-3xl mb-2">💬</div>
+              <p className="text-xs text-white/30">No recent chat sessions.</p>
+              <Link to="/chat" className="mt-3 text-xs text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Start a conversation →</Link>
+            </div>
+          )}
+        </motion.div>
+      </div>
+
       {/* Dynamic Grid Layout */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
         {displayWidgets
@@ -767,36 +1077,6 @@ export const StudentDashboard: React.FC = () => {
               </div>
             );
           })}
-      </div>
-
-      {/* Permanent Learning Analytics & Insights Section */}
-      <div className="space-y-4 pt-4 border-t border-white/5">
-        <div>
-          <h2 className="text-base md:text-lg font-bold text-white flex items-center gap-2">
-            <span>📊</span> Learning Analytics &amp; Insights
-          </h2>
-          <p className="text-xs text-white/40 mt-0.5">Your permanent academic trends, performance indexes, and class standings</p>
-        </div>
-        
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-          {/* Quiz Performance Trends */}
-          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">📈 Quiz Performance Trend</h3>
-              <span className="text-[10px] text-indigo-400 font-semibold font-mono">Accuracy index</span>
-            </div>
-            {renderQuizTrendsWidget()}
-          </div>
-
-          {/* Leaderboard & Streaks */}
-          <div className="glass-card p-5 space-y-3.5 bg-white/[0.01]">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase font-black text-white/50 tracking-wider">🏆 Class Standings &amp; Rank</h3>
-              <span className="text-[10px] text-amber-400 font-semibold font-mono">Streak points</span>
-            </div>
-            {renderLeaderboardWidget()}
-          </div>
-        </div>
       </div>
 
       {/* Weekly Digest Summary */}
