@@ -30,6 +30,42 @@ const StatCard: React.FC<{ icon: string; label: string; value: string | number; 
   </div>
 );
 
+const FacultyStatCard: React.FC<{
+  icon: string;
+  label: string;
+  value: string | number;
+  color: string;
+  progress?: number;
+}> = ({ icon, label, value, color, progress }) => {
+  const isPercentage = progress !== undefined;
+  const fillWidth = isPercentage ? `${Math.max(0, Math.min(100, progress))}%` : '100%';
+
+  return (
+    <div className="glass-card p-5 flex flex-col justify-between border border-white/5 shadow-md rounded-2xl bg-[#111319]/80 hover:bg-[#151821] transition-all duration-300">
+      <div className="flex items-center justify-between">
+        <div className="text-2xl flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 border border-white/10" style={{ color }}>
+          {icon}
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
+          <div className="text-[11px] font-semibold text-white/40 mt-1">{label}</div>
+        </div>
+      </div>
+      <div className="w-full bg-white/[0.04] h-1.5 rounded-full mt-4 overflow-hidden">
+        <div 
+          className="h-full rounded-full transition-all duration-500" 
+          style={{ 
+            backgroundColor: color, 
+            width: fillWidth,
+            boxShadow: `0 0 8px ${color}33`
+          }} 
+        />
+      </div>
+    </div>
+  );
+};
+
+
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuthStore();
 
@@ -1023,11 +1059,15 @@ const FacultyDashboardView: React.FC = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon="👥" label="Total Students" value={stats?.totalUsers || 0} color="#4f63ff" />
-        <StatCard icon="💬" label="Total Queries" value={stats?.totalQueries || 0} color="#9f7aea" />
-        <StatCard icon="📋" label="Quizzes Assigned" value={stats?.totalQuizzes || 0} color="#48bb78" />
-        <StatCard icon="🎯" label="AI Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#f6ad55" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <FacultyStatCard icon="👥" label="Total Users" value={stats?.totalUsers || 0} color="#4f63ff" />
+        <FacultyStatCard icon="🟢" label="Active Users (7d)" value={stats?.activeUsers || 0} color="#48bb78" />
+        <FacultyStatCard icon="💬" label="Total Queries" value={stats?.totalQueries || 0} color="#9f7aea" />
+        <FacultyStatCard icon="📚" label="Total Courses" value={stats?.totalCourses || 0} color="#f6ad55" />
+        <FacultyStatCard icon="📁" label="Docs Processed" value={stats?.totalDocuments || 0} color="#06b6d4" />
+        <FacultyStatCard icon="📝" label="Quizzes Generated" value={stats?.totalQuizzes || 0} color="#e879f9" />
+        <FacultyStatCard icon="✅" label="Avg Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#48bb78" progress={stats?.avgTrustScore || 0} />
+        <FacultyStatCard icon="⚠️" label="Hallucination Rate" value={`${stats?.avgHallucinationRate || 0}%`} color="#fc8181" progress={stats?.avgHallucinationRate || 0} />
       </div>
 
       {/* Customizable Widget Grid */}
