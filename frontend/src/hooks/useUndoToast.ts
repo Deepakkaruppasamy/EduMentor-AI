@@ -12,7 +12,7 @@
  *     onRevert: () => { setBookmarks(prev => [item, ...prev]); },
  *   });
  */
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useHistoryStore, makeExpiry } from '../store/history.store';
 
@@ -32,7 +32,7 @@ interface UndoOptions {
 }
 
 export function useUndoToast() {
-  const { pushAction, undo } = useHistoryStore();
+  const { pushAction } = useHistoryStore();
 
   const deleteWithUndo = useCallback(async (options: UndoOptions) => {
     const { description, onUpdate, onRevert, onDelete, onUndo } = options;
@@ -52,60 +52,74 @@ export function useUndoToast() {
         undone = true;
         if (deleteTimer) clearTimeout(deleteTimer);
         onRevert();
-        await onUndo();
-        toast.success(`↩ ${description} reversed`, { duration: 3000 });
+        try {
+          await onUndo();
+          toast.success(`\u21a9 ${description} reversed`, { duration: 3000 });
+        } catch {
+          toast.error('Failed to undo. Please refresh.');
+        }
       },
     });
 
-    // 4. Show undo toast with countdown bar
+    // 4. Show undo toast using React.createElement (no JSX — .ts file)
+    const handleUndo = async (toastId: string) => {
+      undone = true;
+      if (deleteTimer) clearTimeout(deleteTimer);
+      toast.dismiss(toastId);
+      onRevert();
+      try {
+        await onUndo();
+        toast.success(`\u21a9 ${description} reversed`, { duration: 3000 });
+      } catch {
+        toast.error('Failed to undo. Please refresh.');
+      }
+    };
+
     toast(
-      (t) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '240px' }}>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: '#f0f2f8', margin: 0 }}>
-              {description}
-            </p>
-            {/* Countdown bar */}
-            <div style={{ marginTop: '6px', height: '2px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-              <div
-                style={{
+      (t) =>
+        React.createElement(
+          'div',
+          { style: { display: 'flex', alignItems: 'center', gap: '12px', minWidth: '240px' } },
+          React.createElement(
+            'div',
+            { style: { flex: 1 } },
+            React.createElement(
+              'p',
+              { style: { fontSize: '12px', fontWeight: 600, color: '#f0f2f8', margin: 0 } },
+              description
+            ),
+            React.createElement(
+              'div',
+              { style: { marginTop: '6px', height: '2px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' } },
+              React.createElement('div', {
+                style: {
                   height: '100%',
                   background: 'linear-gradient(90deg, #4f63ff, #7c3aed)',
                   borderRadius: '2px',
                   animation: `undoCountdown ${UNDO_WINDOW_MS}ms linear forwards`,
-                }}
-              />
-            </div>
-          </div>
-          <button
-            onClick={async () => {
-              undone = true;
-              if (deleteTimer) clearTimeout(deleteTimer);
-              toast.dismiss(t.id);
-              onRevert();
-              try {
-                await onUndo();
-                toast.success(`↩ ${description} reversed`, { duration: 3000 });
-              } catch {
-                toast.error('Failed to undo. Please refresh.');
-              }
-            }}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '8px',
-              background: 'rgba(79,99,255,0.2)',
-              border: '1px solid rgba(79,99,255,0.3)',
-              color: '#7c8fff',
-              fontSize: '11px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            Undo
-          </button>
-        </div>
-      ),
+                },
+              })
+            )
+          ),
+          React.createElement(
+            'button',
+            {
+              onClick: () => handleUndo(t.id),
+              style: {
+                padding: '6px 12px',
+                borderRadius: '8px',
+                background: 'rgba(79,99,255,0.2)',
+                border: '1px solid rgba(79,99,255,0.3)',
+                color: '#7c8fff',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                flexShrink: 0,
+              },
+            },
+            'Undo'
+          )
+        ),
       {
         id: `undo-${Date.now()}`,
         duration: UNDO_WINDOW_MS,
@@ -126,7 +140,6 @@ export function useUndoToast() {
       try {
         await onDelete();
       } catch {
-        // Revert UI silently if delete failed
         onRevert();
         toast.error(`Failed to delete. ${description} restored.`);
       }
