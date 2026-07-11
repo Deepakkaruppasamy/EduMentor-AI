@@ -13,6 +13,7 @@ const router = Router();
 router.post('/evaluate', protect, upload.single('file'), evaluateAssignment);
 
 // Get list of assignment evaluation histories (Filterable by courseId)
+router.get('/', protect, getHistory);
 router.get('/history', protect, getHistory);
 
 // Get details of a specific evaluation

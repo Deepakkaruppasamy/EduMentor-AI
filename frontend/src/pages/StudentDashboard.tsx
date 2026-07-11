@@ -164,7 +164,7 @@ export const StudentDashboard: React.FC = () => {
         preferenceService.get(),
         appointmentService.getMy().catch(() => ({ data: { data: [] } })),
         calendarService.getEvents().catch(() => ({ data: { data: [] } })),
-        api.get('/assignment-evaluations').catch(() => ({ data: [] })),
+        api.get('/assignment-evaluations/history').catch(() => ({ data: { evaluations: [] } })),
         api.get('/activity').catch(() => ({ data: { logs: [] } })),
       ]);
 
@@ -173,7 +173,8 @@ export const StudentDashboard: React.FC = () => {
       setPrefs(prefsData);
       setAppointments(appRes.data?.data || []);
       setCalendarEvents(calRes.data?.data || []);
-      setAssignments(assignRes.data || []);
+      const assignmentsList = assignRes.data?.evaluations || assignRes.data?.data || (Array.isArray(assignRes.data) ? assignRes.data : []);
+      setAssignments(assignmentsList);
       setActivityLogs(actRes.data?.logs || []);
 
       // Fetch AI Recommendations based on course progress
@@ -392,7 +393,7 @@ export const StudentDashboard: React.FC = () => {
                 <div className="text-[9px] text-white/45">Grade: {a.grade || 'Evaluated'}</div>
               </div>
               <span className="font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                {a.score}/100
+                {a.evaluation?.score ?? a.score ?? 0}/100
               </span>
             </div>
           ))}

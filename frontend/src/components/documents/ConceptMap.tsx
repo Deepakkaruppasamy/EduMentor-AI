@@ -137,6 +137,13 @@ export const ConceptMap: React.FC<ConceptMapProps> = ({ conceptMapText }) => {
 
           {/* Render connecting links (Cubic curves) */}
           {links.map(link => {
+            if (
+              typeof link?.x1 !== 'number' || typeof link?.y1 !== 'number' ||
+              typeof link?.x2 !== 'number' || typeof link?.y2 !== 'number' ||
+              isNaN(link.x1) || isNaN(link.y1) || isNaN(link.x2) || isNaN(link.y2)
+            ) {
+              return null;
+            }
             const path = `M ${link.x1} ${link.y1} C ${link.x1} ${(link.y1 + link.y2) / 2}, ${link.x2} ${(link.y1 + link.y2) / 2}, ${link.x2} ${link.y2}`;
             return (
               <motion.path

@@ -231,7 +231,7 @@ export const getHistory = async (req: any, res: Response, next: NextFunction): P
       .populate('studentId', 'name email')
       .sort({ createdAt: -1 });
 
-    res.json({ evaluations });
+    res.json({ evaluations, data: evaluations });
   } catch (err) {
     next(err);
   }

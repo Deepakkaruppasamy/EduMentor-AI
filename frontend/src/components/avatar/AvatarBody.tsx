@@ -141,10 +141,10 @@ const POSE_TRANSFORMS: Record<AvatarPose, {
 };
 
 export const AvatarBody: React.FC<AvatarBodyProps> = ({ config, pose, animationName }) => {
-  const skin = SKIN_TONES[config.skinTone];
-  const outfit = OUTFIT_COLORS[config.outfit] || OUTFIT_COLORS.casual;
+  const skin = SKIN_TONES[config?.skinTone] || SKIN_TONES['medium'] || { base: '#C68642', shadow: '#A0622A', highlight: '#DDA060' };
+  const outfit = OUTFIT_COLORS[config?.outfit] || OUTFIT_COLORS.casual;
   const pt = POSE_TRANSFORMS[pose] || POSE_TRANSFORMS.standing;
-  const isFemale = config.gender === 'female';
+  const isFemale = config?.gender === 'female';
 
   // Special hand props for specific poses
   const renderSpecialHands = () => {

@@ -17,8 +17,8 @@ interface AvatarFaceProps {
 }
 
 // Eye shapes per expression
-const getEyeShape = (expr: AvatarExpression, side: 'left' | 'right') => {
-  const shapes: Record<AvatarExpression, { scaleY: number; offsetY: number }> = {
+const getEyeShape = (expr: AvatarExpression | string, side: 'left' | 'right') => {
+  const shapes: Record<string, { scaleY: number; offsetY: number }> = {
     neutral:   { scaleY: 1,    offsetY: 0 },
     happy:     { scaleY: 0.5,  offsetY: 2 },
     smile:     { scaleY: 0.7,  offsetY: 1 },
@@ -30,12 +30,12 @@ const getEyeShape = (expr: AvatarExpression, side: 'left' | 'right') => {
     proud:     { scaleY: 0.8,  offsetY: 1 },
     sleepy:    { scaleY: 0.3,  offsetY: 2 },
   };
-  return shapes[expr];
+  return shapes[expr || 'neutral'] || shapes['neutral'] || { scaleY: 1, offsetY: 0 };
 };
 
 // Mouth shapes per expression
-const getMouthPath = (expr: AvatarExpression): string => {
-  const paths: Record<AvatarExpression, string> = {
+const getMouthPath = (expr: AvatarExpression | string): string => {
+  const paths: Record<string, string> = {
     neutral:   'M 36 58 Q 44 60 52 58',
     happy:     'M 34 56 Q 44 66 54 56',
     smile:     'M 35 57 Q 44 64 53 57',
@@ -47,15 +47,15 @@ const getMouthPath = (expr: AvatarExpression): string => {
     proud:     'M 36 57 Q 44 63 52 57',
     sleepy:    'M 37 59 Q 44 61 51 59',
   };
-  return paths[expr];
+  return paths[expr || 'neutral'] || paths['neutral'] || 'M 36 58 Q 44 60 52 58';
 };
 
 // Eyebrow shapes per expression
-const getEyebrowPath = (expr: AvatarExpression, side: 'left' | 'right') => {
+const getEyebrowPath = (expr: AvatarExpression | string, side: 'left' | 'right') => {
   const leftX = side === 'left' ? 28 : 44;
   const rightX = side === 'left' ? 40 : 56;
 
-  const transforms: Record<AvatarExpression, { y1: number; y2: number }> = {
+  const transforms: Record<string, { y1: number; y2: number }> = {
     neutral:   { y1: 28, y2: 28 },
     happy:     { y1: 25, y2: 25 },
     smile:     { y1: 26, y2: 26 },
@@ -68,7 +68,7 @@ const getEyebrowPath = (expr: AvatarExpression, side: 'left' | 'right') => {
     sleepy:    { y1: 32, y2: 32 },
   };
 
-  const t = transforms[expr];
+  const t = transforms[expr || 'neutral'] || transforms['neutral'] || { y1: 28, y2: 28 };
   return `M ${leftX} ${t.y1} Q ${(leftX + rightX) / 2} ${t.y2 - 2} ${rightX} ${t.y1}`;
 };
 
@@ -81,10 +81,10 @@ export const AvatarFace: React.FC<AvatarFaceProps> = ({
   const [blinkState, setBlinkState] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
 
-  const skin = SKIN_TONES[config.skinTone];
-  const hairColor = HAIR_COLORS[config.hairColor];
-  const eyeColor = EYE_COLORS[config.eyeColor];
-  const isFemale = config.gender === 'female';
+  const skin = SKIN_TONES[config?.skinTone] || SKIN_TONES['medium'] || { base: '#C68642', shadow: '#A0622A', highlight: '#DDA060' };
+  const hairColor = HAIR_COLORS[config?.hairColor] || HAIR_COLORS['black'] || '#1a1a1a';
+  const eyeColor = EYE_COLORS[config?.eyeColor] || EYE_COLORS['brown'] || '#8B4513';
+  const isFemale = config?.gender === 'female';
 
   // Idle blink loop
   useEffect(() => {
@@ -102,11 +102,11 @@ export const AvatarFace: React.FC<AvatarFaceProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  const eyeOffsetX = eyeTarget.x * 2.5;
-  const eyeOffsetY = eyeTarget.y * 2;
-  const leftEye = getEyeShape(expression, 'left');
-  const rightEye = getEyeShape(expression, 'right');
-  const mouthPath = getMouthPath(expression);
+  const eyeOffsetX = (eyeTarget?.x || 0) * 2.5;
+  const eyeOffsetY = (eyeTarget?.y || 0) * 2;
+  const leftEye = getEyeShape(expression || 'neutral', 'left');
+  const rightEye = getEyeShape(expression || 'neutral', 'right');
+  const mouthPath = getMouthPath(expression || 'neutral');
   const blinkScaleY = isBlinking ? 0.05 : 1;
 
   const scale = size / 88;
