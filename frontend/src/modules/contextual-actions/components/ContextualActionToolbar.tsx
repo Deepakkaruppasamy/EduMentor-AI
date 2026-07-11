@@ -20,6 +20,14 @@ export const ContextualActionToolbar: React.FC = () => {
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const [showMore, setShowMore] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+  // Update isMobile on resize
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // Filter actions based on role and current module context
   const filteredActions = ACTION_REGISTRY.filter((action) => {
@@ -32,14 +40,13 @@ export const ContextualActionToolbar: React.FC = () => {
     return true;
   });
 
-  // Sort and split into primary & secondary actions
+  // Sort actions by mobile priority
   const sortedActions = [...filteredActions].sort((a, b) => a.mobilePriority - b.mobilePriority);
 
-  // Mobile gets 2 primary + More; Desktop gets 4 primary + More
-  const isMobile = window.innerWidth < 640;
-  const primaryCount = isMobile ? 2 : 4;
+  // Desktop: 4 primary + More; Mobile: all shown in scrollable vertical list
+  const primaryCount = isMobile ? sortedActions.length : 4;
   const primaryActions = sortedActions.slice(0, primaryCount);
-  const secondaryActions = sortedActions.slice(primaryCount);
+  const secondaryActions = isMobile ? [] : sortedActions.slice(primaryCount);
 
   // Position calculation
   useEffect(() => {
@@ -49,22 +56,21 @@ export const ContextualActionToolbar: React.FC = () => {
       const tb = toolbarRef.current;
       if (!tb) return;
 
-      const tbWidth = tb.offsetWidth || 320;
-      const tbHeight = tb.offsetHeight || 44;
+      const tbWidth = tb.offsetWidth || (isMobile ? Math.min(240, window.innerWidth - 24) : 320);
+      const tbHeight = tb.offsetHeight || (isMobile ? 300 : 44);
       const gap = 8;
 
       let top = selection.rect!.top - tbHeight - gap;
       let left = selection.rect!.left + (selection.rect!.width - tbWidth) / 2;
 
-      // Vertical overflow checks
+      // Vertical overflow: place below selection if not enough room above
       if (top < 12) {
-        // Place below selection instead
         top = selection.rect!.bottom + gap;
       }
 
-      // If still overflowing bottom, center
+      // If still overflowing bottom, pin near top with scroll room
       if (top + tbHeight > window.innerHeight - 12) {
-        top = (window.innerHeight - tbHeight) / 2;
+        top = Math.max(12, window.innerHeight - tbHeight - 12);
       }
 
       // Horizontal overflow clamps
@@ -75,7 +81,6 @@ export const ContextualActionToolbar: React.FC = () => {
 
     calculatePosition();
 
-    // Use requestAnimationFrame for smooth repositioning
     let frameId: number;
     const onReposition = () => {
       frameId = requestAnimationFrame(calculatePosition);
@@ -89,7 +94,7 @@ export const ContextualActionToolbar: React.FC = () => {
       window.removeEventListener('resize', onReposition);
       window.removeEventListener('scroll', onReposition, true);
     };
-  }, [selection, isToolbarOpen, showMore]);
+  }, [selection, isToolbarOpen, showMore, isMobile]);
 
   // Keyboard navigation & Shortcuts
   useEffect(() => {
@@ -101,10 +106,10 @@ export const ContextualActionToolbar: React.FC = () => {
       if (e.key === 'Escape') {
         e.preventDefault();
         closeToolbar();
-      } else if (e.key === 'ArrowRight') {
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
         setFocusedIndex((prev) => (prev + 1) % totalItems);
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
         setFocusedIndex((prev) => (prev - 1 + totalItems) % totalItems);
       } else if (e.key === 'Enter' || e.key === ' ') {
@@ -149,6 +154,55 @@ export const ContextualActionToolbar: React.FC = () => {
 
   if (!isToolbarOpen || !selection) return null;
 
+  // ── Mobile: scrollable vertical list ──────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div
+        ref={toolbarRef}
+        id="contextual-action-toolbar"
+        className="fixed z-[99990] rounded-xl border shadow-2xl"
+        style={{
+          top: coords.top,
+          left: coords.left,
+          width: Math.min(240, window.innerWidth - 24),
+          background: 'linear-gradient(135deg, rgba(26,29,39,0.97) 0%, rgba(15,17,25,0.99) 100%)',
+          borderColor: 'rgba(255,255,255,0.09)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          padding: '6px',
+          maxHeight: '60vh',
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
+        } as React.CSSProperties}
+      >
+        {sortedActions.map((action, idx) => (
+          <button
+            key={action.id}
+            onClick={() => handleActionClick(action.id)}
+            className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-left text-sm font-semibold text-white/75 hover:text-white hover:bg-white/8 transition-all ${
+              focusedIndex === idx ? 'bg-white/10 ring-1 ring-indigo-500' : ''
+            }`}
+            title={action.description}
+          >
+            <span className="text-base">{action.icon}</span>
+            <span>{action.label}</span>
+          </button>
+        ))}
+        <style>{`
+          #contextual-action-toolbar::-webkit-scrollbar {
+            width: 3px;
+          }
+          #contextual-action-toolbar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.12);
+            border-radius: 99px;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // ── Desktop: horizontal pill row + More dropdown ───────────────────────────
   return (
     <div
       ref={toolbarRef}
@@ -196,6 +250,9 @@ export const ContextualActionToolbar: React.FC = () => {
                   background: '#151722',
                   borderColor: 'rgba(255,255,255,0.08)',
                   animation: 'toolbarMoreIn 0.2s cubic-bezier(0.34,1.1,0.64,1)',
+                  maxHeight: '50vh',
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
                 }}
               >
                 {secondaryActions.map((action) => (
