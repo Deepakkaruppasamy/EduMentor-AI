@@ -2,23 +2,347 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="EduMentor AI - Explainable Multi-Course Educational Chatbot powered by Llama 3 and Hybrid RAG for university students." />
     <meta name="keywords" content="educational chatbot, AI tutor, university, Llama 3, RAG, quiz generator" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#4f63ff" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="EduMentor" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
     <title>EduMentor AI — Your Intelligent Learning Companion</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PWA SPLASH SCREEN — Renders before React hydrates.
+         Detected via window.__PWA_SPLASH_SHOWN flag by SplashScreen.tsx
+         ═══════════════════════════════════════════════════════════ -->
+    <style>
+      /* Reset for splash */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      /* ── Splash container ── */
+      #pwa-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #0a0b0f;
+        overflow: hidden;
+        font-family: 'Inter', system-ui, sans-serif;
+        /* Hide in browser mode, show only for standalone PWA or first 1.5s */
+        opacity: 1;
+        transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      #pwa-splash.splash-exit {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.97);
+        pointer-events: none;
+      }
+      #pwa-splash.splash-hidden {
+        display: none;
+      }
+
+      /* ── Animated radial gradient background ── */
+      .splash-bg {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 70% 50% at 30% 40%, rgba(79, 99, 255, 0.25) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 60% at 75% 70%, rgba(159, 122, 234, 0.20) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 40% at 50% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 60%),
+          #0a0b0f;
+        animation: splashBgPulse 4s ease-in-out infinite alternate;
+      }
+      @keyframes splashBgPulse {
+        from { opacity: 0.7; }
+        to   { opacity: 1; }
+      }
+
+      /* ── Floating particles ── */
+      .splash-particles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .splash-particle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(79, 99, 255, 0.4);
+        animation: floatParticle linear infinite;
+      }
+      .splash-particle:nth-child(1)  { width:4px;  height:4px;  left:15%; top:20%; animation-duration:6s;  animation-delay:0s;    background:rgba(79,99,255,0.5); }
+      .splash-particle:nth-child(2)  { width:6px;  height:6px;  left:80%; top:15%; animation-duration:8s;  animation-delay:1s;    background:rgba(159,122,234,0.5); }
+      .splash-particle:nth-child(3)  { width:3px;  height:3px;  left:60%; top:70%; animation-duration:7s;  animation-delay:2s;    background:rgba(6,182,212,0.5); }
+      .splash-particle:nth-child(4)  { width:5px;  height:5px;  left:25%; top:75%; animation-duration:9s;  animation-delay:0.5s;  background:rgba(79,99,255,0.4); }
+      .splash-particle:nth-child(5)  { width:4px;  height:4px;  left:90%; top:55%; animation-duration:5s;  animation-delay:1.5s;  background:rgba(159,122,234,0.6); }
+      .splash-particle:nth-child(6)  { width:3px;  height:3px;  left:45%; top:10%; animation-duration:10s; animation-delay:3s;    background:rgba(6,182,212,0.4); }
+      .splash-particle:nth-child(7)  { width:6px;  height:6px;  left:5%;  top:50%; animation-duration:7s;  animation-delay:2.5s;  background:rgba(79,99,255,0.3); }
+      .splash-particle:nth-child(8)  { width:4px;  height:4px;  left:70%; top:85%; animation-duration:8s;  animation-delay:0.8s;  background:rgba(159,122,234,0.4); }
+      @keyframes floatParticle {
+        0%   { transform: translateY(0px) rotate(0deg);   opacity: 0; }
+        10%  { opacity: 1; }
+        90%  { opacity: 1; }
+        100% { transform: translateY(-120px) rotate(360deg); opacity: 0; }
+      }
+
+      /* ── Logo wrapper ── */
+      .splash-logo-wrapper {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+        animation: splashLogoIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        opacity: 0;
+      }
+      @keyframes splashLogoIn {
+        from { opacity: 0; transform: scale(0.5) translateY(20px); }
+        to   { opacity: 1; transform: scale(1) translateY(0);       }
+      }
+
+      /* ── Logo container with glow ring ── */
+      .splash-logo-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+      }
+      /* Outer glow ring — slow spin */
+      .splash-logo-ring {
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        background: conic-gradient(
+          from 0deg,
+          rgba(79, 99, 255, 0.9),
+          rgba(159, 122, 234, 0.9),
+          rgba(6, 182, 212, 0.7),
+          rgba(79, 99, 255, 0.9)
+        ) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        animation: spinRing 3s linear infinite;
+      }
+      @keyframes spinRing {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      /* Inner glow halo */
+      .splash-logo-halo {
+        position: absolute;
+        inset: -20px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(79,99,255,0.35) 0%, transparent 70%);
+        animation: pulseHalo 2s ease-in-out infinite alternate;
+      }
+      @keyframes pulseHalo {
+        from { transform: scale(0.9); opacity: 0.6; }
+        to   { transform: scale(1.1); opacity: 1;   }
+      }
+      /* The actual logo image */
+      .splash-logo-img {
+        position: relative;
+        z-index: 1;
+        width: 120px;
+        height: 120px;
+        border-radius: 26px;
+        box-shadow:
+          0 0 0 3px rgba(79, 99, 255, 0.3),
+          0 20px 60px rgba(79, 99, 255, 0.4),
+          0 8px 20px rgba(0,0,0,0.5);
+        animation: logoBob 3s ease-in-out infinite;
+      }
+      @keyframes logoBob {
+        0%, 100% { transform: translateY(0px);  }
+        50%       { transform: translateY(-8px); }
+      }
+
+      /* ── Brand text ── */
+      .splash-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        animation: splashTextIn 0.8s ease forwards;
+        animation-delay: 0.35s;
+        opacity: 0;
+      }
+      @keyframes splashTextIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0);    }
+      }
+      .splash-name {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #818cf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .splash-tagline {
+        font-size: 13px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.45);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      /* ── Progress bar ── */
+      .splash-progress-track {
+        position: absolute;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 140px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 99px;
+        overflow: hidden;
+        z-index: 2;
+        animation: splashTextIn 0.5s ease forwards;
+        animation-delay: 0.6s;
+        opacity: 0;
+      }
+      .splash-progress-fill {
+        height: 100%;
+        border-radius: 99px;
+        background: linear-gradient(90deg, #4f63ff, #9f7aea, #06b6d4);
+        background-size: 200% 100%;
+        animation:
+          splashProgressGrow 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+          splashProgressShimmer 1.5s ease infinite;
+        animation-delay: 0.7s, 0.7s;
+        width: 0%;
+      }
+      @keyframes splashProgressGrow {
+        from { width: 0%; }
+        to   { width: 100%; }
+      }
+      @keyframes splashProgressShimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* ── Version badge ── */
+      .splash-version {
+        position: absolute;
+        bottom: 36px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        color: rgba(255,255,255,0.2);
+        z-index: 2;
+        white-space: nowrap;
+        animation: splashTextIn 0.5s ease forwards;
+        animation-delay: 0.8s;
+        opacity: 0;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+      }
+    </style>
   </head>
   <body>
+    <!-- ═══ PWA Splash Screen (hidden after React mounts) ═══ -->
+    <div id="pwa-splash" role="status" aria-label="Loading EduMentor AI">
+      <div class="splash-bg"></div>
+
+      <!-- Floating particles -->
+      <div class="splash-particles">
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+        <div class="splash-particle"></div>
+      </div>
+
+      <!-- Logo + brand -->
+      <div class="splash-logo-wrapper">
+        <div class="splash-logo-container">
+          <div class="splash-logo-halo"></div>
+          <div class="splash-logo-ring"></div>
+          <img
+            class="splash-logo-img"
+            src="/icon-192.png"
+            alt="EduMentor AI Logo"
+            width="120"
+            height="120"
+            draggable="false"
+          />
+        </div>
+        <div class="splash-brand">
+          <span class="splash-name">EduMentor AI</span>
+          <span class="splash-tagline">Intelligent Learning Companion</span>
+        </div>
+      </div>
+
+      <!-- Loading bar -->
+      <div class="splash-progress-track">
+        <div class="splash-progress-fill"></div>
+      </div>
+
+      <!-- Version -->
+      <div class="splash-version">Powered by Llama 3 &amp; Hybrid RAG</div>
+    </div>
+
+    <!-- ═══ React root ═══ -->
     <div id="root"></div>
+
+    <!-- ═══ PWA Launch Detection Script ═══ -->
+    <script>
+      (function () {
+        var splash = document.getElementById('pwa-splash');
+        var isPWA = (
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: fullscreen)').matches ||
+          window.navigator.standalone === true ||
+          document.referrer.includes('android-app://')
+        );
+
+        // Expose for React to read
+        window.__IS_PWA__ = isPWA;
+        window.__SPLASH_SHOWN__ = true;
+
+        // For browser (non-PWA), hide quickly after a short delay
+        if (!isPWA) {
+          setTimeout(function () {
+            if (splash) {
+              splash.classList.add('splash-exit');
+              setTimeout(function () { splash.classList.add('splash-hidden'); }, 700);
+            }
+          }, 400);
+        }
+
+        // Expose dismiss function for React component
+        window.__dismissSplash__ = function (delay) {
+          delay = delay || 0;
+          setTimeout(function () {
+            if (splash && !splash.classList.contains('splash-exit')) {
+              splash.classList.add('splash-exit');
+              setTimeout(function () { splash.classList.add('splash-hidden'); }, 750);
+            }
+          }, delay);
+        };
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

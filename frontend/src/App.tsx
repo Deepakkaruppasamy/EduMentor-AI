@@ -47,6 +47,7 @@ import { PreferencesPage } from './pages/PreferencesPage';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { maintenanceService } from './services/maintenance.service';
 import { useEffect } from 'react';
+import { SplashScreen } from './components/pwa/SplashScreen';
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -98,11 +99,18 @@ const App: React.FC = () => {
   }, [isAuthenticated, user]);
 
   if (isUnderMaintenance) {
-    return <MaintenancePage />;
+    return (
+      <>
+        <SplashScreen minDisplayMs={1200} />
+        <MaintenancePage />
+      </>
+    );
   }
 
   return (
     <BrowserRouter>
+      {/* PWA splash screen — dismisses itself after app mounts */}
+      <SplashScreen minDisplayMs={1800} />
       <InactivityHandler />
       <Routes>
         {/* Public Routes */}
