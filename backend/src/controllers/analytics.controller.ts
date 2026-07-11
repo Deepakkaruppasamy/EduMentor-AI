@@ -127,7 +127,41 @@ export const getDashboardStats = asyncHandler(async (_req: AuthRequest, res: Res
 export const getStudentProgress = asyncHandler(async (req: AuthRequest, res: Response) => {
   const studentId = req.user?._id;
 
-  const user = await User.findById(studentId).populate('courses', 'title code');
+  let user = await User.findById(studentId).populate('courses', 'title code');
+
+  // Auto-seed/enroll for students if they don't have courses linked yet
+  if (user && (!user.courses || user.courses.length === 0)) {
+    let activeCourses = await Course.find({ isActive: true });
+    if (activeCourses.length === 0) {
+      const predefined = [
+        { title: 'Database Management Systems', code: 'DBMS101', description: 'Study of database design, SQL, normalization, and transactions.' },
+        { title: 'Operating Systems', code: 'OS201', description: 'Process management, memory, file systems, and concurrency.' },
+        { title: 'Computer Networks', code: 'CN301', description: 'Network protocols, TCP/IP, routing, and security.' },
+        { title: 'Data Structures', code: 'DS401', description: 'Arrays, linked lists, trees, graphs, and algorithm complexity.' },
+        { title: 'Machine Learning', code: 'ML501', description: 'Supervised, unsupervised learning, neural networks, and model evaluation.' },
+      ];
+      for (const c of predefined) {
+        const existing = await Course.findOne({ code: c.code });
+        if (!existing) {
+          await Course.create({
+            ...c,
+            faculty: studentId,
+            chromaCollection: `course_${c.code.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+          });
+        }
+      }
+      activeCourses = await Course.find({ isActive: true });
+    }
+    if (activeCourses.length > 0) {
+      await User.findByIdAndUpdate(studentId, {
+        $addToSet: { courses: { $each: activeCourses.map(c => c._id) } }
+      });
+      for (const ac of activeCourses) {
+        await Course.findByIdAndUpdate(ac._id, { $addToSet: { students: studentId } });
+      }
+      user = await User.findById(studentId).populate('courses', 'title code');
+    }
+  }
 
   const [chats, quizzes, recommendations] = await Promise.all([
     Chat.find({ user: studentId }).populate('course', 'title code').sort({ updatedAt: -1 }).limit(5),
@@ -135,7 +169,7 @@ export const getStudentProgress = asyncHandler(async (req: AuthRequest, res: Res
     Recommendation.find({ student: studentId })
   ]);
 
-  const totalQueries = chats.reduce((sum, c) => sum + c.totalMessages / 2, 0);
+  const totalQueries = chats.reduce((sum, c) => sum + (c.totalMessages || 2) / 2, 0);
   const avgQuizScore =
     quizzes.length > 0
       ? quizzes.reduce((sum, q) => sum + ((q.score || 0) / (q.maxScore || 1)) * 100, 0) / quizzes.length
@@ -154,7 +188,7 @@ export const getStudentProgress = asyncHandler(async (req: AuthRequest, res: Res
         progressPercent = Math.round(sum / courseQuizzes.length);
       } else {
         // Fallbacks for seeding demonstration
-        const code = c.code.toUpperCase();
+        const code = (c.code || '').toUpperCase();
         if (code.includes('DBMS') || code.includes('DATABASE')) progressPercent = 95;
         else if (code.includes('OS') || code.includes('OPERATING')) progressPercent = 72;
         else if (code.includes('CN') || code.includes('NETWORK')) progressPercent = 43;
@@ -177,7 +211,8 @@ export const getStudentProgress = asyncHandler(async (req: AuthRequest, res: Res
       avgQuizScore: Math.round(avgQuizScore),
       recentChats: chats,
       recentQuizzes: quizzes,
-      courseProgress
+      courseProgress,
+      courses: user?.courses || []
     },
   });
 });

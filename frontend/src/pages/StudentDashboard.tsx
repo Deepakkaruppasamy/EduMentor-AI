@@ -130,7 +130,7 @@ const HeatmapSection: React.FC<{ courseProgress: { courseId: string; title: stri
 };
 
 export const StudentDashboard: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
   const [progress, setProgress] = useState<StudentProgress | null>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -169,6 +169,9 @@ export const StudentDashboard: React.FC = () => {
       ]);
 
       setProgress(progRes.data.progress);
+      if (progRes.data.progress?.courses && updateUser) {
+        updateUser({ courses: progRes.data.progress.courses });
+      }
       setLeaderboard(leaderboardRes.data.leaderboard || []);
       setPrefs(prefsData);
       setAppointments(appRes.data?.data || []);
@@ -834,12 +837,12 @@ export const StudentDashboard: React.FC = () => {
         <StatCard icon="💬" label="Total Queries" value={progress?.totalQueries || 0} gradient="stat-gradient-blue" />
         <StatCard icon="📋" label="Quizzes Taken" value={progress?.totalQuizzesTaken || 0} gradient="stat-gradient-purple" />
         <StatCard icon="🎯" label="Avg Quiz Score" value={`${progress?.avgQuizScore || 0}%`} gradient="stat-gradient-green" />
-        <StatCard icon="🔥" label="Active Courses" value={user?.courses?.length || 0} gradient="stat-gradient-amber" />
+        <StatCard icon="🔥" label="Active Courses" value={progress?.courseProgress?.length || progress?.courses?.length || user?.courses?.length || 0} gradient="stat-gradient-amber" />
       </div>
 
       {/* ── Learning Heatmap & Subject Mastery ── */}
-      {progress?.courseProgress && (
-        <HeatmapSection courseProgress={progress.courseProgress} />
+      {(progress?.courseProgress || user?.courses) && (
+        <HeatmapSection courseProgress={progress?.courseProgress || []} />
       )}
 
       {/* ── Quiz Performance Trend + Quick Actions ── */}

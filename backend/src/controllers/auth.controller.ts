@@ -149,6 +149,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      courses: user.courses || [],
       preferredLanguage: user.preferredLanguage,
       isFirstLogin: user.isFirstLogin,
     },
@@ -375,6 +376,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      courses: user.courses || [],
       preferredLanguage: user.preferredLanguage,
       isFirstLogin: user.isFirstLogin,
     },
@@ -382,7 +384,19 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const user = await User.findById(req.user?._id).populate('courses', 'title code');
+  let user = await User.findById(req.user?._id).populate('courses', 'title code');
+  if (user && user.role === 'student' && (!user.courses || user.courses.length === 0)) {
+    const activeCourses = await Course.find({ isActive: true });
+    if (activeCourses.length > 0) {
+      await User.findByIdAndUpdate(req.user?._id, {
+        $addToSet: { courses: { $each: activeCourses.map(c => c._id) } }
+      });
+      for (const ac of activeCourses) {
+        await Course.findByIdAndUpdate(ac._id, { $addToSet: { students: req.user?._id } });
+      }
+      user = await User.findById(req.user?._id).populate('courses', 'title code');
+    }
+  }
   res.json({ success: true, user });
 });
 
