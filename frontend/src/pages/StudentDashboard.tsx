@@ -654,18 +654,18 @@ export const StudentDashboard: React.FC = () => {
       {quizScoreData.length > 0 ? (
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={quizScoreData} barCategoryGap="30%">
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} domain={[0, 100]} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '12px' }}
-              formatter={(v: any) => [`${v}%`, 'Score']} />
-            <Bar dataKey="score" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
             <defs>
               <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#4f63ff" />
                 <stop offset="100%" stopColor="#9f7aea" />
               </linearGradient>
             </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} domain={[0, 100]} axisLine={false} tickLine={false} />
+            <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '12px' }}
+              formatter={(v: any) => [`${v}%`, 'Score']} />
+            <Bar dataKey="score" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       ) : (
