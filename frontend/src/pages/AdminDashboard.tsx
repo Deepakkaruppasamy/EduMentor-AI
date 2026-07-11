@@ -17,6 +17,9 @@ import { BookmarksWidget } from '../components/dashboard/BookmarksWidget';
 import { RecentlyViewedWidget } from '../components/dashboard/RecentlyViewedWidget';
 import { DashboardLayoutManager } from '../components/dashboard/DashboardLayoutManager';
 import { WidgetWrapper } from '../components/dashboard/WidgetWrapper';
+import { useOnboardingStore } from '../store/onboarding.store';
+import { adminDashboardTour } from '../components/onboarding/tours/adminDashboardTour';
+import { facultyDashboardTour } from '../components/onboarding/tours/facultyDashboardTour';
 
 const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
 
@@ -110,6 +113,14 @@ const SuperAdminDashboardView: React.FC = () => {
   useEffect(() => {
     fetchAdminData();
   }, []);
+
+  const { startTour, hasTourCompleted } = useOnboardingStore();
+
+  useEffect(() => {
+    if (!isLoading && !hasTourCompleted('admin-dashboard')) {
+      startTour('admin-dashboard', adminDashboardTour);
+    }
+  }, [isLoading]);
 
   const handleUpdateWidget = async (id: string, updates: any) => {
     if (!prefs) return;
@@ -699,7 +710,7 @@ const SuperAdminDashboardView: React.FC = () => {
     <div className="p-4 space-y-4 md:p-6 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white">🔒 Platform Administration &amp; Diagnostics</h1>
+          <h1 id="admin-dashboard-welcome" className="text-xl md:text-2xl font-bold text-white">🔒 Platform Administration &amp; Diagnostics</h1>
           <p className="mt-0.5 text-xs md:text-sm text-white/40">Real-time system diagnostics, learning analytics, security logging, and resource health</p>
         </div>
         <button
@@ -797,6 +808,8 @@ const FacultyDashboardView: React.FC = () => {
   const [activity, setActivity] = useState<any[]>([]);
   const [deptStats, setDeptStats] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { startTour, hasTourCompleted } = useOnboardingStore();
+
 
   // Widget Customization states
   const [prefs, setPrefs] = useState<UserPreferences | null>(null);
@@ -827,6 +840,12 @@ const FacultyDashboardView: React.FC = () => {
   useEffect(() => {
     fetchFacultyDashboard();
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && !hasTourCompleted('faculty-dashboard')) {
+      startTour('faculty-dashboard', facultyDashboardTour);
+    }
+  }, [isLoading]);
 
   const handleUpdateWidget = async (id: string, updates: any) => {
     if (!prefs) return;
@@ -1047,7 +1066,7 @@ const FacultyDashboardView: React.FC = () => {
     <div className="p-4 space-y-4 md:p-6 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white">📈 Faculty Dashboard</h1>
+          <h1 id="admin-dashboard-welcome" className="text-xl md:text-2xl font-bold text-white">📈 Faculty Dashboard</h1>
           <p className="mt-0.5 text-xs md:text-sm text-white/40">Platform-wide analytics and system health</p>
         </div>
         <button

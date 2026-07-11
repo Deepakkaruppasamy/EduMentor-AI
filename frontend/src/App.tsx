@@ -48,6 +48,11 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { maintenanceService } from './services/maintenance.service';
 import { useEffect } from 'react';
 import { SplashScreen } from './components/pwa/SplashScreen';
+import { ErrorBoundary } from './components/errors/ErrorBoundary';
+import { GlobalErrorListener } from './components/errors/GlobalErrorListener';
+import { ContextualActionProvider } from './modules/contextual-actions';
+
+
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
@@ -108,224 +113,230 @@ const App: React.FC = () => {
   }
 
   return (
-    <BrowserRouter>
-      {/* PWA splash screen — dismisses itself after app mounts */}
-      <SplashScreen minDisplayMs={1800} />
-      <InactivityHandler />
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={
-          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <LoginPage />
-        } />
-        <Route path="/register" element={
-          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <RegisterPage />
-        } />
-        <Route path="/first-login-change" element={
-          <FirstLoginRoute>
-            <FirstLoginChangePage />
-          </FirstLoginRoute>
-        } />
-        <Route path="/forgot-password" element={
-          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ForgotPasswordPage />
-        } />
-        <Route path="/reset-password" element={
-          isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ResetPasswordPage />
-        } />
+    <ErrorBoundary name="app-root">
+      <ContextualActionProvider>
+        <GlobalErrorListener />
+        <BrowserRouter>
+          {/* PWA splash screen — dismisses itself after app mounts */}
+          <SplashScreen minDisplayMs={1800} />
+          <InactivityHandler />
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={
+              isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <LoginPage />
+            } />
+            <Route path="/register" element={
+              isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <RegisterPage />
+            } />
+            <Route path="/first-login-change" element={
+              <FirstLoginRoute>
+                <FirstLoginChangePage />
+              </FirstLoginRoute>
+            } />
+            <Route path="/forgot-password" element={
+              isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ForgotPasswordPage />
+            } />
+            <Route path="/reset-password" element={
+              isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ResetPasswordPage />
+            } />
 
-        {/* Student Routes */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute roles={['student']}>
-            <AppPage><StudentDashboard /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/chat" element={
-          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
-            <AppPage><ChatPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/quiz" element={
-          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
-            <AppPage><QuizPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/recommendations" element={
-          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
-            <AppPage><RecommendationsPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/flashcards" element={
-          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
-            <AppPage><FlashcardsPage /></AppPage>
-          </ProtectedRoute>
-        } />
+            {/* Student Routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute roles={['student']}>
+                <AppPage><StudentDashboard /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/chat" element={
+              <ProtectedRoute roles={['student', 'faculty', 'admin']}>
+                <AppPage><ChatPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/quiz" element={
+              <ProtectedRoute roles={['student', 'faculty', 'admin']}>
+                <AppPage><QuizPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/recommendations" element={
+              <ProtectedRoute roles={['student', 'faculty', 'admin']}>
+                <AppPage><RecommendationsPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/flashcards" element={
+              <ProtectedRoute roles={['student', 'faculty', 'admin']}>
+                <AppPage><FlashcardsPage /></AppPage>
+              </ProtectedRoute>
+            } />
 
-        {/* Shared Routes */}
-        <Route path="/courses" element={
-          <ProtectedRoute>
-            <AppPage><CoursesPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <AppPage><ProfilePage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/messages" element={
-          <ProtectedRoute>
-            <AppPage><MessagesPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/support" element={
-          <ProtectedRoute>
-            <AppPage><SupportCenterPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/meetings" element={
-          <ProtectedRoute>
-            <AppPage><MeetingSchedulerPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/office-hours" element={
-          <ProtectedRoute>
-            <AppPage><OfficeHoursPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/study-planner" element={
-          <ProtectedRoute roles={['student']}>
-            <AppPage><StudyPlannerPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/calendar" element={
-          <ProtectedRoute>
-            <AppPage><AcademicCalendarPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/notes-generator" element={
-          <ProtectedRoute>
-            <AppPage><NotesGeneratorPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/research-assistant" element={
-          <ProtectedRoute>
-            <AppPage><ResearchAssistantPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/announcements" element={
-          <ProtectedRoute>
-            <AppPage><AnnouncementsPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/assignment-evaluator" element={
-          <ProtectedRoute>
-            <AppPage><AssignmentEvaluatorPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/avatar-settings" element={
-          <ProtectedRoute>
-            <AppPage><AvatarSettingsPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/feedback" element={
-          <ProtectedRoute>
-            <AppPage><FeedbackPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/ai-evaluation" element={
-          <ProtectedRoute roles={['admin']}>
-            <AppPage><AIEvaluationPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/rate-platform" element={
-          <ProtectedRoute>
-            <AppPage><TAMSurveyPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/plagiarism-checker" element={
-          <ProtectedRoute>
-            <AppPage><PlagiarismCheckerPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/activity" element={
-          <ProtectedRoute>
-            <AppPage><ActivityTimelinePage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/sessions" element={
-          <ProtectedRoute>
-            <AppPage><SessionsPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/privacy-security" element={
-          <ProtectedRoute>
-            <AppPage><PrivacySecurityPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/preferences" element={
-          <ProtectedRoute>
-            <AppPage><PreferencesPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/bookmarks" element={
-          <ProtectedRoute>
-            <AppPage><BookmarksPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/system-health" element={
-          <ProtectedRoute roles={['admin']}>
-            <AppPage><SystemHealthPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/maintenance" element={
-          <ProtectedRoute roles={['admin']}>
-            <AppPage><MaintenanceControlPage /></AppPage>
-          </ProtectedRoute>
-        } />
+            {/* Shared Routes */}
+            <Route path="/courses" element={
+              <ProtectedRoute>
+                <AppPage><CoursesPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <AppPage><ProfilePage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/messages" element={
+              <ProtectedRoute>
+                <AppPage><MessagesPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/support" element={
+              <ProtectedRoute>
+                <AppPage><SupportCenterPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/meetings" element={
+              <ProtectedRoute>
+                <AppPage><MeetingSchedulerPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/office-hours" element={
+              <ProtectedRoute>
+                <AppPage><OfficeHoursPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/study-planner" element={
+              <ProtectedRoute roles={['student']}>
+                <AppPage><StudyPlannerPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <AppPage><AcademicCalendarPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/notes-generator" element={
+              <ProtectedRoute>
+                <AppPage><NotesGeneratorPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/research-assistant" element={
+              <ProtectedRoute>
+                <AppPage><ResearchAssistantPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/announcements" element={
+              <ProtectedRoute>
+                <AppPage><AnnouncementsPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/assignment-evaluator" element={
+              <ProtectedRoute>
+                <AppPage><AssignmentEvaluatorPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/avatar-settings" element={
+              <ProtectedRoute>
+                <AppPage><AvatarSettingsPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/feedback" element={
+              <ProtectedRoute>
+                <AppPage><FeedbackPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/ai-evaluation" element={
+              <ProtectedRoute roles={['admin']}>
+                <AppPage><AIEvaluationPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/rate-platform" element={
+              <ProtectedRoute>
+                <AppPage><TAMSurveyPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/plagiarism-checker" element={
+              <ProtectedRoute>
+                <AppPage><PlagiarismCheckerPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/activity" element={
+              <ProtectedRoute>
+                <AppPage><ActivityTimelinePage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/sessions" element={
+              <ProtectedRoute>
+                <AppPage><SessionsPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/privacy-security" element={
+              <ProtectedRoute>
+                <AppPage><PrivacySecurityPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/preferences" element={
+              <ProtectedRoute>
+                <AppPage><PreferencesPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/bookmarks" element={
+              <ProtectedRoute>
+                <AppPage><BookmarksPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/system-health" element={
+              <ProtectedRoute roles={['admin']}>
+                <AppPage><SystemHealthPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/maintenance" element={
+              <ProtectedRoute roles={['admin']}>
+                <AppPage><MaintenanceControlPage /></AppPage>
+              </ProtectedRoute>
+            } />
 
-        {/* Faculty/Admin Routes */}
-        <Route path="/admin" element={
-          <ProtectedRoute roles={['faculty', 'admin']}>
-            <AppPage><AdminDashboard /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/users" element={
-          <ProtectedRoute roles={['admin']}>
-            <AppPage><AdminUserManagement /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/faculty-ai-assistant" element={
-          <ProtectedRoute roles={['faculty', 'admin']}>
-            <AppPage><FacultyAIAssistantPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/documents" element={
-          <ProtectedRoute roles={['faculty', 'admin']}>
-            <AppPage><DocumentsPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/analytics" element={
-          <ProtectedRoute roles={['faculty', 'admin']}>
-            <AppPage><AnalyticsPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/reports" element={
-          <ProtectedRoute roles={['student', 'faculty', 'admin']}>
-            <AppPage><ReportsPage /></AppPage>
-          </ProtectedRoute>
-        } />
-        <Route path="/gradebook" element={
-          <ProtectedRoute roles={['faculty', 'admin']}>
-            <AppPage><GradebookPage /></AppPage>
-          </ProtectedRoute>
-        } />
+            {/* Faculty/Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AppPage><AdminDashboard /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute roles={['admin']}>
+                <AppPage><AdminUserManagement /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/faculty-ai-assistant" element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AppPage><FacultyAIAssistantPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/documents" element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AppPage><DocumentsPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/analytics" element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AppPage><AnalyticsPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/reports" element={
+              <ProtectedRoute roles={['student', 'faculty', 'admin']}>
+                <AppPage><ReportsPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/gradebook" element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AppPage><GradebookPage /></AppPage>
+              </ProtectedRoute>
+            } />
 
-        {/* Default redirect */}
-        <Route path="/" element={
-          <Navigate to={isAuthenticated ? (user?.role === 'student' ? '/dashboard' : '/admin') : '/login'} />
-        } />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
+            {/* Default redirect */}
+            <Route path="/" element={
+              <Navigate to={isAuthenticated ? (user?.role === 'student' ? '/dashboard' : '/admin') : '/login'} />
+            } />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </BrowserRouter>
+      </ContextualActionProvider>
+    </ErrorBoundary>
   );
 };
 
 export default App;
+

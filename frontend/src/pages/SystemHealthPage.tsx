@@ -471,7 +471,7 @@ export const SystemHealthPage: React.FC = () => {
               boxShadow: '0 8px 28px rgba(34,197,94,0.3)',
             }}>🖥️</div>
             <div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: 0 }}>
+              <h1 id="system-health-indicator" style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: 0 }}>
                 System Health Dashboard
               </h1>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>

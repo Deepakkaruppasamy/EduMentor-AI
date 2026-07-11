@@ -16,7 +16,10 @@ import { BookmarksWidget } from '../components/dashboard/BookmarksWidget';
 import { RecentlyViewedWidget } from '../components/dashboard/RecentlyViewedWidget';
 import { DashboardLayoutManager } from '../components/dashboard/DashboardLayoutManager';
 import { WidgetWrapper } from '../components/dashboard/WidgetWrapper';
+import { useOnboardingStore } from '../store/onboarding.store';
+import { studentDashboardTour } from '../components/onboarding/tours/studentDashboardTour';
 import toast from 'react-hot-toast';
+
 
 const StatCard: React.FC<{ icon: string; label: string; value: string | number; sub?: string; gradient: string }> = ({ icon, label, value, sub, gradient }) => (
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5 hover:scale-[1.02] transition-transform duration-200">
@@ -191,6 +194,14 @@ export const StudentDashboard: React.FC = () => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const { startTour, hasTourCompleted } = useOnboardingStore();
+
+  useEffect(() => {
+    if (!isLoading && !hasTourCompleted('student-dashboard')) {
+      startTour('student-dashboard', studentDashboardTour);
+    }
+  }, [isLoading]);
 
   const handleUpdateWidget = async (id: string, updates: any) => {
     if (!prefs) return;
@@ -801,7 +812,7 @@ export const StudentDashboard: React.FC = () => {
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 id="dashboard-welcome" className="text-2xl font-bold text-white">
             Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋
           </h1>
           <p className="mt-1 text-sm text-white/40">Manage your custom learning dashboard</p>

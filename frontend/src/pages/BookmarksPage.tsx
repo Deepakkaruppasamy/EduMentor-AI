@@ -19,10 +19,14 @@ const ITEM_TYPE_LABELS: Record<string, { icon: string; label: string }> = {
   ticket: { icon: '🛠️', label: 'Support Ticket' },
 };
 
+import { useUndoToast } from '../hooks/useUndoToast';
+
 export const BookmarksPage: React.FC = () => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const { deleteWithUndo } = useUndoToast();
+
 
   // Filter & Search states
   const [search, setSearch] = useState('');
@@ -76,15 +80,21 @@ export const BookmarksPage: React.FC = () => {
     }
   };
 
-  const handleRemove = async (id: string) => {
-    if (!window.confirm('Delete this bookmark?')) return;
-    try {
-      await bookmarkService.remove(id);
-      setBookmarks(prev => prev.filter(item => item._id !== id));
-      toast.success('Bookmark removed.');
-    } catch {
-      toast.error('Failed to remove bookmark.');
-    }
+  const handleRemove = (b: Bookmark) => {
+    deleteWithUndo({
+      description: `Bookmark "${b.title}" deleted`,
+      onUpdate: () => setBookmarks(prev => prev.filter(item => item._id !== b._id)),
+      onRevert: () => setBookmarks(prev => [b, ...prev]),
+      onDelete: () => bookmarkService.remove(b._id),
+      onUndo: () => bookmarkService.create({
+        itemType: b.itemType,
+        itemId: b.itemId,
+        title: b.title,
+        category: b.category,
+        isFavorite: b.isFavorite,
+        metadata: b.metadata,
+      }),
+    });
   };
 
   const handleSaveCategory = async (id: string) => {
@@ -260,7 +270,7 @@ export const BookmarksPage: React.FC = () => {
                         {b.isFavorite ? '⭐' : '☆'}
                       </button>
                       <button
-                        onClick={() => handleRemove(b._id)}
+                        onClick={() => handleRemove(b)}
                         className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[10px] text-red-400 hover:bg-red-500/20 transition-all"
                         title="Remove bookmark"
                       >

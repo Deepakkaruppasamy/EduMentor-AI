@@ -11,6 +11,8 @@ import { AvatarFrame } from '../avatar/AvatarFrame';
 import { AnimatePresence } from 'framer-motion';
 import { GlobalSearchBar } from './GlobalSearchBar';
 import { useThemeStore } from '../../store/theme.store';
+import { OnboardingTrigger } from '../onboarding/OnboardingTrigger';
+
 
 const STUDENT_LINKS = [
   { to: '/dashboard', icon: '📊', label: 'Dashboard' },
@@ -266,6 +268,7 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
             {collapsed ? '▶' : '◀ Collapse'}
           </button>
         )}
+        {!collapsed && <OnboardingTrigger />}
       </div>
     </div>
   );

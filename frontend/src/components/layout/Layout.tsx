@@ -17,6 +17,14 @@ import { ShortcutsHelpModal } from '../dashboard/ShortcutsHelpModal';
 import { useAssistantStore } from '../../store/assistant.store';
 import { MobileNotificationPanel } from './MobileNotificationPanel';
 import { MobileNotifBanner } from './MobileNotifBanner';
+import { useHistoryStore } from '../../store/history.store';
+import { useJobsStore } from '../../store/jobs.store';
+import { SyncStatusBar } from '../pwa/SyncStatusBar';
+import { JobsDrawer } from '../jobs/JobsDrawer';
+import { JobsButton } from '../jobs/JobsButton';
+import { OnboardingOverlay } from '../onboarding/OnboardingOverlay';
+import { ContextualActionToolbar, ContextualActionResult, useTextSelection } from '../../modules/contextual-actions';
+
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -35,6 +43,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { toggle: toggleAssistant, close: closeAssistant } = useAssistantStore();
   const [mobileNotifOpen, setMobileNotifOpen] = useState(false);
   const [bellShaking, setBellShaking] = useState(false);
+
+  // Activate global text selection detection for the AI Contextual Action System
+  useTextSelection();
+
 
   // Count unread notifications for the bell badge
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -211,9 +223,31 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     });
 
     // Listen to document processing updates
-    socket.on('document:status', (data: { docId: string; status: string; filename?: string }) => {
+    socket.on('document:status', (data: { docId: string; status: string; filename?: string; processingError?: string }) => {
       const isDone = data.status === 'completed';
       const isFailed = data.status === 'failed';
+
+      // Update background jobs store
+      const jobs = useJobsStore.getState().jobs;
+      const existingJob = jobs.find(j => j.metadata?.docId === data.docId);
+      const statusValue = isDone ? 'completed' : isFailed ? 'failed' : 'running';
+      
+      if (!existingJob) {
+        useJobsStore.getState().addJob({
+          type: 'document_index',
+          label: data.filename || 'Document Indexing',
+          status: statusValue,
+          progress: isDone ? 100 : 30,
+          link: '/documents',
+          metadata: { docId: data.docId }
+        });
+      } else {
+        useJobsStore.getState().updateJob(existingJob.id, {
+          status: statusValue,
+          progress: isDone ? 100 : 70,
+          error: isFailed ? data.processingError || 'Processing failed' : undefined
+        });
+      }
 
       if (isDone || isFailed) {
         addNotification({
@@ -232,9 +266,30 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       }
     });
 
+
     // Listen to assignment evaluation completion updates
     socket.on('assignment:evaluated', (data: { studentId: string; courseId: string; score: number; fileName: string; evaluationId: string }) => {
       if (user?.id === data.studentId) {
+        // Update background jobs store
+        const jobs = useJobsStore.getState().jobs;
+        const existingJob = jobs.find(j => j.metadata?.evaluationId === data.evaluationId);
+        
+        if (!existingJob) {
+          useJobsStore.getState().addJob({
+            type: 'assignment_eval',
+            label: `Assignment: ${data.fileName}`,
+            status: 'completed',
+            progress: 100,
+            link: '/assignment-evaluator',
+            metadata: { evaluationId: data.evaluationId }
+          });
+        } else {
+          useJobsStore.getState().updateJob(existingJob.id, {
+            status: 'completed',
+            progress: 100
+          });
+        }
+
         addNotification({
           type: 'evaluation',
           title: 'Assignment Graded',
@@ -250,6 +305,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         );
       }
     });
+
 
     return () => {
       socket.disconnect();
@@ -349,7 +405,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             navigate('/notes-generator?generateContext=true');
             break;
         }
-      } else if (isCtrl && e.key === '/') {
+      if (isCtrl && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        useHistoryStore.getState().undo().then((success) => {
+          if (!success) {
+            toast.error('Nothing to undo', { id: 'undo-empty' });
+          }
+        });
+        return;
+      }
+
+      if (isCtrl && e.key === '/') {
         e.preventDefault();
         toggleAssistant();
       }
@@ -360,6 +426,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [user, navigate, shortcutsEnabled, closeAssistant, toggleAssistant]);
+
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
@@ -464,11 +531,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <MobileNotificationPanel onClose={() => setMobileNotifOpen(false)} />
         )}
 
+        {/* Sync Status Bar */}
+        <SyncStatusBar />
+
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
+
 
       <Toaster
         position="top-right"
@@ -487,6 +558,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       />
       {/* Global AI Learning Assistant Widget — floats on every authenticated page */}
       <AIAssistantWidget />
+
+      {/* Background Jobs Overlay / Drawer */}
+      <JobsDrawer />
+      <JobsButton />
+
+      {/* Onboarding Spotlight Overlay */}
+      <OnboardingOverlay />
+
+      {/* AI Contextual Action System — floating toolbar & result panel */}
+      <ContextualActionToolbar />
+      <ContextualActionResult />
     </div>
   );
 };
+

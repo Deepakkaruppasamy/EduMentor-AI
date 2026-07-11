@@ -11,6 +11,8 @@ import { recentlyViewedService } from '../services/recently-viewed.service';
 import { formatDate, formatFileSize } from '../utils/uuid';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
+import { useJobsStore } from '../store/jobs.store';
+
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: 'Pending', color: '#f6ad55', bg: 'rgba(246,173,85,0.1)' },
@@ -94,6 +96,14 @@ export const DocumentsPage: React.FC = () => {
 
   const handleUploaded = (doc: Document) => {
     setDocuments(prev => [doc, ...prev]);
+    useJobsStore.getState().addJob({
+      type: 'document_index',
+      label: doc.originalName || 'Document Indexing',
+      status: doc.processingStatus === 'completed' ? 'completed' : doc.processingStatus === 'failed' ? 'failed' : 'running',
+      progress: doc.processingStatus === 'completed' ? 100 : 10,
+      link: '/documents',
+      metadata: { docId: doc._id }
+    });
   };
 
   useEffect(() => {

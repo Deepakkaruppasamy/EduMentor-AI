@@ -41,6 +41,8 @@ import privacyRoutes from './routes/privacy.routes';
 import preferenceRoutes from './routes/preference.routes';
 import bookmarkRoutes from './routes/bookmark.routes';
 import recentlyViewedRoutes from './routes/recently-viewed.routes';
+import contextualActionsRoutes from './modules/contextual-actions/routes/contextualActions.routes';
+
 import { checkMaintenanceMW } from './controllers/maintenance.controller';
 import { initMessagingSocketServer } from './services/messaging-socket.service';
 import { initSupportSocketServer } from './services/support-socket.service';
@@ -120,6 +122,8 @@ app.use('/api/privacy', privacyRoutes);
 app.use('/api/preferences', preferenceRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/recently-viewed', recentlyViewedRoutes);
+app.use('/api/contextual-actions', contextualActionsRoutes);
+
 
 // Health check
 app.get('/api/health', (_req, res) => {
