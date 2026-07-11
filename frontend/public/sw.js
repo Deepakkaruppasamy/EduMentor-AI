@@ -1,11 +1,12 @@
-const CACHE_NAME = 'edumentor-cache-v4';
+const CACHE_NAME = 'edumentor-cache-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  '/pwa-launch.js'
+  '/pwa-launch.js',
+  '/favicon.svg'
 ];
 
 // ── Install Event ────────────────────────────────────────────────────────────
