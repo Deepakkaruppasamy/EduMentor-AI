@@ -201,6 +201,7 @@ export interface StudentProgress {
     code: string;
     progress: number;
   }[];
+  courses?: any[];
 }
 
 // ─── Recommendation Types ───────────────────────────────────────────────────
