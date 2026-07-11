@@ -405,6 +405,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             navigate('/notes-generator?generateContext=true');
             break;
         }
+      }
       if (isCtrl && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         useHistoryStore.getState().undo().then((success) => {
