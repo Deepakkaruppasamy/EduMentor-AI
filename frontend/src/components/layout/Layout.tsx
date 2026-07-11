@@ -15,6 +15,8 @@ import { AIAssistantWidget } from '../assistant/AIAssistantWidget';
 import { preferenceService } from '../../services/preference.service';
 import { ShortcutsHelpModal } from '../dashboard/ShortcutsHelpModal';
 import { useAssistantStore } from '../../store/assistant.store';
+import { MobileNotificationPanel } from './MobileNotificationPanel';
+import { MobileNotifBanner } from './MobileNotifBanner';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -25,12 +27,28 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const { addNotification } = useNotificationStore();
+  const { addNotification, notifications } = useNotificationStore();
   const { theme } = useThemeStore();
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [shortcutsEnabled, setShortcutsEnabled] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toggle: toggleAssistant, close: closeAssistant } = useAssistantStore();
+  const [mobileNotifOpen, setMobileNotifOpen] = useState(false);
+  const [bellShaking, setBellShaking] = useState(false);
+
+  // Count unread notifications for the bell badge
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  // Shake the bell whenever a new unread notification arrives
+  const prevUnreadRef = React.useRef(unreadCount);
+  useEffect(() => {
+    if (unreadCount > prevUnreadRef.current) {
+      setBellShaking(true);
+      setTimeout(() => setBellShaking(false), 700);
+    }
+    prevUnreadRef.current = unreadCount;
+  }, [unreadCount]);
+
 
   // Sync theme class on <html> and apply preferences
   useEffect(() => {
@@ -378,20 +396,73 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Mobile Header */}
         <header className="flex items-center justify-between px-4 py-3 lg:hidden"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,11,15,0.95)' }}>
-          <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 text-white/60 hover:bg-white/5 hover:text-white transition-all">
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,11,15,0.97)' }}>
+          {/* Hamburger */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-xl p-2 text-white/60 hover:bg-white/5 hover:text-white transition-all"
+            aria-label="Open menu"
+          >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
+
+          {/* Brand */}
           <div className="flex items-center gap-2">
             <Logo size="sm" />
             <span className="text-sm font-bold text-white">EduMentor AI</span>
           </div>
-          <div className="flex items-center">
+
+          {/* Right actions */}
+          <div className="flex items-center gap-1">
             <LanguageSelector />
+
+            {/* Notification Bell */}
+            <button
+              id="mobile-notif-bell"
+              onClick={() => setMobileNotifOpen(true)}
+              className="relative rounded-xl p-2 text-white/60 hover:bg-white/5 hover:text-white transition-all"
+              aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+            >
+              <svg
+                className={`h-5 w-5 transition-colors ${bellShaking ? 'bell-shake' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+
+              {/* Unread Badge */}
+              {unreadCount > 0 && (
+                <span
+                  className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-black text-white rounded-full px-1"
+                  style={{
+                    background: 'linear-gradient(135deg, #4f63ff, #7c3aed)',
+                    boxShadow: '0 0 8px rgba(79,99,255,0.7)',
+                    animation: 'bellBadgePop 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+                  }}
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
           </div>
         </header>
+
+        {/* Mobile Heads-Up Notification Banner (PWA style) */}
+        <MobileNotifBanner />
+
+        {/* Mobile Notification Panel (bottom sheet) */}
+        {mobileNotifOpen && (
+          <MobileNotificationPanel onClose={() => setMobileNotifOpen(false)} />
+        )}
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
