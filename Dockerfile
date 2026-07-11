@@ -2,7 +2,7 @@
 FROM node:20-bookworm-slim AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm install --legacy-peer-deps
+RUN rm -f package-lock.json && npm install --legacy-peer-deps
 COPY frontend/ ./
 RUN npm run build
 
