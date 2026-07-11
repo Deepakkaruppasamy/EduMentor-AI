@@ -154,51 +154,89 @@ export const ContextualActionToolbar: React.FC = () => {
 
   if (!isToolbarOpen || !selection) return null;
 
-  // ── Mobile: scrollable vertical list ──────────────────────────────────────
+  // ── Mobile: full-screen backdrop + scrollable vertical list ───────────────
   if (isMobile) {
     return (
-      <div
-        ref={toolbarRef}
-        id="contextual-action-toolbar"
-        className="fixed z-[99990] rounded-xl border shadow-2xl"
-        style={{
-          top: coords.top,
-          left: coords.left,
-          width: Math.min(240, window.innerWidth - 24),
-          background: 'linear-gradient(135deg, rgba(26,29,39,0.97) 0%, rgba(15,17,25,0.99) 100%)',
-          borderColor: 'rgba(255,255,255,0.09)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          padding: '6px',
-          maxHeight: '60vh',
-          overflowY: 'auto',
-          overscrollBehavior: 'contain',
-          WebkitOverflowScrolling: 'touch',
-        } as React.CSSProperties}
-      >
-        {sortedActions.map((action, idx) => (
-          <button
-            key={action.id}
-            onClick={() => handleActionClick(action.id)}
-            className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-left text-sm font-semibold text-white/75 hover:text-white hover:bg-white/8 transition-all ${
-              focusedIndex === idx ? 'bg-white/10 ring-1 ring-indigo-500' : ''
-            }`}
-            title={action.description}
-          >
-            <span className="text-base">{action.icon}</span>
-            <span>{action.label}</span>
-          </button>
-        ))}
-        <style>{`
-          #contextual-action-toolbar::-webkit-scrollbar {
-            width: 3px;
-          }
-          #contextual-action-toolbar::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.12);
-            border-radius: 99px;
-          }
-        `}</style>
-      </div>
+      <>
+        {/* Full-screen backdrop — tap to dismiss, unblocks page scroll */}
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99989,
+            // Transparent but still intercepts taps
+            background: 'rgba(0,0,0,0.35)',
+            backdropFilter: 'blur(1px)',
+            WebkitBackdropFilter: 'blur(1px)',
+            touchAction: 'none',
+          } as React.CSSProperties}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            closeToolbar();
+          }}
+          aria-label="Dismiss menu"
+        />
+
+        {/* Menu panel — sits on top of backdrop */}
+        <div
+          ref={toolbarRef}
+          id="contextual-action-toolbar"
+          style={{
+            position: 'fixed',
+            zIndex: 99990,
+            top: coords.top,
+            left: coords.left,
+            width: Math.min(240, window.innerWidth - 24),
+            background: 'linear-gradient(135deg, rgba(26,29,39,0.98) 0%, rgba(15,17,25,0.99) 100%)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            borderRadius: 16,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            padding: '6px',
+            maxHeight: '60vh',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y',
+          } as React.CSSProperties}
+          onPointerDown={(e) => e.stopPropagation()} // prevent backdrop from closing when tapping the menu itself
+        >
+          {sortedActions.map((action, idx) => (
+            <button
+              key={action.id}
+              onClick={() => handleActionClick(action.id)}
+              style={{ touchAction: 'manipulation' } as React.CSSProperties}
+              className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-left text-sm font-semibold text-white/75 hover:text-white hover:bg-white/8 active:bg-white/10 transition-all ${
+                focusedIndex === idx ? 'bg-white/10 ring-1 ring-indigo-500' : ''
+              }`}
+              title={action.description}
+            >
+              <span className="text-base">{action.icon}</span>
+              <span>{action.label}</span>
+            </button>
+          ))}
+
+          {/* Dismiss hint */}
+          <div style={{
+            fontSize: 10.5,
+            color: 'rgba(255,255,255,0.2)',
+            textAlign: 'center',
+            padding: '6px 4px 2px',
+            letterSpacing: '0.3px',
+          }}>
+            Tap outside to dismiss
+          </div>
+
+          <style>{`
+            #contextual-action-toolbar::-webkit-scrollbar { width: 3px; }
+            #contextual-action-toolbar::-webkit-scrollbar-thumb {
+              background: rgba(255,255,255,0.12);
+              border-radius: 99px;
+            }
+          `}</style>
+        </div>
+      </>
     );
   }
 
