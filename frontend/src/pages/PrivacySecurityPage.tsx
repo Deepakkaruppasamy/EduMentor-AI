@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth.store';
 import { privacyService, PrivacySettings, SecurityOverview, AdminSecurityStats } from '../services/privacy.service';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 export const PrivacySecurityPage: React.FC = () => {
@@ -421,54 +422,159 @@ export const PrivacySecurityPage: React.FC = () => {
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-                {/* Download */}
+                {/* Download Card */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <h4 style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>Download Account Data Archive</h4>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>📥 Download Account Data Archive</h4>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, margin: 0 }}>
                     Request a download of all courses linked, quiz scores, evaluations, chat history, and timeline.
                   </p>
-                  <button
-                    onClick={handleDownloadRequest}
-                    disabled={settings.dataDownloadRequested}
-                    style={{
-                      padding: '10px 18px', borderRadius: 10,
-                      border: '1px solid rgba(99,102,241,0.3)',
-                      background: settings.dataDownloadRequested ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.1)',
-                      color: settings.dataDownloadRequested ? 'rgba(255,255,255,0.3)' : '#818cf8',
-                      cursor: settings.dataDownloadRequested ? 'not-allowed' : 'pointer',
-                      fontSize: 12.5, fontWeight: 600,
-                      marginTop: 'auto',
-                    }}
-                  >
-                    {settings.dataDownloadRequested ? '⏳ Request Pending' : '📥 Request Download'}
-                  </button>
+
+                  {settings.dataDownloadRequested && settings.dataDownloadRequestedAt ? (
+                    <div style={{
+                      background: 'rgba(99,102,241,0.08)',
+                      border: '1px solid rgba(99,102,241,0.2)',
+                      borderRadius: 10, padding: '10px 14px',
+                      display: 'flex', flexDirection: 'column', gap: 6,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 13 }}>⏳</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#818cf8' }}>Request Processing</span>
+                      </div>
+                      <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.4 }}>
+                        Submitted {(() => {
+                          const hrs = Math.floor((Date.now() - new Date(settings.dataDownloadRequestedAt!).getTime()) / 3600000);
+                          return hrs < 1 ? 'just now' : `${hrs}h ago`;
+                        })()} · You'll receive an email within 48 hours.
+                      </p>
+                      <button
+                        onClick={async () => {
+                          if (!window.confirm('Cancel your data download request?')) return;
+                          try {
+                            await api.put('/privacy/settings', { dataDownloadRequested: false });
+                            toast.success('Download request cancelled.');
+                            fetchData();
+                          } catch {
+                            toast.error('Failed to cancel request.');
+                          }
+                        }}
+                        style={{
+                          marginTop: 4, padding: '6px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 600,
+                          border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+                          color: 'rgba(255,255,255,0.5)', cursor: 'pointer', alignSelf: 'flex-start',
+                        }}
+                      >
+                        ✕ Cancel Request
+                      </button>
+                    </div>
+                  ) : settings.dataDownloadRequested ? (
+                    <button
+                      disabled
+                      style={{
+                        padding: '10px 18px', borderRadius: 10,
+                        border: '1px solid rgba(99,102,241,0.2)',
+                        background: 'rgba(255,255,255,0.04)',
+                        color: 'rgba(255,255,255,0.3)',
+                        cursor: 'not-allowed', fontSize: 12.5, fontWeight: 600,
+                        marginTop: 'auto',
+                      }}
+                    >
+                      ⏳ Request Pending
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleDownloadRequest}
+                      style={{
+                        padding: '10px 18px', borderRadius: 10,
+                        border: '1px solid rgba(99,102,241,0.3)',
+                        background: 'rgba(99,102,241,0.1)',
+                        color: '#818cf8',
+                        cursor: 'pointer', fontSize: 12.5, fontWeight: 600,
+                        marginTop: 'auto', transition: 'all 0.2s',
+                      }}
+                    >
+                      📥 Request Download
+                    </button>
+                  )}
                 </div>
 
-                {/* Deletion */}
+                {/* Deletion Card */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <h4 style={{ fontSize: 14, fontWeight: 700, color: '#ef4444', margin: 0 }}>Request Account Deletion</h4>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, color: '#ef4444', margin: 0 }}>⚠️ Request Account Deletion</h4>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, margin: 0 }}>
                     Request full purge of your database objects. This deletes student/faculty profiles and is irreversible.
                   </p>
-                  <button
-                    onClick={handleDeleteRequest}
-                    disabled={settings.deletionRequested}
-                    style={{
-                      padding: '10px 18px', borderRadius: 10,
-                      border: '1px solid rgba(239,68,68,0.3)',
-                      background: settings.deletionRequested ? 'rgba(255,255,255,0.05)' : 'rgba(239,68,68,0.1)',
-                      color: settings.deletionRequested ? 'rgba(255,255,255,0.3)' : '#ef4444',
-                      cursor: settings.deletionRequested ? 'not-allowed' : 'pointer',
-                      fontSize: 12.5, fontWeight: 600,
-                      marginTop: 'auto',
-                    }}
-                  >
-                    {settings.deletionRequested ? '⏳ Purge Pending' : '⚠️ Erase Account'}
-                  </button>
+
+                  {settings.deletionRequested && settings.deletionRequestedAt ? (
+                    <div style={{
+                      background: 'rgba(239,68,68,0.07)',
+                      border: '1px solid rgba(239,68,68,0.2)',
+                      borderRadius: 10, padding: '10px 14px',
+                      display: 'flex', flexDirection: 'column', gap: 6,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 13 }}>⏳</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#f87171' }}>Deletion Pending Review</span>
+                      </div>
+                      <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.4 }}>
+                        Submitted {(() => {
+                          const days = Math.floor((Date.now() - new Date(settings.deletionRequestedAt!).getTime()) / 86400000);
+                          return days < 1 ? 'today' : `${days} day${days > 1 ? 's' : ''} ago`;
+                        })()} · Admin review within 7 business days.
+                      </p>
+                      <button
+                        onClick={async () => {
+                          if (!window.confirm('Cancel your account deletion request?')) return;
+                          try {
+                            await api.put('/privacy/settings', { deletionRequested: false });
+                            toast.success('Deletion request cancelled. Your account is safe.');
+                            fetchData();
+                          } catch {
+                            toast.error('Failed to cancel deletion request.');
+                          }
+                        }}
+                        style={{
+                          marginTop: 4, padding: '6px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 600,
+                          border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.06)',
+                          color: '#f87171', cursor: 'pointer', alignSelf: 'flex-start',
+                        }}
+                      >
+                        ✕ Cancel Deletion Request
+                      </button>
+                    </div>
+                  ) : settings.deletionRequested ? (
+                    <button
+                      disabled
+                      style={{
+                        padding: '10px 18px', borderRadius: 10,
+                        border: '1px solid rgba(239,68,68,0.2)',
+                        background: 'rgba(255,255,255,0.04)',
+                        color: 'rgba(255,255,255,0.3)',
+                        cursor: 'not-allowed', fontSize: 12.5, fontWeight: 600,
+                        marginTop: 'auto',
+                      }}
+                    >
+                      ⏳ Purge Pending
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleDeleteRequest}
+                      style={{
+                        padding: '10px 18px', borderRadius: 10,
+                        border: '1px solid rgba(239,68,68,0.3)',
+                        background: 'rgba(239,68,68,0.1)',
+                        color: '#ef4444',
+                        cursor: 'pointer', fontSize: 12.5, fontWeight: 600,
+                        marginTop: 'auto', transition: 'all 0.2s',
+                      }}
+                    >
+                      ⚠️ Erase Account
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
           )}
+
 
           {/* TAB Panel: Admin Audit Logs (Admin Only) */}
           {activeTab === 'admin' && isAdmin && adminStats && (

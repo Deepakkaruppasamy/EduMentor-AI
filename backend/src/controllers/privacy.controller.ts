@@ -123,23 +123,33 @@ export const updatePrivacySettings = asyncHandler(async (req: AuthRequest, res: 
     notificationPreferences,
     language,
     timezone,
+    dataDownloadRequested,
+    deletionRequested,
   } = req.body;
+
+  const updateFields: Record<string, any> = {};
+  if (cookiePreferences) updateFields.cookiePreferences = cookiePreferences;
+  if (notificationPreferences) updateFields.notificationPreferences = notificationPreferences;
+  if (language) updateFields.language = language;
+  if (timezone) updateFields.timezone = timezone;
+
+  // Allow explicitly cancelling pending requests (only allow resetting to false, not setting to true via this route)
+  if (typeof dataDownloadRequested === 'boolean' && dataDownloadRequested === false) {
+    updateFields.dataDownloadRequested = false;
+  }
+  if (typeof deletionRequested === 'boolean' && deletionRequested === false) {
+    updateFields.deletionRequested = false;
+  }
 
   const settings = await PrivacySettings.findOneAndUpdate(
     { userId: req.user!._id },
-    {
-      $set: {
-        ...(cookiePreferences && { cookiePreferences }),
-        ...(notificationPreferences && { notificationPreferences }),
-        ...(language && { language }),
-        ...(timezone && { timezone }),
-      },
-    },
+    { $set: updateFields },
     { new: true, upsert: true }
   );
 
   res.json({ message: 'Privacy settings updated.', settings });
 });
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    POST /api/privacy/data-download

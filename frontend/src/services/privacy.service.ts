@@ -29,7 +29,9 @@ export interface PrivacySettings {
   };
   twoFactorEnabled: boolean;
   dataDownloadRequested: boolean;
+  dataDownloadRequestedAt?: string;
   deletionRequested: boolean;
+  deletionRequestedAt?: string;
   language: string;
   timezone: string;
 }
