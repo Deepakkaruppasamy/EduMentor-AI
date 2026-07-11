@@ -299,7 +299,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         toast.success(
           <div>
             <p className="font-bold text-xs">📋 Assignment Graded!</p>
-            <p className="text-[10px] text-white/70 mt-0.5">"${data.fileName}" score: <strong className="text-emerald-400">{data.score}/100</strong></p>
+            <p className="text-[10px] text-white/70 mt-0.5">"{data.fileName}" score: <strong className="text-emerald-400">{data.score}/100</strong></p>
           </div>,
           { duration: 8000 }
         );

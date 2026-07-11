@@ -10,10 +10,10 @@
  *
  * Only these operations are safe to queue:
  *  - PUT /preferences
- *  - POST /bookmarks, DELETE /bookmarks/:id
- *  - POST /flashcards/*/review
- *  - POST /announcements/:id/read
- *  - PUT /chat/sessions/:id (rename)
+ *  - POST /bookmarks, DELETE /bookmarks/[id]
+ *  - POST /flashcards/[id]/review
+ *  - POST /announcements/[id]/read
+ *  - PUT /chat/sessions/[id] (rename)
  */
 
 import { useSyncStore } from '../store/sync.store';
