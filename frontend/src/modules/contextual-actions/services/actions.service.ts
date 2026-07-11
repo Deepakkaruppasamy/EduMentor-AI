@@ -42,4 +42,4 @@ export const actionsService = {
     return res.data;
   },
 };
-export type { ActionPayload };
+

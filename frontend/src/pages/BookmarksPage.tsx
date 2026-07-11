@@ -85,15 +85,17 @@ export const BookmarksPage: React.FC = () => {
       description: `Bookmark "${b.title}" deleted`,
       onUpdate: () => setBookmarks(prev => prev.filter(item => item._id !== b._id)),
       onRevert: () => setBookmarks(prev => [b, ...prev]),
-      onDelete: () => bookmarkService.remove(b._id),
-      onUndo: () => bookmarkService.create({
-        itemType: b.itemType,
-        itemId: b.itemId,
-        title: b.title,
-        category: b.category,
-        isFavorite: b.isFavorite,
-        metadata: b.metadata,
-      }),
+      onDelete: async () => { await bookmarkService.remove(b._id); },
+      onUndo: async () => {
+        await bookmarkService.create({
+          itemType: b.itemType,
+          itemId: b.itemId,
+          title: b.title,
+          category: b.category,
+          isFavorite: b.isFavorite,
+          metadata: b.metadata,
+        });
+      },
     });
   };
 

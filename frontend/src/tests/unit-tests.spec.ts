@@ -1,11 +1,21 @@
+declare const global: any;
+declare const process: any;
+
 // Self-contained test runner
-const suites: { name: string; tests: { name: string; fn: () => void | Promise<void> }[] }[] = [];
+const suites: { name: string; beforeEachFns: (() => void)[]; tests: { name: string; fn: () => void | Promise<void> }[] }[] = [];
 let currentSuite: string | null = null;
 
 export function describe(name: string, fn: () => void) {
   currentSuite = name;
-  suites.push({ name, tests: [] });
+  suites.push({ name, beforeEachFns: [], tests: [] });
   fn();
+}
+
+export function beforeEach(fn: () => void) {
+  const suite = suites.find(s => s.name === currentSuite);
+  if (suite) {
+    suite.beforeEachFns.push(fn);
+  }
 }
 
 export function it(name: string, fn: () => void | Promise<void>) {
@@ -14,6 +24,7 @@ export function it(name: string, fn: () => void | Promise<void>) {
     suite.tests.push({ name, fn });
   }
 }
+
 
 export function expect(actual: any) {
   return {
@@ -236,6 +247,9 @@ if (typeof process !== 'undefined' && process.argv && process.argv[1] && process
       for (const test of suite.tests) {
         total++;
         try {
+          for (const beforeFn of suite.beforeEachFns) {
+            beforeFn();
+          }
           await test.fn();
           console.log(`  ✓ ${test.name}`);
           passed++;
