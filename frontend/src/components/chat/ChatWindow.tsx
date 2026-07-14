@@ -87,11 +87,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
     
     // Dynamically assign target RFC 5646 language locale code
     const langMap: Record<string, string> = {
-      'English': 'en-US',
-      'Tamil': 'ta-IN',
+      // Indian Languages
       'Hindi': 'hi-IN',
+      'Bengali': 'bn-IN',
+      'Telugu': 'te-IN',
+      'Marathi': 'mr-IN',
+      'Tamil': 'ta-IN',
+      'Urdu': 'ur-IN',
+      'Gujarati': 'gu-IN',
+      'Kannada': 'kn-IN',
+      'Malayalam': 'ml-IN',
+      'Odia': 'or-IN',
+      'Punjabi': 'pa-IN',
+      'Assamese': 'as-IN',
+      'Maithili': 'mai-IN',
+      'Sanskrit': 'sa-IN',
+      'Santali': 'sat-IN',
+      'Kashmiri': 'ks-IN',
+      'Nepali': 'ne-NP',
+      'Sindhi': 'sd-IN',
+      'Konkani': 'kok-IN',
+      'Manipuri': 'mni-IN',
+      'Bodo': 'brx-IN',
+      'Dogri': 'doi-IN',
+      // International Languages
+      'English': 'en-US',
+      'Spanish': 'es-ES',
+      'French': 'fr-FR',
       'German': 'de-DE',
-      'French': 'fr-FR'
+      'Chinese': 'zh-CN',
+      'Arabic': 'ar-SA',
+      'Portuguese': 'pt-PT',
+      'Japanese': 'ja-JP',
+      'Korean': 'ko-KR',
+      'Russian': 'ru-RU',
     };
     const targetLangCode = langMap[preferredLanguage] || 'en-US';
     utterance.lang = targetLangCode;
@@ -146,11 +175,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
       rec.interimResults = false;
       
       const langMap: Record<string, string> = {
-        'English': 'en-US',
-        'Tamil': 'ta-IN',
+        // Indian Languages
         'Hindi': 'hi-IN',
+        'Bengali': 'bn-IN',
+        'Telugu': 'te-IN',
+        'Marathi': 'mr-IN',
+        'Tamil': 'ta-IN',
+        'Urdu': 'ur-IN',
+        'Gujarati': 'gu-IN',
+        'Kannada': 'kn-IN',
+        'Malayalam': 'ml-IN',
+        'Odia': 'or-IN',
+        'Punjabi': 'pa-IN',
+        'Assamese': 'as-IN',
+        'Maithili': 'mai-IN',
+        'Sanskrit': 'sa-IN',
+        'Santali': 'sat-IN',
+        'Kashmiri': 'ks-IN',
+        'Nepali': 'ne-NP',
+        'Sindhi': 'sd-IN',
+        'Konkani': 'kok-IN',
+        'Manipuri': 'mni-IN',
+        'Bodo': 'brx-IN',
+        'Dogri': 'doi-IN',
+        // International Languages
+        'English': 'en-US',
+        'Spanish': 'es-ES',
+        'French': 'fr-FR',
         'German': 'de-DE',
-        'French': 'fr-FR'
+        'Chinese': 'zh-CN',
+        'Arabic': 'ar-SA',
+        'Portuguese': 'pt-PT',
+        'Japanese': 'ja-JP',
+        'Korean': 'ko-KR',
+        'Russian': 'ru-RU',
       };
       rec.lang = langMap[preferredLanguage] || 'en-US';
 

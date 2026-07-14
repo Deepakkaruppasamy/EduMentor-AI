@@ -335,7 +335,17 @@ export const ContextualActionResult: React.FC = () => {
                       onChange={(e) => setTargetLang(e.target.value)}
                       className="bg-[#151722] border border-white/10 rounded-lg px-2 py-1 text-xs text-white outline-none"
                     >
-                      {['Spanish', 'French', 'German', 'Chinese', 'Hindi', 'Arabic', 'Portuguese'].map((lang) => (
+                      {[
+                        // Indian Languages (22 Scheduled Languages)
+                        'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil',
+                        'Urdu', 'Gujarati', 'Kannada', 'Malayalam', 'Odia',
+                        'Punjabi', 'Assamese', 'Maithili', 'Sanskrit', 'Santali',
+                        'Kashmiri', 'Nepali', 'Sindhi', 'Konkani', 'Manipuri',
+                        'Bodo', 'Dogri',
+                        // Other Popular Languages
+                        'English', 'Spanish', 'French', 'German', 'Chinese',
+                        'Arabic', 'Portuguese', 'Japanese', 'Korean', 'Russian',
+                      ].map((lang) => (
                         <option key={lang} value={lang}>{lang}</option>
                       ))}
                     </select>
