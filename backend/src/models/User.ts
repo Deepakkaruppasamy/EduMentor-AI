@@ -56,7 +56,21 @@ const UserSchema = new Schema<IUser>(
     bio: { type: String, default: '' },
     qualifications: { type: String, default: '' },
     department: { type: String, default: '' },
-    preferredLanguage: { type: String, default: 'English', enum: ['English', 'Tamil', 'Hindi', 'German', 'French'] },
+    preferredLanguage: {
+      type: String,
+      default: 'English',
+      enum: [
+        // Indian Languages (22 Scheduled — 8th Schedule)
+        'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil',
+        'Urdu', 'Gujarati', 'Kannada', 'Malayalam', 'Odia',
+        'Punjabi', 'Assamese', 'Maithili', 'Sanskrit', 'Santali',
+        'Kashmiri', 'Nepali', 'Sindhi', 'Konkani', 'Manipuri',
+        'Bodo', 'Dogri',
+        // International Languages
+        'English', 'Spanish', 'French', 'German', 'Chinese',
+        'Arabic', 'Portuguese', 'Japanese', 'Korean', 'Russian',
+      ],
+    },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     loginAttempts: { type: Number, default: 0 },
