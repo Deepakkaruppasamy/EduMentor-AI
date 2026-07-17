@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { messagingService } from '../../services/messaging.service';
 import { MsgMessage } from '../../types/messaging.types';
 import { format } from 'date-fns';
@@ -64,7 +64,7 @@ export const MessageSearch: React.FC<MessageSearchProps> = ({ onClose, onMessage
               onClick={() => onMessageSelect(msg.conversation, msg._id)}
               className="w-full p-3 flex items-start gap-3 hover:bg-white/5 transition-colors text-left border-b border-white/5"
             >
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2), rgba(159,122,234,0.1))' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.14), rgba(124,111,194,0.1))' }}>
                 {msg.sender?.name?.[0]?.toUpperCase() || '?'}
               </div>
               <div className="min-w-0 flex-1">

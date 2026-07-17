@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -96,9 +96,9 @@ export const RegisterPage: React.FC = () => {
           }} 
         />
         <div className="absolute -left-40 top-20 h-80 w-80 rounded-full blur-3xl opacity-20"
-          style={{ background: 'radial-gradient(circle, #4f63ff, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #4f5dc8, transparent)' }} />
         <div className="absolute -right-40 bottom-20 h-80 w-80 rounded-full blur-3xl opacity-15"
-          style={{ background: 'radial-gradient(circle, #9f7aea, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #7c6fc2, transparent)' }} />
       </div>
 
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
@@ -133,9 +133,9 @@ export const RegisterPage: React.FC = () => {
                   <button key={r} type="button" onClick={() => { setRole(r); setSemester(''); setCourseName(''); }}
                     className="rounded-xl py-2.5 text-xs font-medium transition-all capitalize"
                     style={{
-                      background: role === r ? 'rgba(79,99,255,0.25)' : 'rgba(255,255,255,0.04)',
-                      border: role === r ? '1px solid rgba(79,99,255,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                      color: role === r ? '#7c8fff' : 'rgba(255,255,255,0.5)',
+                      background: role === r ? 'rgba(79,93,200,0.18)' : 'rgba(255,255,255,0.04)',
+                      border: role === r ? '1px solid rgba(79,93,200,0.45)' : '1px solid rgba(255,255,255,0.08)',
+                      color: role === r ? '#8b94e0' : 'rgba(255,255,255,0.5)',
                     }}>
                     {r === 'student' ? '🎓 Student' : '👨‍🏫 Faculty'}
                   </button>

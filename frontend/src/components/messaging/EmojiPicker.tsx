@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 
 // Built-in emoji picker — no external dependency needed
 const EMOJI_CATEGORIES: { name: string; emojis: string[] }[] = [
@@ -69,7 +69,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
           placeholder="Search emoji…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white/80 outline-none focus:border-[#4f63ff]/50 placeholder:text-white/20"
+          className="w-full px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white/80 outline-none focus:border-[#4f5dc8]/50 placeholder:text-white/20"
           autoFocus
         />
       </div>
@@ -83,7 +83,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
               onClick={() => setActiveCategory(i)}
               className={`px-2 py-1 rounded-md text-xs whitespace-nowrap transition-colors ${
                 i === activeCategory
-                  ? 'bg-[#4f63ff]/20 text-[#7c8fff]'
+                  ? 'bg-[#4f5dc8]/15 text-[#8b94e0]'
                   : 'text-white/40 hover:text-white/60 hover:bg-white/5'
               }`}
             >

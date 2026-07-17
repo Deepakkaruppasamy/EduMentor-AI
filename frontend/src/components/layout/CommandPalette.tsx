@@ -6,6 +6,7 @@ import { useThemeStore } from '../../store/theme.store';
 import { useCommandPaletteStore } from '../../store/command-palette.store';
 import { searchService } from '../../services/search.service';
 import toast from 'react-hot-toast';
+import { scaleInVariants, backdropVariants } from '../../utils/motion';
 
 interface Command {
   id: string;
@@ -295,7 +296,11 @@ export const CommandPalette: React.FC = () => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div
+        <motion.div
+          variants={backdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="fixed inset-0 flex items-start justify-center pt-24 px-4"
           style={{
             background: 'rgba(0,0,0,0.5)',
@@ -305,10 +310,10 @@ export const CommandPalette: React.FC = () => {
           onClick={closePalette}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: -8 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            variants={scaleInVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="w-full max-w-xl overflow-hidden rounded-2xl shadow-2xl"
             style={{
               background: 'var(--bg-modal)',
@@ -371,7 +376,7 @@ export const CommandPalette: React.FC = () => {
                         onMouseEnter={() => setSelectedIdx(globalIdx)}
                         className="w-full flex items-center gap-3.5 px-4 py-2.5 text-left transition-all"
                         style={{
-                          background: isSelected ? 'rgba(79,99,255,0.12)' : 'transparent',
+                          background: isSelected ? 'rgba(79,93,200,0.09)' : 'transparent',
                           borderLeft: isSelected ? '3px solid var(--accent-blue)' : '3px solid transparent',
                         }}
                       >
@@ -402,7 +407,7 @@ export const CommandPalette: React.FC = () => {
               )}
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

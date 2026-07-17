@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export type AvatarState = 'idle' | 'thinking' | 'speaking' | 'happy' | 'encouraging';
@@ -247,13 +247,13 @@ export const AIBuddyAvatar: React.FC<AIBuddyAvatarProps> = ({ state, size = 64 }
         viewBox="0 0 120 120"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full filter drop-shadow-[0_4px_12px_rgba(79,99,255,0.25)]"
+        className="w-full h-full filter drop-shadow-[0_4px_12px_rgba(79,93,200,0.18)]"
       >
         <defs>
           {/* Gradients */}
           <radialGradient id="ringGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#4f63ff" stopOpacity="0" />
+            <stop offset="100%" stopColor="#4f5dc8" stopOpacity="0" />
           </radialGradient>
 
           <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -267,7 +267,7 @@ export const AIBuddyAvatar: React.FC<AIBuddyAvatarProps> = ({ state, size = 64 }
           </linearGradient>
 
           <linearGradient id="eyeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#38bdf8" />
+            <stop offset="0%" stopColor="#4da89a" />
             <stop offset="100%" stopColor="#6366f1" />
           </linearGradient>
 
@@ -278,7 +278,7 @@ export const AIBuddyAvatar: React.FC<AIBuddyAvatarProps> = ({ state, size = 64 }
 
           <linearGradient id="haloGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#60a5fa" />
-            <stop offset="50%" stopColor="#a78bfa" />
+            <stop offset="50%" stopColor="#9b96d4" />
             <stop offset="100%" stopColor="#f472b6" />
           </linearGradient>
         </defs>
@@ -307,7 +307,7 @@ export const AIBuddyAvatar: React.FC<AIBuddyAvatarProps> = ({ state, size = 64 }
             width="6"
             height="16"
             rx="3"
-            fill="#4f63ff"
+            fill="#4f5dc8"
             opacity="0.8"
             animate={state === 'speaking' ? { scaleX: [1, 1.3, 1], x: [0, -1, 0] } : {}}
             transition={{ duration: 0.3, repeat: Infinity }}
@@ -319,7 +319,7 @@ export const AIBuddyAvatar: React.FC<AIBuddyAvatarProps> = ({ state, size = 64 }
             width="6"
             height="16"
             rx="3"
-            fill="#4f63ff"
+            fill="#4f5dc8"
             opacity="0.8"
             animate={state === 'speaking' ? { scaleX: [1, 1.3, 1], x: [0, 1, 0] } : {}}
             transition={{ duration: 0.3, repeat: Infinity }}

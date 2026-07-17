@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 
 interface LogoProps {
@@ -22,7 +22,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
         style={{
           width: dimensions.width * 1.2,
           height: dimensions.height * 1.2,
-          background: 'radial-gradient(circle, rgba(79,99,255,0.6) 0%, rgba(159,122,234,0.4) 70%, transparent 100%)',
+          background: 'radial-gradient(circle, rgba(79,93,200,0.55) 0%, rgba(124,111,194,0.4) 70%, transparent 100%)',
         }}
         animate={{
           scale: [1, 1.15, 1],
@@ -48,14 +48,14 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
         <defs>
           {/* Gradients */}
           <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#4f63ff" />
-            <stop offset="50%" stopColor="#805ad5" />
-            <stop offset="100%" stopColor="#9f7aea" />
+            <stop offset="0%" stopColor="#4f5dc8" />
+            <stop offset="50%" stopColor="#6359a8" />
+            <stop offset="100%" stopColor="#7c6fc2" />
           </linearGradient>
           
           <linearGradient id="accentGrad" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#38bdf8" />
-            <stop offset="100%" stopColor="#818cf8" />
+            <stop offset="0%" stopColor="#4da89a" />
+            <stop offset="100%" stopColor="#7b87d4" />
           </linearGradient>
 
           {/* Glow filter */}
@@ -97,11 +97,11 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
         <line x1="50" y1="58" x2="50" y2="76" stroke="url(#accentGrad)" strokeWidth="2" opacity="0.8" />
 
         {/* Neural Network Nodes */}
-        <motion.circle cx="50" cy="22" r="3.5" fill="#38bdf8" filter="url(#glow)" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0 }} />
-        <motion.circle cx="22" cy="40" r="3.5" fill="#818cf8" filter="url(#glow)" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
-        <motion.circle cx="78" cy="40" r="3.5" fill="#818cf8" filter="url(#glow)" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
-        <motion.circle cx="50" cy="58" r="4" fill="#a78bfa" filter="url(#glow)" animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }} />
-        <motion.circle cx="50" cy="76" r="3" fill="#38bdf8" filter="url(#glow)" />
+        <motion.circle cx="50" cy="22" r="3.5" fill="#4da89a" filter="url(#glow)" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0 }} />
+        <motion.circle cx="22" cy="40" r="3.5" fill="#7b87d4" filter="url(#glow)" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
+        <motion.circle cx="78" cy="40" r="3.5" fill="#7b87d4" filter="url(#glow)" animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
+        <motion.circle cx="50" cy="58" r="4" fill="#9b96d4" filter="url(#glow)" animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }} />
+        <motion.circle cx="50" cy="76" r="3" fill="#4da89a" filter="url(#glow)" />
 
         {/* Core Graduation Cap Shape */}
         <motion.path
@@ -124,11 +124,11 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
         {/* Tassel */}
         <path
           d="M50 42L32 50V68"
-          stroke="#38bdf8"
+          stroke="#4da89a"
           strokeWidth="1.5"
           strokeLinecap="round"
         />
-        <circle cx="32" cy="68" r="2" fill="#38bdf8" />
+        <circle cx="32" cy="68" r="2" fill="#4da89a" />
       </motion.svg>
     </div>
   );

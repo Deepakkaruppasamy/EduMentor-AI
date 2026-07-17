@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { useSupportStore } from '../store/support.store';
 import { BookmarkButton } from '../components/common/BookmarkButton';
@@ -274,7 +274,7 @@ export const SupportCenterPage: React.FC = () => {
           <button
             onClick={() => setActiveTab('aichat')}
             className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'aichat' ? 'bg-[#4f63ff]/10 text-[#7c8fff]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
+              activeTab === 'aichat' ? 'bg-[#4f5dc8]/10 text-[#8b94e0]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
             }`}
           >
             🤖 AI Support Chat
@@ -282,7 +282,7 @@ export const SupportCenterPage: React.FC = () => {
           <button
             onClick={() => setActiveTab('tickets')}
             className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'tickets' ? 'bg-[#4f63ff]/10 text-[#7c8fff]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
+              activeTab === 'tickets' ? 'bg-[#4f5dc8]/10 text-[#8b94e0]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
             }`}
           >
             📂 Ticket Center ({tickets.length})
@@ -290,7 +290,7 @@ export const SupportCenterPage: React.FC = () => {
           <button
             onClick={() => setActiveTab('faq')}
             className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'faq' ? 'bg-[#4f63ff]/10 text-[#7c8fff]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
+              activeTab === 'faq' ? 'bg-[#4f5dc8]/10 text-[#8b94e0]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
             }`}
           >
             📋 FAQ & Announcements
@@ -299,7 +299,7 @@ export const SupportCenterPage: React.FC = () => {
             <button
               onClick={() => setActiveTab('admin')}
               className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold flex items-center gap-2 transition-all ${
-                activeTab === 'admin' ? 'bg-[#4f63ff]/10 text-[#7c8fff]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
+                activeTab === 'admin' ? 'bg-[#4f5dc8]/10 text-[#8b94e0]' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.02]'
               }`}
             >
               🛡️ Admin Console
@@ -331,8 +331,8 @@ export const SupportCenterPage: React.FC = () => {
                     <div
                       className="rounded-2xl px-4 py-2.5 text-xs leading-relaxed"
                       style={{
-                        background: isAI ? 'rgba(255,255,255,0.05)' : 'rgba(79,99,255,0.15)',
-                        border: isAI ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(79,99,255,0.25)',
+                        background: isAI ? 'rgba(255,255,255,0.05)' : 'rgba(79,93,200,0.10)',
+                        border: isAI ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(79,93,200,0.18)',
                       }}
                     >
                       {msg.content}
@@ -360,7 +360,7 @@ export const SupportCenterPage: React.FC = () => {
                       onClick={() => setSelectedCsatRating(r.val)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 border transition-all ${
                         selectedCsatRating === r.val
-                          ? 'bg-[#4f63ff]/20 text-[#7c8fff] border-[#4f63ff]/30'
+                          ? 'bg-[#4f5dc8]/15 text-[#8b94e0] border-[#4f5dc8]/25'
                           : 'text-white/40 border-white/5 hover:text-white/70'
                       }`}
                     >
@@ -401,7 +401,7 @@ export const SupportCenterPage: React.FC = () => {
                 onClick={handleSendChat}
                 disabled={!chatInput.trim() || sendingChat}
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg, #4f63ff, #7c3aed)' }}
+                style={{ background: 'linear-gradient(135deg, #4f5dc8, #6359a8)' }}
               >
                 {sendingChat ? '…' : '➤'}
               </button>
@@ -446,12 +446,12 @@ export const SupportCenterPage: React.FC = () => {
                       }`}
                     >
                       <div className="flex justify-between items-center">
-                        <span className="font-mono text-[10px] font-bold text-[#7c8fff]">{t.ticketId}</span>
+                        <span className="font-mono text-[10px] font-bold text-[#8b94e0]">{t.ticketId}</span>
                         <span
                           className="px-1.5 py-0.2 rounded text-[8px] font-bold uppercase"
                           style={{
-                            background: t.status === 'Resolved' ? 'rgba(72,187,120,0.1)' : 'rgba(79,99,255,0.1)',
-                            color: t.status === 'Resolved' ? '#48bb78' : '#7c8fff',
+                            background: t.status === 'Resolved' ? 'rgba(52,168,122,0.1)' : 'rgba(79,93,200,0.08)',
+                            color: t.status === 'Resolved' ? '#34a87a' : '#8b94e0',
                           }}
                         >
                           {t.status}
@@ -552,7 +552,7 @@ export const SupportCenterPage: React.FC = () => {
                         category="Support Tickets"
                         className="py-1 px-2 rounded-lg text-xs"
                       />
-                      <span className="text-[10px] bg-[#4f63ff]/10 border border-[#4f63ff]/25 text-[#7c8fff] px-2.5 py-1 rounded-lg font-bold uppercase">{activeTicket.status}</span>
+                      <span className="text-[10px] bg-[#4f5dc8]/10 border border-[#4f5dc8]/25 text-[#8b94e0] px-2.5 py-1 rounded-lg font-bold uppercase">{activeTicket.status}</span>
                     </div>
                   </div>
 
@@ -574,8 +574,8 @@ export const SupportCenterPage: React.FC = () => {
                           <div
                             className="rounded-xl px-3.5 py-2 text-xs leading-relaxed"
                             style={{
-                              background: isOwner ? 'rgba(79,99,255,0.1)' : 'rgba(255,255,255,0.03)',
-                              border: isOwner ? '1px solid rgba(79,99,255,0.18)' : '1px solid rgba(255,255,255,0.06)',
+                              background: isOwner ? 'rgba(79,93,200,0.08)' : 'rgba(255,255,255,0.03)',
+                              border: isOwner ? '1px solid rgba(79,93,200,0.13)' : '1px solid rgba(255,255,255,0.06)',
                             }}
                           >
                             {msg.content}
@@ -599,7 +599,7 @@ export const SupportCenterPage: React.FC = () => {
                         onClick={handleUserReply}
                         disabled={!replyText.trim() || sendingReply}
                         className="w-10 h-10 rounded-xl flex items-center justify-center text-white disabled:opacity-40 flex-shrink-0"
-                        style={{ background: 'linear-gradient(135deg, #4f63ff, #7c3aed)' }}
+                        style={{ background: 'linear-gradient(135deg, #4f5dc8, #6359a8)' }}
                       >
                         {sendingReply ? '…' : '➤'}
                       </button>
@@ -648,7 +648,7 @@ export const SupportCenterPage: React.FC = () => {
               <div className="space-y-3">
                 {FAQ_ITEMS.map((faq, i) => (
                   <div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
-                    <h5 className="text-xs font-bold text-[#7c8fff]">{faq.q}</h5>
+                    <h5 className="text-xs font-bold text-[#8b94e0]">{faq.q}</h5>
                     <p className="text-xs text-white/70 leading-relaxed">{faq.a}</p>
                   </div>
                 ))}

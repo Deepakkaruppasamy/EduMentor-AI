@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../../store/auth.store';
@@ -388,7 +388,7 @@ export const LiveBattleScreen: React.FC<LiveBattleScreenProps> = ({ courses, onC
                     cy="18"
                     r="14"
                     fill="transparent"
-                    stroke={timeLeft > 5 ? '#4f63ff' : '#fc8181'}
+                    stroke={timeLeft > 5 ? '#4f5dc8' : '#c0524a'}
                     strokeWidth="3"
                     strokeDasharray={`${2 * Math.PI * 14}`}
                     strokeDashoffset={`${2 * Math.PI * 14 * (1 - timeLeft / timerSeconds)}`}
@@ -417,8 +417,8 @@ export const LiveBattleScreen: React.FC<LiveBattleScreenProps> = ({ courses, onC
                   onClick={() => handleSubmitAnswer(opt.label)}
                   className="glass-card p-4 rounded-2xl text-left border-white/5 hover:border-white/20 transition-all text-xs font-medium flex items-center gap-3 w-full"
                   style={{
-                    background: isSelected ? 'rgba(79,99,255,0.18)' : 'rgba(255,255,255,0.03)',
-                    borderColor: isSelected ? 'rgba(79,99,255,0.5)' : 'rgba(255,255,255,0.06)',
+                    background: isSelected ? 'rgba(79,93,200,0.13)' : 'rgba(255,255,255,0.03)',
+                    borderColor: isSelected ? 'rgba(79,93,200,0.45)' : 'rgba(255,255,255,0.06)',
                     cursor: isFaculty || isSubmitted || timeLeft <= 0 ? 'default' : 'pointer',
                   }}
                 >
@@ -485,7 +485,7 @@ export const LiveBattleScreen: React.FC<LiveBattleScreenProps> = ({ courses, onC
                 className="flex items-center justify-between p-2.5 rounded-xl border text-xs"
                 style={{
                   background: 'rgba(255,255,255,0.02)',
-                  borderColor: player.lastCorrect ? 'rgba(72,187,120,0.2)' : 'rgba(255,255,255,0.05)',
+                  borderColor: player.lastCorrect ? 'rgba(52,168,122,0.2)' : 'rgba(255,255,255,0.05)',
                 }}
               >
                 <div className="flex items-center gap-3">

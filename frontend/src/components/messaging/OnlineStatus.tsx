@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 interface OnlineStatusProps {
   isOnline: boolean;
@@ -14,9 +14,9 @@ export const OnlineStatus: React.FC<OnlineStatusProps> = ({ isOnline, size = 'sm
       className={`inline-block rounded-full border-2 border-[#0a0b0f] ${sizeMap[size]} ${className}`}
       style={{
         background: isOnline
-          ? 'linear-gradient(135deg, #48bb78, #38a169)'
+          ? 'linear-gradient(135deg, #34a87a, #38a169)'
           : 'rgba(255,255,255,0.2)',
-        boxShadow: isOnline ? '0 0 6px rgba(72,187,120,0.5)' : 'none',
+        boxShadow: isOnline ? '0 0 6px rgba(52,168,122,0.5)' : 'none',
       }}
       title={isOnline ? 'Online' : 'Offline'}
     />

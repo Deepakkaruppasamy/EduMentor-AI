@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { courseService } from '../services/course.service';
 import { recentlyViewedService } from '../services/recently-viewed.service';
@@ -230,8 +230,8 @@ export const CoursesPage: React.FC = () => {
               onClick={() => setSelectedFacultyId('all')}
               className="glass-card px-3 py-2 rounded-xl flex items-center gap-2.5 cursor-pointer select-none transition-all duration-250 text-left"
               style={{
-                background: selectedFacultyId === 'all' ? 'rgba(79,99,255,0.12)' : 'rgba(255,255,255,0.02)',
-                borderColor: selectedFacultyId === 'all' ? 'rgba(79,99,255,0.35)' : 'rgba(255,255,255,0.06)',
+                background: selectedFacultyId === 'all' ? 'rgba(79,93,200,0.09)' : 'rgba(255,255,255,0.02)',
+                borderColor: selectedFacultyId === 'all' ? 'rgba(79,93,200,0.28)' : 'rgba(255,255,255,0.06)',
               }}
             >
               <div className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold bg-white/5 text-white/70">
@@ -250,15 +250,15 @@ export const CoursesPage: React.FC = () => {
                 onClick={() => setSelectedFacultyId(fac._id)}
                 className="glass-card px-3 py-2 rounded-xl flex items-center gap-2.5 cursor-pointer select-none transition-all duration-250 text-left group relative"
                 style={{
-                  background: selectedFacultyId === fac._id ? 'rgba(79,99,255,0.12)' : 'rgba(255,255,255,0.02)',
-                  borderColor: selectedFacultyId === fac._id ? 'rgba(79,99,255,0.35)' : 'rgba(255,255,255,0.06)',
+                  background: selectedFacultyId === fac._id ? 'rgba(79,93,200,0.09)' : 'rgba(255,255,255,0.02)',
+                  borderColor: selectedFacultyId === fac._id ? 'rgba(79,93,200,0.28)' : 'rgba(255,255,255,0.06)',
                 }}
               >
                 {fac.avatar ? (
                   <img src={fac.avatar} alt={fac.name} className="h-7 w-7 rounded-lg object-cover" />
                 ) : (
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-bold text-white font-mono"
-                       style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}>
+                       style={{ background: 'linear-gradient(135deg, #4f5dc8 0%, #7c6fc2 100%)' }}>
                     {fac.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -347,7 +347,7 @@ export const CoursesPage: React.FC = () => {
                         <button onClick={() => !isEnrolled && handleEnroll(course._id)}
                           disabled={isEnrolled}
                           className={`w-full rounded-xl py-2 text-xs font-semibold transition-all ${isEnrolled ? 'cursor-default' : 'btn-primary'}`}
-                          style={isEnrolled ? { background: 'rgba(72,187,120,0.15)', border: '1px solid rgba(72,187,120,0.3)', color: '#48bb78' } : {}}>
+                          style={isEnrolled ? { background: 'rgba(52,168,122,0.15)', border: '1px solid rgba(52,168,122,0.3)', color: '#34a87a' } : {}}>
                           {isEnrolled ? '✅ Enrolled' : 'Enroll Now'}
                         </button>
                       ) : (
@@ -487,7 +487,7 @@ export const CoursesPage: React.FC = () => {
                 ) : (
                   <div
                     className="h-24 w-24 rounded-2xl flex items-center justify-center text-3xl font-bold text-white font-mono"
-                    style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #4f5dc8 0%, #7c6fc2 100%)' }}
                   >
                     {selectedFacultyForModal.name.charAt(0).toUpperCase()}
                   </div>

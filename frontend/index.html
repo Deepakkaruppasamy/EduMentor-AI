@@ -8,7 +8,7 @@
     <meta name="description" content="EduMentor AI - Explainable Multi-Course Educational Chatbot powered by Llama 3 and Hybrid RAG for university students." />
     <meta name="keywords" content="educational chatbot, AI tutor, university, Llama 3, RAG, quiz generator" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#4f63ff" />
+    <meta name="theme-color" content="#4f5dc8" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -38,7 +38,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: #0a0b0f;
+        background: #0e0f14;
         overflow: hidden;
         font-family: 'Inter', system-ui, sans-serif;
         /* Hide in browser mode, show only for standalone PWA or first 1.5s */
@@ -59,10 +59,10 @@
         position: absolute;
         inset: 0;
         background:
-          radial-gradient(ellipse 70% 50% at 30% 40%, rgba(79, 99, 255, 0.25) 0%, transparent 60%),
-          radial-gradient(ellipse 60% 60% at 75% 70%, rgba(159, 122, 234, 0.20) 0%, transparent 60%),
-          radial-gradient(ellipse 50% 40% at 50% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 60%),
-          #0a0b0f;
+          radial-gradient(ellipse 70% 50% at 30% 40%, rgba(79, 93, 200, 0.16) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 60% at 75% 70%, rgba(124, 111, 194, 0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 40% at 50% 10%, rgba(45, 154, 138, 0.07) 0%, transparent 60%),
+          #0e0f14;
         animation: splashBgPulse 4s ease-in-out infinite alternate;
       }
       @keyframes splashBgPulse {
@@ -79,17 +79,17 @@
       .splash-particle {
         position: absolute;
         border-radius: 50%;
-        background: rgba(79, 99, 255, 0.4);
+        background: rgba(79, 93, 200, 0.3);
         animation: floatParticle linear infinite;
       }
-      .splash-particle:nth-child(1)  { width:4px;  height:4px;  left:15%; top:20%; animation-duration:6s;  animation-delay:0s;    background:rgba(79,99,255,0.5); }
-      .splash-particle:nth-child(2)  { width:6px;  height:6px;  left:80%; top:15%; animation-duration:8s;  animation-delay:1s;    background:rgba(159,122,234,0.5); }
-      .splash-particle:nth-child(3)  { width:3px;  height:3px;  left:60%; top:70%; animation-duration:7s;  animation-delay:2s;    background:rgba(6,182,212,0.5); }
-      .splash-particle:nth-child(4)  { width:5px;  height:5px;  left:25%; top:75%; animation-duration:9s;  animation-delay:0.5s;  background:rgba(79,99,255,0.4); }
-      .splash-particle:nth-child(5)  { width:4px;  height:4px;  left:90%; top:55%; animation-duration:5s;  animation-delay:1.5s;  background:rgba(159,122,234,0.6); }
-      .splash-particle:nth-child(6)  { width:3px;  height:3px;  left:45%; top:10%; animation-duration:10s; animation-delay:3s;    background:rgba(6,182,212,0.4); }
-      .splash-particle:nth-child(7)  { width:6px;  height:6px;  left:5%;  top:50%; animation-duration:7s;  animation-delay:2.5s;  background:rgba(79,99,255,0.3); }
-      .splash-particle:nth-child(8)  { width:4px;  height:4px;  left:70%; top:85%; animation-duration:8s;  animation-delay:0.8s;  background:rgba(159,122,234,0.4); }
+      .splash-particle:nth-child(1)  { width:3px;  height:3px;  left:15%; top:20%; animation-duration:6s;  animation-delay:0s;    background:rgba(79,93,200,0.35); }
+      .splash-particle:nth-child(2)  { width:4px;  height:4px;  left:80%; top:15%; animation-duration:8s;  animation-delay:1s;    background:rgba(124,111,194,0.35); }
+      .splash-particle:nth-child(3)  { width:2px;  height:2px;  left:60%; top:70%; animation-duration:7s;  animation-delay:2s;    background:rgba(45,154,138,0.30); }
+      .splash-particle:nth-child(4)  { width:3px;  height:3px;  left:25%; top:75%; animation-duration:9s;  animation-delay:0.5s;  background:rgba(79,93,200,0.28); }
+      .splash-particle:nth-child(5)  { width:3px;  height:3px;  left:90%; top:55%; animation-duration:5s;  animation-delay:1.5s;  background:rgba(124,111,194,0.32); }
+      .splash-particle:nth-child(6)  { width:2px;  height:2px;  left:45%; top:10%; animation-duration:10s; animation-delay:3s;    background:rgba(45,154,138,0.25); }
+      .splash-particle:nth-child(7)  { width:4px;  height:4px;  left:5%;  top:50%; animation-duration:7s;  animation-delay:2.5s;  background:rgba(79,93,200,0.22); }
+      .splash-particle:nth-child(8)  { width:3px;  height:3px;  left:70%; top:85%; animation-duration:8s;  animation-delay:0.8s;  background:rgba(124,111,194,0.28); }
       @keyframes floatParticle {
         0%   { transform: translateY(0px) rotate(0deg);   opacity: 0; }
         10%  { opacity: 1; }
@@ -127,10 +127,10 @@
         border: 2px solid transparent;
         background: conic-gradient(
           from 0deg,
-          rgba(79, 99, 255, 0.9),
-          rgba(159, 122, 234, 0.9),
-          rgba(6, 182, 212, 0.7),
-          rgba(79, 99, 255, 0.9)
+          rgba(79, 93, 200, 0.75),
+          rgba(124, 111, 194, 0.75),
+          rgba(45, 154, 138, 0.50),
+          rgba(79, 93, 200, 0.75)
         ) border-box;
         -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
         mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
@@ -147,7 +147,7 @@
         position: absolute;
         inset: -20px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(79,99,255,0.35) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79,93,200,0.22) 0%, transparent 70%);
         animation: pulseHalo 2s ease-in-out infinite alternate;
       }
       @keyframes pulseHalo {
@@ -162,9 +162,9 @@
         height: 120px;
         border-radius: 26px;
         box-shadow:
-          0 0 0 3px rgba(79, 99, 255, 0.3),
-          0 20px 60px rgba(79, 99, 255, 0.4),
-          0 8px 20px rgba(0,0,0,0.5);
+          0 0 0 2px rgba(79, 93, 200, 0.22),
+          0 12px 40px rgba(0, 0, 0, 0.40),
+          0 4px 12px rgba(0,0,0,0.30);
         animation: logoBob 3s ease-in-out infinite;
       }
       @keyframes logoBob {
@@ -190,7 +190,7 @@
         font-size: 32px;
         font-weight: 800;
         letter-spacing: -0.5px;
-        background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #818cf8 100%);
+        background: linear-gradient(135deg, #e8eaf2 0%, #bcc5ef 50%, #9ba8dc 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -222,12 +222,11 @@
       .splash-progress-fill {
         height: 100%;
         border-radius: 99px;
-        background: linear-gradient(90deg, #4f63ff, #9f7aea, #06b6d4);
+        background: #4f5dc8;
         background-size: 200% 100%;
         animation:
-          splashProgressGrow 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards,
-          splashProgressShimmer 1.5s ease infinite;
-        animation-delay: 0.7s, 0.7s;
+          splashProgressGrow 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: 0.7s;
         width: 0%;
       }
       @keyframes splashProgressGrow {
@@ -286,17 +285,17 @@
             viewBox="0 0 100 100"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style="background: #0d0f17; border-radius: 26px; box-shadow: 0 0 0 3px rgba(79, 99, 255, 0.3), 0 20px 60px rgba(79, 99, 255, 0.4), 0 8px 20px rgba(0,0,0,0.5);"
+            style="background: #12131c; border-radius: 26px; box-shadow: 0 0 0 2px rgba(79, 93, 200, 0.22), 0 12px 40px rgba(0, 0, 0, 0.40), 0 4px 12px rgba(0,0,0,0.30);"
           >
             <defs>
               <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#4f63ff" />
-                <stop offset="50%" stopColor="#805ad5" />
-                <stop offset="100%" stopColor="#9f7aea" />
+                <stop offset="0%" stopColor="#4f5dc8" />
+                <stop offset="50%" stopColor="#6359a8" />
+                <stop offset="100%" stopColor="#7c6fc2" />
               </linearGradient>
               <linearGradient id="accentGrad" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#38bdf8" />
-                <stop offset="100%" stopColor="#818cf8" />
+                <stop offset="0%" stopColor="#2d9a8a" />
+                <stop offset="100%" stopColor="#7b87d4" />
               </linearGradient>
               <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="3" result="blur" />
@@ -316,11 +315,11 @@
             <line x1="50" y1="58" x2="50" y2="76" stroke="url(#accentGrad)" strokeWidth="2" opacity="0.8" />
 
             <!-- Neural Network Nodes -->
-            <circle cx="50" cy="22" r="3.5" fill="#38bdf8" filter="url(#glow)" />
-            <circle cx="22" cy="40" r="3.5" fill="#818cf8" filter="url(#glow)" />
-            <circle cx="78" cy="40" r="3.5" fill="#818cf8" filter="url(#glow)" />
-            <circle cx="50" cy="58" r="4" fill="#a78bfa" filter="url(#glow)" />
-            <circle cx="50" cy="76" r="3" fill="#38bdf8" filter="url(#glow)" />
+            <circle cx="50" cy="22" r="3.5" fill="#2d9a8a" filter="url(#glow)" />
+            <circle cx="22" cy="40" r="3.5" fill="#7b87d4" filter="url(#glow)" />
+            <circle cx="78" cy="40" r="3.5" fill="#7b87d4" filter="url(#glow)" />
+            <circle cx="50" cy="58" r="4" fill="#9b96d4" filter="url(#glow)" />
+            <circle cx="50" cy="76" r="3" fill="#2d9a8a" filter="url(#glow)" />
 
             <!-- Core Graduation Cap Shape -->
             <path
@@ -335,11 +334,11 @@
             <!-- Tassel -->
             <path
               d="M50 42L32 50V68"
-              stroke="#38bdf8"
+              stroke="#2d9a8a"
               strokeWidth="1.5"
               strokeLinecap="round"
             />
-            <circle cx="32" cy="68" r="2" fill="#38bdf8" />
+            <circle cx="32" cy="68" r="2" fill="#2d9a8a" />
           </svg>
         </div>
         <div class="splash-brand">

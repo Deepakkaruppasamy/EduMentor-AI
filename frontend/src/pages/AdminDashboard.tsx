@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -21,7 +21,7 @@ import { useOnboardingStore } from '../store/onboarding.store';
 import { adminDashboardTour } from '../components/onboarding/tours/adminDashboardTour';
 import { facultyDashboardTour } from '../components/onboarding/tours/facultyDashboardTour';
 
-const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
+const COLORS = ['#4f5dc8', '#7c6fc2', '#34a87a', '#c4893a', '#c0524a', '#2d9a8a', '#a78bcd'];
 
 const StatCard: React.FC<{ icon: string; label: string; value: string | number; color: string }> = ({ icon, label, value, color }) => (
   <div className="glass-card p-4 flex items-center gap-4 border border-white/5 shadow-md">
@@ -346,11 +346,11 @@ const SuperAdminDashboardView: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <StatCard icon="👥" label="Total Students" value={data.userAnalytics.totalStudents} color="#4f63ff" />
-              <StatCard icon="👨‍🏫" label="Total Faculty" value={data.userAnalytics.totalFaculty} color="#9f7aea" />
-              <StatCard icon="🟢" label="Active Users" value={data.userAnalytics.activeUsers} color="#48bb78" />
-              <StatCard icon="🔴" label="Inactive Users" value={data.userAnalytics.inactiveUsers} color="#fc8181" />
-              <StatCard icon="✨" label="New Users (Mo)" value={data.userAnalytics.newUsersThisMonth} color="#f6ad55" />
+              <StatCard icon="👥" label="Total Students" value={data.userAnalytics.totalStudents} color="#4f5dc8" />
+              <StatCard icon="👨‍🏫" label="Total Faculty" value={data.userAnalytics.totalFaculty} color="#7c6fc2" />
+              <StatCard icon="🟢" label="Active Users" value={data.userAnalytics.activeUsers} color="#34a87a" />
+              <StatCard icon="🔴" label="Inactive Users" value={data.userAnalytics.inactiveUsers} color="#c0524a" />
+              <StatCard icon="✨" label="New Users (Mo)" value={data.userAnalytics.newUsersThisMonth} color="#c4893a" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -384,7 +384,7 @@ const SuperAdminDashboardView: React.FC = () => {
                       <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
                       <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
                       <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Bar dataKey="value" fill="#4f63ff" radius={[4, 4, 0, 0]} name="Users" />
+                      <Bar dataKey="value" fill="#4f5dc8" radius={[4, 4, 0, 0]} name="Users" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -398,10 +398,10 @@ const SuperAdminDashboardView: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="💬" label="Questions Asked" value={data.studentAnalytics.totalQuestionsAsked} color="#4f63ff" />
-              <StatCard icon="📈" label="Avg Daily Queries" value={data.studentAnalytics.avgDailyUsage} color="#48bb78" />
-              <StatCard icon="🎯" label="Avg Quiz Score" value={`${data.studentAnalytics.quizScores}%`} color="#9f7aea" />
-              <StatCard icon="📋" label="Avg Assignment Score" value={`${data.studentAnalytics.assignmentScores}%`} color="#f6ad55" />
+              <StatCard icon="💬" label="Questions Asked" value={data.studentAnalytics.totalQuestionsAsked} color="#4f5dc8" />
+              <StatCard icon="📈" label="Avg Daily Queries" value={data.studentAnalytics.avgDailyUsage} color="#34a87a" />
+              <StatCard icon="🎯" label="Avg Quiz Score" value={`${data.studentAnalytics.quizScores}%`} color="#7c6fc2" />
+              <StatCard icon="📋" label="Avg Assignment Score" value={`${data.studentAnalytics.assignmentScores}%`} color="#c4893a" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -414,7 +414,7 @@ const SuperAdminDashboardView: React.FC = () => {
                       <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
                       <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
                       <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Bar dataKey="count" fill="#fc8181" radius={[0, 4, 4, 0]} name="Students Struggling" />
+                      <Bar dataKey="count" fill="#c0524a" radius={[0, 4, 4, 0]} name="Students Struggling" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -431,7 +431,7 @@ const SuperAdminDashboardView: React.FC = () => {
                       <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
                       <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.65)', fontSize: 10 }} width={120} />
                       <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Bar dataKey="count" fill="#48bb78" radius={[0, 4, 4, 0]} name="Students Mastered" />
+                      <Bar dataKey="count" fill="#34a87a" radius={[0, 4, 4, 0]} name="Students Mastered" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -445,10 +445,10 @@ const SuperAdminDashboardView: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="📚" label="Total Courses" value={data.facultyAnalytics.totalCourses} color="#4f63ff" />
-              <StatCard icon="📄" label="Docs Uploaded" value={data.facultyAnalytics.uploadedDocuments} color="#06b6d4" />
-              <StatCard icon="📋" label="Assignments Created" value={data.facultyAnalytics.assignmentsCreated} color="#f6ad55" />
-              <StatCard icon="📝" label="Quizzes Created" value={data.facultyAnalytics.quizzesCreated} color="#9f7aea" />
+              <StatCard icon="📚" label="Total Courses" value={data.facultyAnalytics.totalCourses} color="#4f5dc8" />
+              <StatCard icon="📄" label="Docs Uploaded" value={data.facultyAnalytics.uploadedDocuments} color="#2d9a8a" />
+              <StatCard icon="📋" label="Assignments Created" value={data.facultyAnalytics.assignmentsCreated} color="#c4893a" />
+              <StatCard icon="📝" label="Quizzes Created" value={data.facultyAnalytics.quizzesCreated} color="#7c6fc2" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -468,8 +468,8 @@ const SuperAdminDashboardView: React.FC = () => {
                     <Bar dataKey="count" fill="url(#facultyGrad)" radius={[4, 4, 0, 0]} name="Total Uploaded" />
                     <defs>
                       <linearGradient id="facultyGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#9f7aea" />
-                        <stop offset="100%" stopColor="#4f63ff" />
+                        <stop offset="0%" stopColor="#7c6fc2" />
+                        <stop offset="100%" stopColor="#4f5dc8" />
                       </linearGradient>
                     </defs>
                   </BarChart>
@@ -486,7 +486,7 @@ const SuperAdminDashboardView: React.FC = () => {
                       <XAxis dataKey="topic" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
                       <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 9 }} />
                       <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Bar dataKey="count" fill="#4f63ff" radius={[4, 4, 0, 0]} name="Interactions Count" />
+                      <Bar dataKey="count" fill="#4f5dc8" radius={[4, 4, 0, 0]} name="Interactions Count" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -500,11 +500,11 @@ const SuperAdminDashboardView: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <StatCard icon="💬" label="Total Conversations" value={data.chatbotAnalytics.totalConversations} color="#4f63ff" />
-              <StatCard icon="⚡" label="Avg Response" value={`${data.chatbotAnalytics.avgResponseTime}ms`} color="#06b6d4" />
-              <StatCard icon="⚠️" label="Hallucination Rate" value={`${data.chatbotAnalytics.hallucinationRate}%`} color="#fc8181" />
-              <StatCard icon="🎯" label="Retrieval Accuracy" value={`${data.chatbotAnalytics.retrievalAccuracy}%`} color="#48bb78" />
-              <StatCard icon="😊" label="User Satisfaction" value={`${data.chatbotAnalytics.userSatisfaction}%`} color="#f6ad55" />
+              <StatCard icon="💬" label="Total Conversations" value={data.chatbotAnalytics.totalConversations} color="#4f5dc8" />
+              <StatCard icon="⚡" label="Avg Response" value={`${data.chatbotAnalytics.avgResponseTime}ms`} color="#2d9a8a" />
+              <StatCard icon="⚠️" label="Hallucination Rate" value={`${data.chatbotAnalytics.hallucinationRate}%`} color="#c0524a" />
+              <StatCard icon="🎯" label="Retrieval Accuracy" value={`${data.chatbotAnalytics.retrievalAccuracy}%`} color="#34a87a" />
+              <StatCard icon="😊" label="User Satisfaction" value={`${data.chatbotAnalytics.userSatisfaction}%`} color="#c4893a" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -538,7 +538,7 @@ const SuperAdminDashboardView: React.FC = () => {
                       <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
                       <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
                       <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Area type="monotone" dataKey="count" stroke="#4f63ff" fill="rgba(79, 99, 255, 0.15)" strokeWidth={2} name="Queries" />
+                      <Area type="monotone" dataKey="count" stroke="#4f5dc8" fill="rgba(79, 93, 200, 0.10)" strokeWidth={2} name="Queries" />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
@@ -552,10 +552,10 @@ const SuperAdminDashboardView: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="🔥" label="Most Popular Course" value={data.courseAnalytics.mostPopularCourse} color="#4f63ff" />
-              <StatCard icon="❄️" label="Least Popular Course" value={data.courseAnalytics.leastAccessedCourse} color="#fc8181" />
-              <StatCard icon="📄" label="Total Course Docs" value={data.courseAnalytics.totalDocuments} color="#06b6d4" />
-              <StatCard icon="📥" label="Total Downloads" value={data.courseAnalytics.totalDownloads} color="#48bb78" />
+              <StatCard icon="🔥" label="Most Popular Course" value={data.courseAnalytics.mostPopularCourse} color="#4f5dc8" />
+              <StatCard icon="❄️" label="Least Popular Course" value={data.courseAnalytics.leastAccessedCourse} color="#c0524a" />
+              <StatCard icon="📄" label="Total Course Docs" value={data.courseAnalytics.totalDocuments} color="#2d9a8a" />
+              <StatCard icon="📥" label="Total Downloads" value={data.courseAnalytics.totalDownloads} color="#34a87a" />
             </div>
 
             {/* Student Engagement by Course */}
@@ -568,7 +568,7 @@ const SuperAdminDashboardView: React.FC = () => {
                     <XAxis dataKey="course" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
                     <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
                     <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                    <Bar dataKey="engagement" fill="#48bb78" radius={[4, 4, 0, 0]} name="Engagement Rate (%)" />
+                    <Bar dataKey="engagement" fill="#34a87a" radius={[4, 4, 0, 0]} name="Engagement Rate (%)" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -581,10 +581,10 @@ const SuperAdminDashboardView: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="👥" label="Daily Active (DAU)" value={data.systemAnalytics.dau} color="#48bb78" />
-              <StatCard icon="🔵" label="Weekly Active (WAU)" value={data.systemAnalytics.wau} color="#4f63ff" />
-              <StatCard icon="🟣" label="Monthly Active (MAU)" value={data.systemAnalytics.mau} color="#9f7aea" />
-              <StatCard icon="⚡" label="API Avg Latency" value={`${data.systemAnalytics.apiResponseTime}ms`} color="#06b6d4" />
+              <StatCard icon="👥" label="Daily Active (DAU)" value={data.systemAnalytics.dau} color="#34a87a" />
+              <StatCard icon="🔵" label="Weekly Active (WAU)" value={data.systemAnalytics.wau} color="#4f5dc8" />
+              <StatCard icon="🟣" label="Monthly Active (MAU)" value={data.systemAnalytics.mau} color="#7c6fc2" />
+              <StatCard icon="⚡" label="API Avg Latency" value={`${data.systemAnalytics.apiResponseTime}ms`} color="#2d9a8a" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -603,8 +603,8 @@ const SuperAdminDashboardView: React.FC = () => {
                     <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
                     <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
-                    <Area type="monotone" dataKey="CPU" stroke="#fc8181" fill="rgba(252, 129, 129, 0.1)" strokeWidth={2} />
-                    <Area type="monotone" dataKey="Memory" stroke="#9f7aea" fill="rgba(159, 122, 234, 0.1)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="CPU" stroke="#c0524a" fill="rgba(252, 129, 129, 0.1)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="Memory" stroke="#7c6fc2" fill="rgba(124, 111, 194, 0.08)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -634,10 +634,10 @@ const SuperAdminDashboardView: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard icon="💚" label="Successful Logins" value={data.securityDashboard.successfulLogins} color="#48bb78" />
-              <StatCard icon="❤️" label="Failed Attempts" value={data.securityDashboard.failedLoginAttempts} color="#fc8181" />
-              <StatCard icon="⚠️" label="Blocked Attempts" value={data.securityDashboard.blockedLoginAttempts} color="#f6ad55" />
-              <StatCard icon="🔑" label="Password Resets" value={data.securityDashboard.passwordResetRequests} color="#9f7aea" />
+              <StatCard icon="💚" label="Successful Logins" value={data.securityDashboard.successfulLogins} color="#34a87a" />
+              <StatCard icon="❤️" label="Failed Attempts" value={data.securityDashboard.failedLoginAttempts} color="#c0524a" />
+              <StatCard icon="⚠️" label="Blocked Attempts" value={data.securityDashboard.blockedLoginAttempts} color="#c4893a" />
+              <StatCard icon="🔑" label="Password Resets" value={data.securityDashboard.passwordResetRequests} color="#7c6fc2" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -1079,14 +1079,14 @@ const FacultyDashboardView: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <FacultyStatCard icon="👥" label="Total Users" value={stats?.totalUsers || 0} color="#4f63ff" />
-        <FacultyStatCard icon="🟢" label="Active Users (7d)" value={stats?.activeUsers || 0} color="#48bb78" />
-        <FacultyStatCard icon="💬" label="Total Queries" value={stats?.totalQueries || 0} color="#9f7aea" />
-        <FacultyStatCard icon="📚" label="Total Courses" value={stats?.totalCourses || 0} color="#f6ad55" />
-        <FacultyStatCard icon="📁" label="Docs Processed" value={stats?.totalDocuments || 0} color="#06b6d4" />
-        <FacultyStatCard icon="📝" label="Quizzes Generated" value={stats?.totalQuizzes || 0} color="#e879f9" />
-        <FacultyStatCard icon="✅" label="Avg Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#48bb78" progress={stats?.avgTrustScore || 0} />
-        <FacultyStatCard icon="⚠️" label="Hallucination Rate" value={`${stats?.avgHallucinationRate || 0}%`} color="#fc8181" progress={stats?.avgHallucinationRate || 0} />
+        <FacultyStatCard icon="👥" label="Total Users" value={stats?.totalUsers || 0} color="#4f5dc8" />
+        <FacultyStatCard icon="🟢" label="Active Users (7d)" value={stats?.activeUsers || 0} color="#34a87a" />
+        <FacultyStatCard icon="💬" label="Total Queries" value={stats?.totalQueries || 0} color="#7c6fc2" />
+        <FacultyStatCard icon="📚" label="Total Courses" value={stats?.totalCourses || 0} color="#c4893a" />
+        <FacultyStatCard icon="📁" label="Docs Processed" value={stats?.totalDocuments || 0} color="#2d9a8a" />
+        <FacultyStatCard icon="📝" label="Quizzes Generated" value={stats?.totalQuizzes || 0} color="#a78bcd" />
+        <FacultyStatCard icon="✅" label="Avg Trust Score" value={`${stats?.avgTrustScore || 0}%`} color="#34a87a" progress={stats?.avgTrustScore || 0} />
+        <FacultyStatCard icon="⚠️" label="Hallucination Rate" value={`${stats?.avgHallucinationRate || 0}%`} color="#c0524a" progress={stats?.avgHallucinationRate || 0} />
       </div>
 
       {/* Customizable Widget Grid */}
@@ -1150,8 +1150,8 @@ const FacultyDashboardView: React.FC = () => {
                   <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
-                  <Line type="monotone" dataKey="queries" stroke="#4f63ff" strokeWidth={2} name="Queries" />
-                  <Line type="monotone" dataKey="trust" stroke="#48bb78" strokeWidth={2} name="Avg Trust" />
+                  <Line type="monotone" dataKey="queries" stroke="#4f5dc8" strokeWidth={2} name="Queries" />
+                  <Line type="monotone" dataKey="trust" stroke="#34a87a" strokeWidth={2} name="Avg Trust" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -1172,7 +1172,7 @@ const FacultyDashboardView: React.FC = () => {
                   <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 9 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
-                  <Bar dataKey="count" fill="#9f7aea" radius={[4, 4, 0, 0]} name="Queries" />
+                  <Bar dataKey="count" fill="#7c6fc2" radius={[4, 4, 0, 0]} name="Queries" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -1193,7 +1193,7 @@ const FacultyDashboardView: React.FC = () => {
                   <XAxis dataKey="department" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
-                  <Bar dataKey="aiUsage" fill="#06b6d4" radius={[4, 4, 0, 0]} name="Queries" />
+                  <Bar dataKey="aiUsage" fill="#2d9a8a" radius={[4, 4, 0, 0]} name="Queries" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

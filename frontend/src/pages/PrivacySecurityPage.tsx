@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth.store';
 import { privacyService, PrivacySettings, SecurityOverview, AdminSecurityStats } from '../services/privacy.service';
@@ -438,7 +438,7 @@ export const PrivacySecurityPage: React.FC = () => {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 13 }}>⏳</span>
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#818cf8' }}>Request Processing</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#7b87d4' }}>Request Processing</span>
                       </div>
                       <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.4 }}>
                         Submitted {(() => {
@@ -487,7 +487,7 @@ export const PrivacySecurityPage: React.FC = () => {
                         padding: '10px 18px', borderRadius: 10,
                         border: '1px solid rgba(99,102,241,0.3)',
                         background: 'rgba(99,102,241,0.1)',
-                        color: '#818cf8',
+                        color: '#7b87d4',
                         cursor: 'pointer', fontSize: 12.5, fontWeight: 600,
                         marginTop: 'auto', transition: 'all 0.2s',
                       }}
@@ -592,12 +592,12 @@ export const PrivacySecurityPage: React.FC = () => {
                 gap: 12,
               }}>
                 {[
-                  { label: 'Total Users', val: adminStats.overview.totalUsers, c: '#818cf8' },
+                  { label: 'Total Users', val: adminStats.overview.totalUsers, c: '#7b87d4' },
                   { label: 'Active Sessions', val: adminStats.overview.activeSessions, c: '#10b981' },
                   { label: 'Locked Users', val: adminStats.overview.lockedUsers, c: '#ef4444' },
                   { label: 'Failed Logins (30d)', val: adminStats.loginStats30d.failed, c: '#f59e0b' },
                   { label: 'Purge Requests', val: adminStats.overview.deletionRequests, c: '#ef4444' },
-                  { label: 'Data Requests', val: adminStats.overview.downloadRequests, c: '#06b6d4' },
+                  { label: 'Data Requests', val: adminStats.overview.downloadRequests, c: '#2d9a8a' },
                 ].map(s => (
                   <div key={s.label} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 16, textAlign: 'center' }}>
                     <div style={{ fontSize: 22, fontWeight: 800, color: s.c }}>{s.val}</div>

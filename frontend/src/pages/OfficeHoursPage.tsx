@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { officeHoursService } from '../services/officeHours.service';
 import toast from 'react-hot-toast';
@@ -6,10 +6,10 @@ import { io, Socket } from 'socket.io-client';
 import { Loader } from '../components/common/Loader';
 
 const STATUS_CONFIG = {
-  Available: { color: '#48bb78', bg: 'rgba(72,187,120,0.12)', icon: '🟢' },
-  Busy: { color: '#f6ad55', bg: 'rgba(246,173,85,0.12)', icon: '🟡' },
+  Available: { color: '#34a87a', bg: 'rgba(52,168,122,0.12)', icon: '🟢' },
+  Busy: { color: '#c4893a', bg: 'rgba(196,137,58,0.12)', icon: '🟡' },
   Offline: { color: 'rgba(255,255,255,0.3)', bg: 'rgba(255,255,255,0.04)', icon: '⚫' },
-  OnLeave: { color: '#9f7aea', bg: 'rgba(159,122,234,0.12)', icon: '🏖️' },
+  OnLeave: { color: '#7c6fc2', bg: 'rgba(124,111,194,0.12)', icon: '🏖️' },
 };
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -195,7 +195,7 @@ export const OfficeHoursPage: React.FC = () => {
           {(['directory', ...(isFaculty ? ['configure'] : ['queue'])] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab as any)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/60'}`}
-              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f63ff,#7c3aed)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f5dc8,#6359a8)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               {tab}
             </button>
           ))}
@@ -230,7 +230,7 @@ export const OfficeHoursPage: React.FC = () => {
                     {officeHours?.workingDays && (
                       <div className="flex gap-0.5 mt-1">
                         {DAYS_OF_WEEK.map((d, i) => (
-                          <span key={d} className={`text-[8px] px-1 rounded ${officeHours.workingDays.includes(i) ? 'text-[#7c8fff] bg-[#4f63ff]/10' : 'text-white/20'}`}>{d}</span>
+                          <span key={d} className={`text-[8px] px-1 rounded ${officeHours.workingDays.includes(i) ? 'text-[#8b94e0] bg-[#4f5dc8]/10' : 'text-white/20'}`}>{d}</span>
                         ))}
                       </div>
                     )}
@@ -258,12 +258,12 @@ export const OfficeHoursPage: React.FC = () => {
             <div className="text-xs text-white/60">Queue: <span className="font-bold text-white/90">{queue.length}</span> waiting</div>
             {myQueueEntry ? (
               <div className="space-y-2">
-                <div className="p-3 rounded-xl text-center" style={{ background: 'rgba(79,99,255,0.1)', border: '1px solid rgba(79,99,255,0.2)' }}>
+                <div className="p-3 rounded-xl text-center" style={{ background: 'rgba(79,93,200,0.08)', border: '1px solid rgba(79,93,200,0.14)' }}>
                   <div className="text-xs text-white/60">Your position</div>
                   <div className="text-3xl font-black text-white/90 my-1">#{myQueueEntry.position}</div>
                   <div className="text-[10px] text-white/40">Estimated wait: ~{(myQueueEntry.position - 1) * 15} min</div>
                 </div>
-                <button onClick={handleLeaveQueue} className="w-full py-2 rounded-xl text-xs font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)' }}>
+                <button onClick={handleLeaveQueue} className="w-full py-2 rounded-xl text-xs font-semibold text-[#c0524a]" style={{ background: 'rgba(192,82,74,0.08)' }}>
                   Leave Queue
                 </button>
               </div>
@@ -271,7 +271,7 @@ export const OfficeHoursPage: React.FC = () => {
               <button onClick={handleJoinQueue}
                 disabled={selectedFaculty.officeHours?.status !== 'Available'}
                 className="w-full py-2.5 rounded-xl text-xs font-bold text-white transition-all disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg,#4f63ff,#7c3aed)' }}>
+                style={{ background: 'linear-gradient(135deg,#4f5dc8,#6359a8)' }}>
                 {selectedFaculty.officeHours?.status === 'Available' ? 'Join Consultation Queue' : 'Faculty is not available'}
               </button>
             )}
@@ -283,11 +283,11 @@ export const OfficeHoursPage: React.FC = () => {
             {queue.length === 0 && <div className="text-center py-4 text-white/20 text-xs">Queue is empty</div>}
             {queue.map((entry, i) => (
               <div key={entry._id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style={{ background: i === 0 ? 'rgba(79,99,255,0.2)' : 'rgba(255,255,255,0.05)', color: i === 0 ? '#7c8fff' : 'rgba(255,255,255,0.4)' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style={{ background: i === 0 ? 'rgba(79,93,200,0.14)' : 'rgba(255,255,255,0.05)', color: i === 0 ? '#8b94e0' : 'rgba(255,255,255,0.4)' }}>
                   #{entry.position}
                 </div>
                 <div className="text-xs font-semibold text-white/70">{entry.student?.name}</div>
-                {entry.status === 'Called' && <span className="ml-auto text-[10px] text-[#f6ad55] font-bold animate-pulse">Being Called</span>}
+                {entry.status === 'Called' && <span className="ml-auto text-[10px] text-[#c4893a] font-bold animate-pulse">Being Called</span>}
               </div>
             ))}
           </div>
@@ -319,7 +319,7 @@ export const OfficeHoursPage: React.FC = () => {
               {DAYS_OF_WEEK.map((d, i) => (
                 <button key={d} onClick={() => toggleDay(i)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                  style={{ background: workingDays.includes(i) ? 'rgba(79,99,255,0.15)' : 'rgba(255,255,255,0.03)', color: workingDays.includes(i) ? '#7c8fff' : 'rgba(255,255,255,0.35)', border: `1px solid ${workingDays.includes(i) ? 'rgba(79,99,255,0.3)' : 'rgba(255,255,255,0.05)'}` }}>
+                  style={{ background: workingDays.includes(i) ? 'rgba(79,93,200,0.10)' : 'rgba(255,255,255,0.03)', color: workingDays.includes(i) ? '#8b94e0' : 'rgba(255,255,255,0.35)', border: `1px solid ${workingDays.includes(i) ? 'rgba(79,93,200,0.22)' : 'rgba(255,255,255,0.05)'}` }}>
                   {d}
                 </button>
               ))}
@@ -367,9 +367,9 @@ export const OfficeHoursPage: React.FC = () => {
             ) : (
               queue.map((entry, i) => (
                 <div key={entry._id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style={{ background: entry.status === 'Called' ? 'rgba(246,173,85,0.2)' : 'rgba(79,99,255,0.1)', color: entry.status === 'Called' ? '#f6ad55' : '#7c8fff' }}>#{i+1}</div>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style={{ background: entry.status === 'Called' ? 'rgba(196,137,58,0.2)' : 'rgba(79,93,200,0.08)', color: entry.status === 'Called' ? '#c4893a' : '#8b94e0' }}>#{i+1}</div>
                   <div className="text-xs font-semibold text-white/80">{entry.student?.name}</div>
-                  {entry.status === 'Called' && <span className="ml-auto text-[10px] text-[#f6ad55] font-bold">▶ Now</span>}
+                  {entry.status === 'Called' && <span className="ml-auto text-[10px] text-[#c4893a] font-bold">▶ Now</span>}
                 </div>
               ))
             )}

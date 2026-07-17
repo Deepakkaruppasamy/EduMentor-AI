@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { ChatMessage } from '../../types';
@@ -80,7 +80,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chatId, m
           ? 'rounded-tr-md text-sm text-white'
           : 'rounded-tl-md text-sm text-white/90'}`}
           style={isUser
-            ? { background: 'linear-gradient(135deg, #4f63ff 0%, #7c3aed 100%)', boxShadow: '0 4px 20px rgba(79,99,255,0.25)' }
+            ? { background: 'linear-gradient(135deg, #4f5dc8 0%, #6359a8 100%)', boxShadow: '0 4px 20px rgba(79,93,200,0.18)' }
             : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
 
           {message.isLoading ? (
@@ -152,7 +152,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chatId, m
             {/* Confidence */}
             {message.confidenceScore !== undefined && (
               <span className="text-[10px] px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(79,99,255,0.15)', color: '#7c8fff', border: '1px solid rgba(79,99,255,0.25)' }}>
+                style={{ background: 'rgba(79,93,200,0.10)', color: '#8b94e0', border: '1px solid rgba(79,93,200,0.18)' }}>
                 {message.confidenceScore}% Confidence
               </span>
             )}
@@ -163,9 +163,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chatId, m
                 onClick={() => setShowSources(!showSources)}
                 className="text-[10px] px-2 py-0.5 rounded-full transition-all"
                 style={{
-                  background: showSources ? 'rgba(159,122,234,0.2)' : 'rgba(159,122,234,0.1)',
+                  background: showSources ? 'rgba(124,111,194,0.2)' : 'rgba(124,111,194,0.1)',
                   color: '#c4b5fd',
-                  border: '1px solid rgba(159,122,234,0.25)',
+                  border: '1px solid rgba(124,111,194,0.25)',
                 }}>
                 {showSources ? '▲' : '▼'} {message.explainability.sources.length} Sources
               </button>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { Course } from '../../types';
@@ -202,7 +202,7 @@ export const StudyLobbyScreen: React.FC<StudyLobbyScreenProps> = ({ courses, stu
       y1: lastPosRef.current.y,
       x2: currentX,
       y2: currentY,
-      color: '#4f63ff',
+      color: '#4f5dc8',
       width: 3,
     };
 
@@ -244,7 +244,7 @@ export const StudyLobbyScreen: React.FC<StudyLobbyScreenProps> = ({ courses, stu
       y1: lastPosRef.current.y,
       x2: currentX,
       y2: currentY,
-      color: '#4f63ff',
+      color: '#4f5dc8',
       width: 3,
     };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { DocumentUploader } from '../components/documents/DocumentUploader';
 import { AudioRecorder } from '../components/documents/AudioRecorder';
@@ -15,10 +15,10 @@ import { useJobsStore } from '../store/jobs.store';
 
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: 'Pending', color: '#f6ad55', bg: 'rgba(246,173,85,0.1)' },
-  processing: { label: 'Processing', color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
-  completed: { label: 'Ready', color: '#48bb78', bg: 'rgba(72,187,120,0.1)' },
-  failed: { label: 'Failed', color: '#fc8181', bg: 'rgba(252,129,129,0.1)' },
+  pending: { label: 'Pending', color: '#c4893a', bg: 'rgba(196,137,58,0.1)' },
+  processing: { label: 'Processing', color: '#2d9a8a', bg: 'rgba(6,182,212,0.1)' },
+  completed: { label: 'Ready', color: '#34a87a', bg: 'rgba(52,168,122,0.1)' },
+  failed: { label: 'Failed', color: '#c0524a', bg: 'rgba(192,82,74,0.1)' },
 };
 
 export const DocumentsPage: React.FC = () => {
@@ -266,7 +266,7 @@ export const DocumentsPage: React.FC = () => {
                   className="px-3 py-1 text-xs font-semibold border-b-2 transition-all"
                   style={{
                     color: activeModalTab === 'summary' ? '#fff' : 'rgba(255,255,255,0.4)',
-                    borderColor: activeModalTab === 'summary' ? '#4f63ff' : 'transparent',
+                    borderColor: activeModalTab === 'summary' ? '#4f5dc8' : 'transparent',
                   }}
                 >
                   📊 Summary & Mindmap
@@ -276,7 +276,7 @@ export const DocumentsPage: React.FC = () => {
                   className="px-3 py-1 text-xs font-semibold border-b-2 transition-all"
                   style={{
                     color: activeModalTab === 'transcript' ? '#fff' : 'rgba(255,255,255,0.4)',
-                    borderColor: activeModalTab === 'transcript' ? '#4f63ff' : 'transparent',
+                    borderColor: activeModalTab === 'transcript' ? '#4f5dc8' : 'transparent',
                   }}
                 >
                   🎙️ Structured Notes & Transcript

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { courseService } from '../services/course.service';
@@ -249,7 +249,7 @@ export const GradebookPage: React.FC = () => {
             style={{
               background: activeTab === tab.id ? 'rgba(255,255,255,0.03)' : 'transparent',
               color: activeTab === tab.id ? '#fff' : 'rgba(255,255,255,0.4)',
-              borderBottom: activeTab === tab.id ? '2px solid #4f63ff' : '2px solid transparent',
+              borderBottom: activeTab === tab.id ? '2px solid #4f5dc8' : '2px solid transparent',
             }}
           >
             {tab.label}
@@ -291,7 +291,7 @@ export const GradebookPage: React.FC = () => {
                         <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
                         <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
                         <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
-                        <Bar dataKey="avgScore" fill="#fc8181" radius={[6, 6, 0, 0]} name="Avg Quiz Score (%)" />
+                        <Bar dataKey="avgScore" fill="#c0524a" radius={[6, 6, 0, 0]} name="Avg Quiz Score (%)" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -405,8 +405,8 @@ export const GradebookPage: React.FC = () => {
                         key={student.studentId}
                         className="glass-card p-5 space-y-4 flex flex-col justify-between border-white/5"
                         style={{
-                          borderColor: isHigh ? 'rgba(252,129,129,0.2)' : 'rgba(246,173,85,0.2)',
-                          background: isHigh ? 'rgba(252,129,129,0.02)' : 'rgba(246,173,85,0.02)',
+                          borderColor: isHigh ? 'rgba(192,82,74,0.2)' : 'rgba(196,137,58,0.2)',
+                          background: isHigh ? 'rgba(192,82,74,0.02)' : 'rgba(196,137,58,0.02)',
                         }}
                       >
                         <div>
@@ -427,9 +427,9 @@ export const GradebookPage: React.FC = () => {
                             <span
                               className="px-2.5 py-0.5 rounded-full text-[9px] font-bold"
                               style={{
-                                background: isHigh ? 'rgba(252,129,129,0.15)' : 'rgba(246,173,85,0.15)',
-                                color: isHigh ? '#fc8181' : '#f6ad55',
-                                border: `1px solid ${isHigh ? 'rgba(252,129,129,0.3)' : 'rgba(246,173,85,0.3)'}`,
+                                background: isHigh ? 'rgba(192,82,74,0.15)' : 'rgba(196,137,58,0.15)',
+                                color: isHigh ? '#c0524a' : '#c4893a',
+                                border: `1px solid ${isHigh ? 'rgba(192,82,74,0.3)' : 'rgba(196,137,58,0.3)'}`,
                               }}
                             >
                               {student.riskLevel.toUpperCase()} RISK
@@ -469,8 +469,8 @@ export const GradebookPage: React.FC = () => {
                           }}
                           className="btn-primary py-2 text-xs w-full mt-2"
                           style={{
-                            background: isHigh ? 'linear-gradient(135deg, #fc8181 0%, #d53f8c 100%)' : undefined,
-                            boxShadow: isHigh ? '0 4px 15px rgba(252,129,129,0.2)' : undefined,
+                            background: isHigh ? 'linear-gradient(135deg, #c0524a 0%, #d53f8c 100%)' : undefined,
+                            boxShadow: isHigh ? '0 4px 15px rgba(192,82,74,0.2)' : undefined,
                           }}
                         >
                           📢 Launch Support Intervention
@@ -603,9 +603,9 @@ export const GradebookPage: React.FC = () => {
                       onClick={() => setAssignType(type)}
                       className="rounded-xl py-2 text-xs font-medium transition-all capitalize"
                       style={{
-                        background: assignType === type ? 'rgba(79,99,255,0.25)' : 'rgba(255,255,255,0.04)',
-                        border: assignType === type ? '1px solid rgba(79,99,255,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                        color: assignType === type ? '#7c8fff' : 'rgba(255,255,255,0.5)',
+                        background: assignType === type ? 'rgba(79,93,200,0.18)' : 'rgba(255,255,255,0.04)',
+                        border: assignType === type ? '1px solid rgba(79,93,200,0.45)' : '1px solid rgba(255,255,255,0.08)',
+                        color: assignType === type ? '#8b94e0' : 'rgba(255,255,255,0.5)',
                       }}
                     >
                       {type === 'mcq' ? 'MCQ' : type}
@@ -624,9 +624,9 @@ export const GradebookPage: React.FC = () => {
                       onClick={() => setAssignDifficulty(d)}
                       className="rounded-xl py-2 text-xs font-medium transition-all capitalize"
                       style={{
-                        background: assignDifficulty === d ? 'rgba(79,99,255,0.15)' : 'rgba(255,255,255,0.04)',
-                        border: assignDifficulty === d ? '1px solid rgba(79,99,255,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                        color: assignDifficulty === d ? '#7c8fff' : 'rgba(255,255,255,0.5)',
+                        background: assignDifficulty === d ? 'rgba(79,93,200,0.10)' : 'rgba(255,255,255,0.04)',
+                        border: assignDifficulty === d ? '1px solid rgba(79,93,200,0.32)' : '1px solid rgba(255,255,255,0.08)',
+                        color: assignDifficulty === d ? '#8b94e0' : 'rgba(255,255,255,0.5)',
                       }}
                     >
                       {d}
@@ -731,8 +731,8 @@ export const GradebookPage: React.FC = () => {
                             <span
                               className="px-2 py-0.5 rounded-full text-[9px] font-bold"
                               style={{
-                                background: sub.status === 'completed' ? 'rgba(72,187,120,0.1)' : sub.status === 'overdue' ? 'rgba(252,129,129,0.1)' : 'rgba(79,99,255,0.1)',
-                                color: sub.status === 'completed' ? '#48bb78' : sub.status === 'overdue' ? '#fc8181' : '#7c8fff',
+                                background: sub.status === 'completed' ? 'rgba(52,168,122,0.1)' : sub.status === 'overdue' ? 'rgba(192,82,74,0.1)' : 'rgba(79,93,200,0.08)',
+                                color: sub.status === 'completed' ? '#34a87a' : sub.status === 'overdue' ? '#c0524a' : '#8b94e0',
                               }}
                             >
                               {sub.status.toUpperCase()}
@@ -851,7 +851,7 @@ export const GradebookPage: React.FC = () => {
                 ) : (
                   <div
                     className="h-24 w-24 rounded-2xl flex items-center justify-center text-3xl font-bold text-white font-mono"
-                    style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #4f5dc8 0%, #7c6fc2 100%)' }}
                   >
                     {selectedStudentForModal.name.charAt(0).toUpperCase()}
                   </div>

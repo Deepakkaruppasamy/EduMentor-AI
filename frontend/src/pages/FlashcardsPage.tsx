@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { courseService } from '../services/course.service';
 import { flashcardService, FlashcardDeck, Flashcard } from '../services/flashcard.service';
@@ -183,10 +183,10 @@ export const FlashcardsPage: React.FC = () => {
                       animate={{ rotateY: isFlipped ? 180 : 0 }}
                       style={{
                         background: 'rgba(255, 255, 255, 0.03)',
-                        borderColor: isFlipped ? 'rgba(159,122,234,0.3)' : 'rgba(79,99,255,0.3)',
+                        borderColor: isFlipped ? 'rgba(124,111,194,0.3)' : 'rgba(79,93,200,0.22)',
                         boxShadow: isFlipped 
-                          ? '0 15px 35px rgba(159,122,234,0.15)' 
-                          : '0 15px 35px rgba(79,99,255,0.15)'
+                          ? '0 15px 35px rgba(124,111,194,0.15)' 
+                          : '0 15px 35px rgba(79,93,200,0.10)'
                       }}
                     >
                       {/* FRONT OF CARD */}
@@ -194,7 +194,7 @@ export const FlashcardsPage: React.FC = () => {
                         <div className="flex justify-between items-center text-[10px] font-bold text-white/30 uppercase tracking-wider">
                           <span>Concept Query (Front)</span>
                           {activeCard.interval !== undefined && activeCard.interval > 0 && (
-                            <span className="text-[9px] text-[#7c8fff] font-semibold bg-[#4f63ff]/10 px-2 py-0.5 rounded-full border border-[#4f63ff]/20">
+                            <span className="text-[9px] text-[#8b94e0] font-semibold bg-[#4f5dc8]/10 px-2 py-0.5 rounded-full border border-[#4f5dc8]/20">
                               Interval: {activeCard.interval}d
                             </span>
                           )}
@@ -235,7 +235,7 @@ export const FlashcardsPage: React.FC = () => {
                           { val: 2, label: 'Hard 🤨', color: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.3)', text: '#fbbf24' },
                           { val: 3, label: 'Good 🙂', color: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.3)', text: '#60a5fa' },
                           { val: 4, label: 'Easy 😄', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.3)', text: '#34d399' },
-                          { val: 5, label: 'Perfect 🧠', color: 'rgba(139, 92, 246, 0.15)', border: 'rgba(139, 92, 246, 0.3)', text: '#a78bfa' },
+                          { val: 5, label: 'Perfect 🧠', color: 'rgba(139, 92, 246, 0.15)', border: 'rgba(139, 92, 246, 0.3)', text: '#9b96d4' },
                         ].map((btn) => (
                           <button
                             key={btn.val}

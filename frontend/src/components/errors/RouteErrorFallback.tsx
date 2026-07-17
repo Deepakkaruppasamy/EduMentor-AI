@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { getLatestCorrelationId } from '../../services/errorLogger';
 
 interface RouteErrorFallbackProps {
@@ -47,7 +47,7 @@ export const RouteErrorFallback: React.FC<RouteErrorFallbackProps> = ({ error, o
             onClick={onReset}
             className="text-xs font-extrabold text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl transition-all"
             style={{
-              background: 'linear-gradient(135deg, #4f63ff, #7c3aed)',
+              background: 'linear-gradient(135deg, #4f5dc8, #6359a8)',
               boxShadow: '0 4px 12px rgba(79, 99, 255, 0.2)',
             }}
           >

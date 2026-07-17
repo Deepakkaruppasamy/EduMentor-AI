@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { maintenanceService } from '../services/maintenance.service';
 
@@ -99,7 +99,7 @@ export const MaintenancePage: React.FC = () => {
             borderRadius: 16, padding: '16px 20px',
             marginBottom: 20,
           }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#7b87d4', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
               Estimated Time Remaining
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>

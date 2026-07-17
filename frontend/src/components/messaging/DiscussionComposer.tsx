@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { DISCUSSION_CATEGORIES, DiscussionCategory } from '../../types/messaging.types';
 import { messagingService } from '../../services/messaging.service';
 import toast from 'react-hot-toast';
@@ -48,12 +48,12 @@ export const DiscussionComposer: React.FC<DiscussionComposerProps> = ({ onCreate
   };
 
   const categoryColors: Record<string, string> = {
-    'General Questions': '#4f63ff',
-    'Assignments': '#f6ad55',
-    'Exams': '#fc8181',
-    'Lab': '#48bb78',
-    'Course Materials': '#9f7aea',
-    'Announcements': '#38b2ac',
+    'General Questions': '#4f5dc8',
+    'Assignments': '#c4893a',
+    'Exams': '#c0524a',
+    'Lab': '#34a87a',
+    'Course Materials': '#7c6fc2',
+    'Announcements': '#2d9a8a',
   };
 
   return (

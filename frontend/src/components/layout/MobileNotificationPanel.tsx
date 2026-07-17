@@ -15,7 +15,7 @@ interface MobileNotificationPanelProps {
 }
 
 const TYPE_ICONS: Record<AppNotification['type'], { icon: string; bg: string; color: string }> = {
-  quiz_assigned:   { icon: '📝', bg: 'rgba(79,99,255,0.15)',    color: '#7c8fff' },
+  quiz_assigned:   { icon: '📝', bg: 'rgba(79,93,200,0.10)',    color: '#8b94e0' },
   live_battle:     { icon: '⚔️', bg: 'rgba(236,72,153,0.15)',   color: '#ec4899' },
   document_status: { icon: '📁', bg: 'rgba(59,130,246,0.15)',   color: '#3b82f6' },
   evaluation:      { icon: '📋', bg: 'rgba(16,185,129,0.15)',   color: '#10b981' },
@@ -108,7 +108,7 @@ export const MobileNotificationPanel: React.FC<MobileNotificationPanelProps> = (
           <div className="flex items-center gap-2.5">
             <div
               className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(79,99,255,0.15)' }}
+              style={{ background: 'rgba(79,93,200,0.10)' }}
             >
               <span className="text-base">🔔</span>
             </div>
@@ -128,7 +128,7 @@ export const MobileNotificationPanel: React.FC<MobileNotificationPanelProps> = (
                 <button
                   onClick={markAllAsRead}
                   className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors px-2 py-1 rounded-lg"
-                  style={{ background: 'rgba(79,99,255,0.1)' }}
+                  style={{ background: 'rgba(79,93,200,0.08)' }}
                 >
                   Mark all read
                 </button>
@@ -179,7 +179,7 @@ export const MobileNotificationPanel: React.FC<MobileNotificationPanelProps> = (
                     onClick={() => handleNotificationClick(notif)}
                     className="flex items-start gap-3.5 px-5 py-4 cursor-pointer active:bg-white/5 transition-colors relative"
                     style={{
-                      background: !notif.isRead ? 'rgba(79,99,255,0.03)' : 'transparent',
+                      background: !notif.isRead ? 'rgba(79,93,200,0.03)' : 'transparent',
                       animationDelay: `${index * 30}ms`,
                     }}
                   >
@@ -187,7 +187,7 @@ export const MobileNotificationPanel: React.FC<MobileNotificationPanelProps> = (
                     {!notif.isRead && (
                       <span
                         className="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                        style={{ background: '#4f63ff', boxShadow: '0 0 6px rgba(79,99,255,0.8)' }}
+                        style={{ background: '#4f5dc8', boxShadow: '0 1px 4px rgba(79,93,200,0.30)' }}
                       />
                     )}
 

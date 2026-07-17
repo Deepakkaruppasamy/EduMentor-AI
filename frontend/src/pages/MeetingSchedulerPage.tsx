@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { appointmentService } from '../services/appointment.service';
 import { BookmarkButton } from '../components/common/BookmarkButton';
@@ -7,11 +7,11 @@ import toast from 'react-hot-toast';
 import { Loader } from '../components/common/Loader';
 
 const STATUS_COLOR: Record<string, string> = {
-  Pending: '#f6ad55',
-  Approved: '#48bb78',
-  Rejected: '#fc8181',
-  Rescheduled: '#9f7aea',
-  Completed: '#4f63ff',
+  Pending: '#c4893a',
+  Approved: '#34a87a',
+  Rejected: '#c0524a',
+  Rescheduled: '#7c6fc2',
+  Completed: '#4f5dc8',
   Cancelled: 'rgba(255,255,255,0.2)',
 };
 
@@ -138,7 +138,7 @@ export const MeetingSchedulerPage: React.FC = () => {
           {(['calendar', 'appointments', ...(isStudent ? ['request'] : [])] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab as any)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/60'}`}
-              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f63ff,#7c3aed)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f5dc8,#6359a8)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               {tab === 'request' ? '+ New Request' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
@@ -166,8 +166,8 @@ export const MeetingSchedulerPage: React.FC = () => {
                 const isSelected = selectedDate && isSameDay(day, selectedDate);
                 return (
                   <button key={day.toISOString()} onClick={() => setSelectedDate(day)}
-                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs transition-all ${isSelected ? 'text-white' : isToday(day) ? 'text-[#7c8fff]' : 'text-white/50 hover:text-white/80'}`}
-                    style={{ background: isSelected ? 'rgba(79,99,255,0.25)' : isToday(day) ? 'rgba(79,99,255,0.1)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isSelected ? 'rgba(79,99,255,0.4)' : 'rgba(255,255,255,0.04)'}` }}>
+                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs transition-all ${isSelected ? 'text-white' : isToday(day) ? 'text-[#8b94e0]' : 'text-white/50 hover:text-white/80'}`}
+                    style={{ background: isSelected ? 'rgba(79,93,200,0.18)' : isToday(day) ? 'rgba(79,93,200,0.08)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isSelected ? 'rgba(79,93,200,0.32)' : 'rgba(255,255,255,0.04)'}` }}>
                     <span className="font-semibold">{format(day, 'd')}</span>
                     {dayAppts.length > 0 && (
                       <div className="flex gap-0.5 mt-0.5">
@@ -222,8 +222,8 @@ export const MeetingSchedulerPage: React.FC = () => {
               <div className="flex gap-2">
                 {(['Online', 'Offline'] as const).map(m => (
                   <button key={m} onClick={() => setMode(m)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${mode === m ? 'text-white border-[#4f63ff]/40' : 'text-white/40 border-white/5'}`}
-                    style={{ background: mode === m ? 'rgba(79,99,255,0.15)' : 'rgba(255,255,255,0.02)' }}>
+                    className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${mode === m ? 'text-white border-[#4f5dc8]/35' : 'text-white/40 border-white/5'}`}
+                    style={{ background: mode === m ? 'rgba(79,93,200,0.10)' : 'rgba(255,255,255,0.02)' }}>
                     {MODE_ICONS[m]} {m}
                   </button>
                 ))}
@@ -272,8 +272,8 @@ export const MeetingSchedulerPage: React.FC = () => {
                 </div>
                 <div className="mt-1 font-semibold text-sm text-white/80">{isStudent ? a.faculty?.name : a.student?.name}</div>
                 <div className="text-xs text-white/40 mt-0.5 truncate">{a.purpose}</div>
-                {a.facultyNotes && <div className="text-xs text-[#7c8fff] mt-1">Note: {a.facultyNotes}</div>}
-                {a.rescheduledDate && <div className="text-xs text-[#f6ad55] mt-1">Rescheduled to: {format(new Date(a.rescheduledDate), 'MMM d, yyyy')} {a.rescheduledSlot}</div>}
+                {a.facultyNotes && <div className="text-xs text-[#8b94e0] mt-1">Note: {a.facultyNotes}</div>}
+                {a.rescheduledDate && <div className="text-xs text-[#c4893a] mt-1">Rescheduled to: {format(new Date(a.rescheduledDate), 'MMM d, yyyy')} {a.rescheduledSlot}</div>}
               </div>
               <div className="flex gap-2 flex-shrink-0 items-center">
                 <BookmarkButton
@@ -285,14 +285,14 @@ export const MeetingSchedulerPage: React.FC = () => {
                 />
                 {isStudent && ['Pending', 'Approved'].includes(a.status) && (
                   <button onClick={() => handleCancel(a._id)}
-                    className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)', border: '1px solid rgba(252,129,129,0.15)' }}>
+                    className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#c0524a]" style={{ background: 'rgba(192,82,74,0.08)', border: '1px solid rgba(192,82,74,0.15)' }}>
                     Cancel
                   </button>
                 )}
                 {(isFaculty || isAdmin) && a.status === 'Pending' && (
                   <>
                     <button onClick={() => handleStatusUpdate(a._id, 'Approved')}
-                      className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#48bb78]" style={{ background: 'rgba(72,187,120,0.08)', border: '1px solid rgba(72,187,120,0.15)' }}>
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#34a87a]" style={{ background: 'rgba(52,168,122,0.08)', border: '1px solid rgba(52,168,122,0.15)' }}>
                       Approve
                     </button>
                     <button onClick={() => setActionTarget(a)}
@@ -303,7 +303,7 @@ export const MeetingSchedulerPage: React.FC = () => {
                 )}
                 {(isFaculty || isAdmin) && a.status === 'Approved' && (
                   <button onClick={() => handleStatusUpdate(a._id, 'Completed')}
-                    className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#4f63ff]" style={{ background: 'rgba(79,99,255,0.08)', border: '1px solid rgba(79,99,255,0.15)' }}>
+                    className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#4f5dc8]" style={{ background: 'rgba(79,93,200,0.06)', border: '1px solid rgba(79,93,200,0.10)' }}>
                     Mark Done
                   </button>
                 )}
@@ -337,9 +337,9 @@ export const MeetingSchedulerPage: React.FC = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => handleStatusUpdate(actionTarget._id, 'Approved')} className="flex-1 py-2 rounded-xl text-xs font-semibold text-[#48bb78]" style={{ background: 'rgba(72,187,120,0.1)' }}>Approve</button>
-              <button onClick={() => handleStatusUpdate(actionTarget._id, 'Rejected')} className="flex-1 py-2 rounded-xl text-xs font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.1)' }}>Reject</button>
-              {rescheduleDate && rescheduleSlot && <button onClick={() => handleStatusUpdate(actionTarget._id, 'Rescheduled')} className="flex-1 py-2 rounded-xl text-xs font-semibold text-[#9f7aea]" style={{ background: 'rgba(159,122,234,0.1)' }}>Reschedule</button>}
+              <button onClick={() => handleStatusUpdate(actionTarget._id, 'Approved')} className="flex-1 py-2 rounded-xl text-xs font-semibold text-[#34a87a]" style={{ background: 'rgba(52,168,122,0.1)' }}>Approve</button>
+              <button onClick={() => handleStatusUpdate(actionTarget._id, 'Rejected')} className="flex-1 py-2 rounded-xl text-xs font-semibold text-[#c0524a]" style={{ background: 'rgba(192,82,74,0.1)' }}>Reject</button>
+              {rescheduleDate && rescheduleSlot && <button onClick={() => handleStatusUpdate(actionTarget._id, 'Rescheduled')} className="flex-1 py-2 rounded-xl text-xs font-semibold text-[#7c6fc2]" style={{ background: 'rgba(124,111,194,0.1)' }}>Reschedule</button>}
             </div>
           </div>
         </div>

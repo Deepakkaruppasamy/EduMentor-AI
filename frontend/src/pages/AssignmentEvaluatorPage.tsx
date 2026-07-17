@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -335,7 +335,7 @@ export const AssignmentEvaluatorPage: React.FC = () => {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return '#48bb78'; // Green
+    if (score >= 85) return '#34a87a'; // Green
     if (score >= 65) return '#ecc94b'; // Yellow
     return '#f56565'; // Red
   };

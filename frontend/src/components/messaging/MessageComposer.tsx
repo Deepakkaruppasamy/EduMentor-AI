@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+﻿import React, { useState, useRef, useCallback } from 'react';
 import { MsgMessage, MsgAttachment } from '../../types/messaging.types';
 import { messagingService } from '../../services/messaging.service';
 import { emitTyping, emitStopTyping } from '../../services/messaging-socket';
@@ -245,7 +245,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
               onClick={() => setShowEmoji(!showEmoji)}
               className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all text-sm ${
                 showEmoji
-                  ? 'bg-[#4f63ff]/20 border-[#4f63ff]/30 text-white/80'
+                  ? 'bg-[#4f5dc8]/15 border-[#4f5dc8]/25 text-white/80'
                   : 'bg-white/5 border-white/[0.06] hover:bg-white/10 hover:border-white/15 text-white/40 hover:text-white/70'
               }`}
               title="Emoji"
@@ -275,7 +275,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           onKeyDown={handleKeyDown}
           placeholder="Type a message…"
           rows={1}
-          className="flex-1 px-4 py-2.5 rounded-xl text-sm bg-white/5 border border-white/[0.08] text-white/90 outline-none focus:border-[#4f63ff]/40 resize-none placeholder:text-white/20 min-h-[40px] max-h-[120px]"
+          className="flex-1 px-4 py-2.5 rounded-xl text-sm bg-white/5 border border-white/[0.08] text-white/90 outline-none focus:border-[#4f5dc8]/35 resize-none placeholder:text-white/20 min-h-[40px] max-h-[120px]"
           style={{ scrollbarWidth: 'thin' }}
         />
 
@@ -284,7 +284,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           onClick={handleSend}
           disabled={sending || (!text.trim() && pendingImages.length === 0 && pendingFiles.length === 0 && !editingMessage)}
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm transition-all disabled:opacity-30 mb-0.5 flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #4f63ff, #7c3aed)' }}
+          style={{ background: 'linear-gradient(135deg, #4f5dc8, #6359a8)' }}
         >
           {sending ? '…' : editingMessage ? '✓' : '➤'}
         </button>

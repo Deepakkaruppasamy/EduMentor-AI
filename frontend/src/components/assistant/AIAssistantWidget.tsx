@@ -5,6 +5,8 @@ import { useAuthStore } from '../../store/auth.store';
 import { useAssistantStore } from '../../store/assistant.store';
 import { assistantService } from '../../services/assistant.service';
 import { getPageContext, getRandomTip } from './AssistantContext';
+import { spring, fadeUpSmallVariants, listContainerVariants, listItemVariants } from '../../utils/motion';
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Markdown-lite renderer for AI responses
@@ -20,7 +22,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
     if (line.startsWith('- ') || line.startsWith('* ')) {
       return (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 2 }}>
-          <span style={{ color: '#818cf8', flexShrink: 0, marginTop: 1 }}>•</span>
+          <span style={{ color: '#7b87d4', flexShrink: 0, marginTop: 1 }}>•</span>
           <span dangerouslySetInnerHTML={{ __html: codeReplaced.replace(/^[-*]\s/, '') }} />
         </div>
       );
@@ -29,7 +31,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
     if (/^\d+\.\s/.test(line)) {
       return (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 2 }}>
-          <span style={{ color: '#818cf8', flexShrink: 0 }}>{line.match(/^\d+/)?.[0]}.</span>
+          <span style={{ color: '#7b87d4', flexShrink: 0 }}>{line.match(/^\d+/)?.[0]}.</span>
           <span dangerouslySetInnerHTML={{ __html: codeReplaced.replace(/^\d+\.\s/, '') }} />
         </div>
       );
@@ -159,28 +161,27 @@ export const AIAssistantWidget: React.FC = () => {
               zIndex: 9998,
             }}
           >
-            <button
+            <motion.button
               id="ai-assistant-trigger"
               onClick={toggle}
               aria-label="Open AI Learning Assistant"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.93 }}
               style={{
                 width: 56,
                 height: 56,
                 borderRadius: '50%',
                 border: 'none',
                 cursor: 'pointer',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%)',
-                boxShadow: '0 0 0 0 rgba(99,102,241,0.6)',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #2d9a8a 100%)',
+                boxShadow: '0 4px 14px rgba(99,102,241,0.3)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 24,
-                transition: 'transform 0.2s, box-shadow 0.2s',
                 animation: 'assistantPulse 2.5s ease-in-out infinite',
                 position: 'relative',
               }}
-              onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
-              onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             >
               🤖
               {/* Unread badge */}
@@ -197,7 +198,7 @@ export const AIAssistantWidget: React.FC = () => {
                   animation: 'assistantPulse 1s ease-in-out infinite',
                 }} />
               )}
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -412,8 +413,11 @@ export const AIAssistantWidget: React.FC = () => {
                 </div>
 
                 {/* Messages */}
-                <div
+                <motion.div
                   id="ai-assistant-messages"
+                  variants={listContainerVariants}
+                  initial="hidden"
+                  animate="visible"
                   style={{
                     flex: 1,
                     overflowY: 'auto',
@@ -425,67 +429,77 @@ export const AIAssistantWidget: React.FC = () => {
                     scrollbarColor: 'rgba(255,255,255,0.08) transparent',
                   }}
                 >
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                        gap: 3,
-                      }}
-                    >
-                      <div style={{
-                        maxWidth: '88%',
-                        padding: '9px 12px',
-                        borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                        background: msg.role === 'user'
-                          ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
-                          : 'rgba(255,255,255,0.05)',
-                        border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                        fontSize: 12.5,
-                        lineHeight: 1.55,
-                        color: '#f0f2f8',
-                        wordBreak: 'break-word',
-                        boxShadow: msg.role === 'user'
-                          ? '0 4px 12px rgba(99,102,241,0.3)'
-                          : '0 2px 8px rgba(0,0,0,0.2)',
-                      }}>
-                        {msg.role === 'assistant'
-                          ? <div style={{ fontSize: 12.5, lineHeight: 1.55 }}>{renderMarkdown(msg.content)}</div>
-                          : msg.content
-                        }
-                      </div>
-                      <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.22)', paddingLeft: 4, paddingRight: 4 }}>
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  ))}
+                  <AnimatePresence>
+                    {messages.map((msg) => (
+                      <motion.div
+                        key={msg.id}
+                        variants={fadeUpSmallVariants}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                          gap: 3,
+                        }}
+                      >
+                        <div style={{
+                          maxWidth: '88%',
+                          padding: '9px 12px',
+                          borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                          background: msg.role === 'user'
+                            ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+                            : 'rgba(255,255,255,0.05)',
+                          border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                          fontSize: 12.5,
+                          lineHeight: 1.55,
+                          color: '#f0f2f8',
+                          wordBreak: 'break-word',
+                          boxShadow: msg.role === 'user'
+                            ? '0 4px 12px rgba(99,102,241,0.3)'
+                            : '0 2px 8px rgba(0,0,0,0.2)',
+                        }}>
+                          {msg.role === 'assistant'
+                            ? <div style={{ fontSize: 12.5, lineHeight: 1.55 }}>{renderMarkdown(msg.content)}</div>
+                            : msg.content
+                          }
+                        </div>
+                        <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.22)', paddingLeft: 4, paddingRight: 4 }}>
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
 
                   {/* Typing indicator */}
-                  {isLoading && (
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-                      <div style={{
-                        padding: '10px 14px',
-                        borderRadius: '16px 16px 16px 4px',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        display: 'flex',
-                        gap: 5,
-                        alignItems: 'center',
-                      }}>
-                        {[0, 1, 2].map(i => (
-                          <div key={i} style={{
-                            width: 6, height: 6, borderRadius: '50%',
-                            background: '#818cf8',
-                            animation: `assistantDot 1.2s ease-in-out ${i * 0.2}s infinite`,
-                          }} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {isLoading && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}
+                      >
+                        <div style={{
+                          padding: '10px 14px',
+                          borderRadius: '16px 16px 16px 4px',
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.07)',
+                          display: 'flex',
+                          gap: 5,
+                          alignItems: 'center',
+                        }}>
+                          {[0, 1, 2].map(i => (
+                            <div key={i} style={{
+                              width: 6, height: 6, borderRadius: '50%',
+                              background: '#7b87d4',
+                              animation: `assistantDot 1.2s ease-in-out ${i * 0.2}s infinite`,
+                            }} />
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   <div ref={messagesEndRef} />
-                </div>
+                </motion.div>
 
                 {/* Input Area */}
                 <div style={{

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { notesService } from '../services/notes.service';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
@@ -105,7 +105,7 @@ export const NotesGeneratorPage: React.FC = () => {
           {(['generate', 'saved'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/60'}`}
-              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f63ff,#7c3aed)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f5dc8,#6359a8)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               {tab === 'generate' ? '✦ Generate Notes' : `Saved (${savedNotes.length})`}
             </button>
           ))}
@@ -133,7 +133,7 @@ export const NotesGeneratorPage: React.FC = () => {
                   {NOTE_TYPES.map(nt => (
                     <button key={nt.value} onClick={() => setNoteType(nt.value)}
                       className={`p-2 rounded-xl text-left text-[10px] font-semibold transition-all`}
-                      style={{ background: noteType === nt.value ? 'rgba(79,99,255,0.15)' : 'rgba(255,255,255,0.02)', color: noteType === nt.value ? '#7c8fff' : 'rgba(255,255,255,0.4)', border: `1px solid ${noteType === nt.value ? 'rgba(79,99,255,0.3)' : 'rgba(255,255,255,0.05)'}` }}>
+                      style={{ background: noteType === nt.value ? 'rgba(79,93,200,0.10)' : 'rgba(255,255,255,0.02)', color: noteType === nt.value ? '#8b94e0' : 'rgba(255,255,255,0.4)', border: `1px solid ${noteType === nt.value ? 'rgba(79,93,200,0.22)' : 'rgba(255,255,255,0.05)'}` }}>
                       <div className="text-base mb-0.5">{nt.icon}</div>
                       <div className="font-bold">{nt.value}</div>
                       <div style={{ fontSize: '9px', opacity: 0.7 }}>{nt.desc}</div>
@@ -143,7 +143,7 @@ export const NotesGeneratorPage: React.FC = () => {
               </div>
               <button onClick={handleGenerate} disabled={generating}
                 className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg,#4f63ff,#7c3aed)' }}>
+                style={{ background: 'linear-gradient(135deg,#4f5dc8,#6359a8)' }}>
                 {generating ? '🤖 Generating…' : '✦ Generate Notes'}
               </button>
             </div>
@@ -219,7 +219,7 @@ export const NotesGeneratorPage: React.FC = () => {
                           url: `/notes-generator`
                         }).catch(() => {});
                       }}
-                        className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#7c8fff]" style={{ background: 'rgba(79,99,255,0.08)' }}>View</button>
+                        className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#8b94e0]" style={{ background: 'rgba(79,93,200,0.06)' }}>View</button>
                       <BookmarkButton
                         itemType="note"
                         itemId={note._id}
@@ -228,7 +228,7 @@ export const NotesGeneratorPage: React.FC = () => {
                         className="px-2 py-1 text-[9px] font-semibold"
                       />
                       <button onClick={() => handleDelete(note._id)}
-                        className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)' }}>Del</button>
+                        className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#c0524a]" style={{ background: 'rgba(192,82,74,0.08)' }}>Del</button>
                     </div>
                   </div>
                   <div className="mt-2 text-[10px] text-white/30 line-clamp-2">{note.content.replace(/[#*`]/g, '').substring(0, 100)}…</div>

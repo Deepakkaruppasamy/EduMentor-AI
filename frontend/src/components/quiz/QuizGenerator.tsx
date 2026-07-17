@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Quiz, Course } from '../../types';
@@ -35,16 +35,16 @@ export const QuizGenerator: React.FC<QuizGeneratorProps> = ({ courses, onQuizGen
   };
 
   const difficultyColors: Record<string, string> = {
-    easy: 'rgba(72,187,120,0.15)',
-    medium: 'rgba(246,173,85,0.15)',
-    hard: 'rgba(252,129,129,0.15)',
+    easy: 'rgba(52,168,122,0.15)',
+    medium: 'rgba(196,137,58,0.15)',
+    hard: 'rgba(192,82,74,0.15)',
   };
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6">
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl text-xl"
-          style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2) 0%, rgba(159,122,234,0.2) 100%)', border: '1px solid rgba(79,99,255,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.14) 0%, rgba(124,111,194,0.2) 100%)', border: '1px solid rgba(79,93,200,0.22)' }}>
           📝
         </div>
         <div>
@@ -82,9 +82,9 @@ export const QuizGenerator: React.FC<QuizGeneratorProps> = ({ courses, onQuizGen
               <button key={type} onClick={() => setQuestionType(type)}
                 className="rounded-xl py-2 text-xs font-medium transition-all capitalize"
                 style={{
-                  background: questionType === type ? 'rgba(79,99,255,0.25)' : 'rgba(255,255,255,0.04)',
-                  border: questionType === type ? '1px solid rgba(79,99,255,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                  color: questionType === type ? '#7c8fff' : 'rgba(255,255,255,0.5)',
+                  background: questionType === type ? 'rgba(79,93,200,0.18)' : 'rgba(255,255,255,0.04)',
+                  border: questionType === type ? '1px solid rgba(79,93,200,0.45)' : '1px solid rgba(255,255,255,0.08)',
+                  color: questionType === type ? '#8b94e0' : 'rgba(255,255,255,0.5)',
                 }}>
                 {type === 'mcq' ? 'MCQ' : type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
@@ -101,8 +101,8 @@ export const QuizGenerator: React.FC<QuizGeneratorProps> = ({ courses, onQuizGen
                 className="rounded-xl py-2 text-xs font-medium transition-all capitalize"
                 style={{
                   background: difficulty === d ? difficultyColors[d] : 'rgba(255,255,255,0.04)',
-                  border: difficulty === d ? `1px solid ${d === 'easy' ? 'rgba(72,187,120,0.4)' : d === 'medium' ? 'rgba(246,173,85,0.4)' : 'rgba(252,129,129,0.4)'}` : '1px solid rgba(255,255,255,0.08)',
-                  color: difficulty === d ? (d === 'easy' ? '#48bb78' : d === 'medium' ? '#f6ad55' : '#fc8181') : 'rgba(255,255,255,0.5)',
+                  border: difficulty === d ? `1px solid ${d === 'easy' ? 'rgba(52,168,122,0.4)' : d === 'medium' ? 'rgba(196,137,58,0.4)' : 'rgba(192,82,74,0.4)'}` : '1px solid rgba(255,255,255,0.08)',
+                  color: difficulty === d ? (d === 'easy' ? '#34a87a' : d === 'medium' ? '#c4893a' : '#c0524a') : 'rgba(255,255,255,0.5)',
                 }}>
                 {d}
               </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextualAction } from '../context/ContextualActionContext';
 import { actionsService } from '../services/actions.service';
@@ -510,8 +510,8 @@ export const ContextualActionResult: React.FC = () => {
                         onClick={() => setCardFlipped(prev => !prev)}
                         className="h-[200px] w-full rounded-2xl border cursor-pointer select-none flex items-center justify-center p-6 text-center shadow-xl transition-all"
                         style={{
-                          background: cardFlipped ? 'rgba(79,99,255,0.05)' : 'rgba(255,255,255,0.01)',
-                          borderColor: cardFlipped ? 'rgba(79,99,255,0.2)' : 'rgba(255,255,255,0.06)',
+                          background: cardFlipped ? 'rgba(79,93,200,0.04)' : 'rgba(255,255,255,0.01)',
+                          borderColor: cardFlipped ? 'rgba(79,93,200,0.14)' : 'rgba(255,255,255,0.06)',
                         }}
                       >
                         <p className="text-white text-xs leading-relaxed">

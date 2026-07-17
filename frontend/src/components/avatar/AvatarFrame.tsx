@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+﻿import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { AvatarFace } from './AvatarFace';
 import { useAvatarStore } from '../../store/avatar.store';
@@ -219,10 +219,10 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
           overflow: 'visible',
           position: 'relative',
           cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(79,99,255,0.3)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(79,93,200,0.22)',
           border: '2px solid rgba(255,255,255,0.15)',
         }}
-        whileHover={{ boxShadow: '0 12px 40px rgba(0,0,0,0.5), 0 4px 16px rgba(79,99,255,0.4)' }}
+        whileHover={{ boxShadow: '0 12px 40px rgba(0,0,0,0.5), 0 4px 16px rgba(79,93,200,0.32)' }}
         onClick={handleClick}
         onDoubleClick={handleDblClick}
         onMouseDown={handleMouseDown}

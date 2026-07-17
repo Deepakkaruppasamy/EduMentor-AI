@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 import { ChatSource } from '../../types';
 
@@ -74,7 +74,7 @@ export const CitationViewer: React.FC<CitationViewerProps> = ({ citation, onClos
           <div 
             className="rounded-2xl p-4 border border-primary-500/10 leading-relaxed text-xs text-white/70 relative overflow-hidden"
             style={{ 
-              background: 'linear-gradient(135deg, rgba(79,99,255,0.04) 0%, rgba(159,122,234,0.02) 100%)',
+              background: 'linear-gradient(135deg, rgba(79,93,200,0.03) 0%, rgba(124,111,194,0.02) 100%)',
               boxShadow: '0 4px 30px rgba(0,0,0,0.1)'
             }}
           >

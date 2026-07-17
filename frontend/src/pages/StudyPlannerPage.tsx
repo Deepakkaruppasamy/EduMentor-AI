@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { studyPlannerService } from '../services/studyPlanner.service';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 
 const PREFERRED_TIMES = ['Morning', 'Afternoon', 'Evening', 'Night'];
-const SUBJECT_COLORS = ['#4f63ff', '#48bb78', '#f6ad55', '#9f7aea', '#fc8181', '#38b2ac', '#ed8936'];
+const SUBJECT_COLORS = ['#4f5dc8', '#34a87a', '#c4893a', '#7c6fc2', '#c0524a', '#2d9a8a', '#c4893a'];
 
 export const StudyPlannerPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'generate' | 'plan' | 'history'>('generate');
@@ -111,7 +111,7 @@ export const StudyPlannerPage: React.FC = () => {
           {(['generate', 'plan', 'history'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/60'}`}
-              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f63ff,#7c3aed)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f5dc8,#6359a8)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               {tab === 'generate' ? '✦ Generate Plan' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
@@ -136,20 +136,20 @@ export const StudyPlannerPage: React.FC = () => {
                     <input type="text" value={s} placeholder={`Subject ${i + 1}`}
                       onChange={e => handleSubjectChange(i, e.target.value)} className="input-field text-xs flex-1" />
                     {subjects.length > 1 && (
-                      <button onClick={() => handleRemoveSubject(i)} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#fc8181] text-xs"
-                        style={{ background: 'rgba(252,129,129,0.08)' }}>✕</button>
+                      <button onClick={() => handleRemoveSubject(i)} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#c0524a] text-xs"
+                        style={{ background: 'rgba(192,82,74,0.08)' }}>✕</button>
                     )}
                   </div>
                 ))}
               </div>
-              <button onClick={handleAddSubject} className="mt-2 text-xs text-[#7c8fff] hover:underline">+ Add Subject</button>
+              <button onClick={handleAddSubject} className="mt-2 text-xs text-[#8b94e0] hover:underline">+ Add Subject</button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] text-white/40 mb-1 uppercase font-bold">Daily Study Hours</label>
                 <div className="flex items-center gap-2">
-                  <input type="range" min={1} max={12} value={dailyHours} onChange={e => setDailyHours(Number(e.target.value))} className="flex-1 accent-[#4f63ff]" />
+                  <input type="range" min={1} max={12} value={dailyHours} onChange={e => setDailyHours(Number(e.target.value))} className="flex-1 accent-[#4f5dc8]" />
                   <span className="text-xs font-bold text-white/80 w-8 text-right">{dailyHours}h</span>
                 </div>
               </div>
@@ -163,7 +163,7 @@ export const StudyPlannerPage: React.FC = () => {
 
             <button onClick={handleGenerate} disabled={generating}
               className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-40 transition-all"
-              style={{ background: 'linear-gradient(135deg,#4f63ff,#7c3aed)' }}>
+              style={{ background: 'linear-gradient(135deg,#4f5dc8,#6359a8)' }}>
               {generating ? '🤖 AI is building your study plan…' : '✦ Generate AI Study Plan'}
             </button>
           </div>
@@ -192,7 +192,7 @@ export const StudyPlannerPage: React.FC = () => {
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-bold text-white/80">{day.dayLabel}</span>
                   <span className="text-[10px] text-white/30">{day.date}</span>
-                  <span className="text-[10px] text-[#7c8fff] font-semibold">{day.totalHours}h total</span>
+                  <span className="text-[10px] text-[#8b94e0] font-semibold">{day.totalHours}h total</span>
                 </div>
                 <div className="space-y-2">
                   {day.topics.map((t: any, ti: number) => {
@@ -216,12 +216,12 @@ export const StudyPlannerPage: React.FC = () => {
 
           {/* Exam Tips */}
           {currentPlan.examTips?.length > 0 && (
-            <div className="p-5 rounded-2xl" style={{ background: 'rgba(79,99,255,0.06)', border: '1px solid rgba(79,99,255,0.15)' }}>
-              <h4 className="text-xs font-bold text-[#7c8fff] mb-3 uppercase">💡 Exam Tips</h4>
+            <div className="p-5 rounded-2xl" style={{ background: 'rgba(79,93,200,0.05)', border: '1px solid rgba(79,93,200,0.10)' }}>
+              <h4 className="text-xs font-bold text-[#8b94e0] mb-3 uppercase">💡 Exam Tips</h4>
               <div className="space-y-1.5">
                 {currentPlan.examTips.map((tip: string, i: number) => (
                   <div key={i} className="text-xs text-white/70 flex items-start gap-2">
-                    <span className="text-[#7c8fff] flex-shrink-0">✦</span>{tip}
+                    <span className="text-[#8b94e0] flex-shrink-0">✦</span>{tip}
                   </div>
                 ))}
               </div>
@@ -246,8 +246,8 @@ export const StudyPlannerPage: React.FC = () => {
                 <div className="text-[10px] text-white/30">{plan.generatedPlan.length} days generated · {new Date(plan.createdAt).toLocaleDateString()}</div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => { setCurrentPlan(plan); setActiveTab('plan'); }} className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#7c8fff]" style={{ background: 'rgba(79,99,255,0.08)' }}>View</button>
-                <button onClick={() => handleDelete(plan._id)} className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)' }}>Delete</button>
+                <button onClick={() => { setCurrentPlan(plan); setActiveTab('plan'); }} className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#8b94e0]" style={{ background: 'rgba(79,93,200,0.06)' }}>View</button>
+                <button onClick={() => handleDelete(plan._id)} className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-[#c0524a]" style={{ background: 'rgba(192,82,74,0.08)' }}>Delete</button>
               </div>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/auth.store';
 import { useMessagingStore } from '../../store/messaging.store';
 import { messagingService } from '../../services/messaging.service';
@@ -112,7 +112,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation }
           placeholder={showContacts ? 'Search contacts…' : 'Search chats…'}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/[0.08] text-white/80 outline-none focus:border-[#4f63ff]/40 placeholder:text-white/20"
+          className="w-full px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/[0.08] text-white/80 outline-none focus:border-[#4f5dc8]/35 placeholder:text-white/20"
         />
       </div>
 
@@ -132,7 +132,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation }
                 className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 transition-colors text-left"
               >
                 <div className="relative">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2), rgba(159,122,234,0.15))' }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.14), rgba(124,111,194,0.15))' }}>
                     {contact.name?.[0]?.toUpperCase()}
                   </div>
                   <OnlineStatus
@@ -157,7 +157,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation }
                 <div className="text-white/25">No conversations yet</div>
                 <button
                   onClick={() => setShowContacts(true)}
-                  className="mt-2 text-[#7c8fff] hover:underline text-[10px]"
+                  className="mt-2 text-[#8b94e0] hover:underline text-[10px]"
                 >
                   Start a new chat →
                 </button>
@@ -175,12 +175,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation }
                   onClick={() => onSelectConversation(conv)}
                   className={`w-full px-4 py-3 flex items-center gap-3 transition-all text-left border-l-2 ${
                     isActive
-                      ? 'bg-[#4f63ff]/10 border-l-[#4f63ff]'
+                      ? 'bg-[#4f5dc8]/10 border-l-[#4f5dc8]'
                       : 'border-l-transparent hover:bg-white/[0.03]'
                   }`}
                 >
                   <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2), rgba(159,122,234,0.15))' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.14), rgba(124,111,194,0.15))' }}>
                       {other.name?.[0]?.toUpperCase()}
                     </div>
                     <OnlineStatus
@@ -207,7 +207,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation }
                           : 'No messages yet'}
                       </span>
                       {unread > 0 && (
-                        <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, #4f63ff, #7c3aed)' }}>
+                        <span className="flex-shrink-0 ml-2 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, #4f5dc8, #6359a8)' }}>
                           {unread > 9 ? '9+' : unread}
                         </span>
                       )}

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth.store';
 import { plagiarismService, PlagiarismReport } from '../services/plagiarism.service';
@@ -341,7 +341,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                             padding: '10px 24px', borderRadius: 12,
                             border: '1px solid rgba(99,102,241,0.4)',
                             background: 'rgba(99,102,241,0.1)',
-                            color: '#818cf8', cursor: 'pointer',
+                            color: '#7b87d4', cursor: 'pointer',
                             fontSize: 13, fontWeight: 600,
                             transition: 'all 0.15s',
                           }}
@@ -413,10 +413,10 @@ export const PlagiarismCheckerPage: React.FC = () => {
                       borderRadius: 16,
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#818cf8' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#7b87d4' }}>
                           🤖 AI Analyzing Document...
                         </span>
-                        <span style={{ fontSize: 13, color: '#818cf8', fontWeight: 700 }}>
+                        <span style={{ fontSize: 13, color: '#7b87d4', fontWeight: 700 }}>
                           {Math.round(analyzeProgress)}%
                         </span>
                       </div>
@@ -424,7 +424,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                         <motion.div
                           style={{
                             height: '100%',
-                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4)',
+                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #2d9a8a)',
                             borderRadius: 6,
                           }}
                           animate={{ width: `${analyzeProgress}%` }}
@@ -542,7 +542,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                             flex: 1, padding: '8px 6px',
                             borderRadius: 9, border: 'none', cursor: 'pointer',
                             background: reportTab === tab.id ? 'rgba(99,102,241,0.25)' : 'transparent',
-                            color: reportTab === tab.id ? '#818cf8' : 'rgba(255,255,255,0.4)',
+                            color: reportTab === tab.id ? '#7b87d4' : 'rgba(255,255,255,0.4)',
                             fontWeight: reportTab === tab.id ? 700 : 500,
                             fontSize: 12, transition: 'all 0.2s',
                             borderColor: reportTab === tab.id ? 'rgba(99,102,241,0.3)' : 'transparent',
@@ -602,7 +602,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
                             {[
                               { label: 'Flagged Sections', value: currentReport.highlightedSections.length, color: '#f59e0b', icon: '🔦' },
-                              { label: 'AI Suggestions', value: currentReport.aiSuggestions.length, color: '#818cf8', icon: '💡' },
+                              { label: 'AI Suggestions', value: currentReport.aiSuggestions.length, color: '#7b87d4', icon: '💡' },
                               { label: 'Missing Citations', value: currentReport.citationAnalysis?.missingCitations?.length || 0, color: '#ef4444', icon: '📚' },
                               { label: 'Citation Issues', value: (currentReport.citationAnalysis?.incorrectReferences?.length || 0) + (currentReport.citationAnalysis?.formattingIssues?.length || 0), color: '#f97316', icon: '⚠️' },
                             ].map(stat => (
@@ -721,7 +721,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                               { title: '❌ Missing Citations', items: currentReport.citationAnalysis?.missingCitations || [], color: '#ef4444', emptyMsg: 'No missing citations found!' },
                               { title: '⚠️ Incorrect References', items: currentReport.citationAnalysis?.incorrectReferences || [], color: '#f59e0b', emptyMsg: 'No incorrect references found!' },
                               { title: '🔁 Duplicate References', items: currentReport.citationAnalysis?.duplicateReferences || [], color: '#f97316', emptyMsg: 'No duplicate references found!' },
-                              { title: '📐 Formatting Issues', items: currentReport.citationAnalysis?.formattingIssues || [], color: '#818cf8', emptyMsg: 'No formatting issues found!' },
+                              { title: '📐 Formatting Issues', items: currentReport.citationAnalysis?.formattingIssues || [], color: '#7b87d4', emptyMsg: 'No formatting issues found!' },
                             ].map(({ title, items, color, emptyMsg }) => (
                               <div key={title} style={{
                                 background: 'rgba(255,255,255,0.02)',
@@ -902,7 +902,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                                   padding: '6px 14px', borderRadius: 8,
                                   border: '1px solid rgba(99,102,241,0.3)',
                                   background: 'rgba(99,102,241,0.1)',
-                                  color: '#818cf8', cursor: 'pointer', fontSize: 11, fontWeight: 600,
+                                  color: '#7b87d4', cursor: 'pointer', fontSize: 11, fontWeight: 600,
                                 }}
                               >View</button>
                             </td>
@@ -960,13 +960,13 @@ export const PlagiarismCheckerPage: React.FC = () => {
                   {/* Stat cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 28 }}>
                     {[
-                      { label: 'Total Documents', value: analytics.totalDocuments, icon: '📄', color: '#818cf8' },
+                      { label: 'Total Documents', value: analytics.totalDocuments, icon: '📄', color: '#7b87d4' },
                       { label: 'Avg Similarity', value: `${analytics.averageSimilarity}%`, icon: '📊', color: getSimilarityColor(analytics.averageSimilarity) },
                       { label: 'High Risk', value: analytics.highRiskDocuments, icon: '🚨', color: '#ef4444' },
                       { label: 'Moderate Risk', value: analytics.moderateRiskDocuments, icon: '⚠️', color: '#f59e0b' },
                       { label: 'Low Risk', value: analytics.lowRiskDocuments, icon: '✅', color: '#22c55e' },
-                      { label: 'Faculty Usage', value: analytics.facultyUsage, icon: '👨‍🏫', color: '#06b6d4' },
-                      { label: 'Student Usage', value: analytics.studentUsage, icon: '👨‍🎓', color: '#a78bfa' },
+                      { label: 'Faculty Usage', value: analytics.facultyUsage, icon: '👨‍🏫', color: '#2d9a8a' },
+                      { label: 'Student Usage', value: analytics.studentUsage, icon: '👨‍🎓', color: '#9b96d4' },
                     ].map(({ label, value, icon, color }) => (
                       <div key={label} style={{
                         background: 'rgba(255,255,255,0.02)',
@@ -996,7 +996,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                           const barH = Math.round((m.count / maxCount) * 110);
                           return (
                             <div key={`${m.year}-${m.month}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                              <span style={{ fontSize: 10, color: '#818cf8', fontWeight: 700 }}>{m.count}</span>
+                              <span style={{ fontSize: 10, color: '#7b87d4', fontWeight: 700 }}>{m.count}</span>
                               <div style={{
                                 width: 36, height: barH,
                                 borderRadius: '6px 6px 0 0',

@@ -131,108 +131,143 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
   };
 
   return (
-    <div className="flex h-full flex-col" style={{ background: 'var(--bg-sidebar)' }}>
+    <div className="flex h-full flex-col overflow-hidden" style={{ background: 'var(--bg-sidebar)' }}>
       {/* Logo */}
       <div className={`flex items-center px-5 py-6 ${collapsed ? 'justify-center' : 'gap-3'}`}>
         <Logo size="sm" />
-        {!collapsed && (
-          <div>
-            <div className="text-sm font-bold text-white">EduMentor AI</div>
-            <div className="text-[10px] text-white/40 font-mono">Powered by Llama 3</div>
-          </div>
-        )}
+        <AnimatePresence initial={false} mode="wait">
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col whitespace-nowrap overflow-hidden"
+            >
+              <div className="text-sm font-bold text-white">EduMentor AI</div>
+              <div className="text-[10px] text-white/40 font-mono">Powered by Llama 3</div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* User info */}
-      {!collapsed ? (
-        <div className="mx-4 mb-4 rounded-xl p-3 relative" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="flex items-center gap-3">
-            {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
-              <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
-            ) : (
-              <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
-                <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-xs font-semibold text-white leading-snug">{user?.name}</div>
-              <div className="truncate text-[10px] capitalize text-white/40 font-medium mt-0.5">{user?.role}</div>
-            </div>
+      <div className="overflow-hidden">
+        <AnimatePresence initial={false} mode="wait">
+          {!collapsed ? (
+            <motion.div
+              key="expanded-user"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="mx-4 mb-4 rounded-xl p-3 relative overflow-hidden"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div className="flex items-center gap-3">
+                {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
+                  <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
+                ) : (
+                  <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
+                    <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-xs font-semibold text-white leading-snug">{user?.name}</div>
+                  <div className="truncate text-[10px] capitalize text-white/40 font-medium mt-0.5">{user?.role}</div>
+                </div>
 
-            {/* Theme Toggle + Notification Bell */}
-            <div className="flex items-center gap-1.5">
-              {/* Theme toggle */}
-              <button
-                onClick={toggleTheme}
-                className="h-8 w-8 rounded-xl border flex items-center justify-center transition-all"
-                style={{
-                  background: 'var(--bg-input)',
-                  borderColor: 'var(--border-subtle)',
-                  color: 'var(--text-muted)',
-                }}
-                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              >
-                <span className="text-sm leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
-              </button>
+                {/* Theme Toggle + Notification Bell */}
+                <div className="flex items-center gap-1.5">
+                  {/* Theme toggle */}
+                  <button
+                    onClick={toggleTheme}
+                    className="h-8 w-8 rounded-xl border flex items-center justify-center transition-all hover:bg-white/5 active:scale-95"
+                    style={{
+                      background: 'var(--bg-input)',
+                      borderColor: 'var(--border-subtle)',
+                      color: 'var(--text-muted)',
+                    }}
+                    title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  >
+                    <span className="text-sm leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
+                  </button>
 
-              {/* Notification Bell with Badge */}
-              <div className="relative">
-                <button
-                  onClick={() => setNotifOpen(!notifOpen)}
-                  className="h-8 w-8 rounded-xl border flex items-center justify-center relative focus:outline-none transition-all"
-                  style={{
-                    background: 'var(--bg-input)',
-                    borderColor: 'var(--border-subtle)',
-                    color: 'var(--text-muted)',
-                  }}
-                  title="Notifications"
-                >
-                  <span className="text-sm leading-none">🔔</span>
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-                <AnimatePresence>
-                  {notifOpen && (
-                    <NotificationDrawer onClose={() => setNotifOpen(false)} />
-                  )}
-                </AnimatePresence>
+                  {/* Notification Bell with Badge */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setNotifOpen(!notifOpen)}
+                      className="h-8 w-8 rounded-xl border flex items-center justify-center relative focus:outline-none transition-all hover:bg-white/5 active:scale-95"
+                      style={{
+                        background: 'var(--bg-input)',
+                        borderColor: 'var(--border-subtle)',
+                        color: 'var(--text-muted)',
+                      }}
+                      title="Notifications"
+                    >
+                      <span className="text-sm leading-none">🔔</span>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+                    <AnimatePresence>
+                      {notifOpen && (
+                        <NotificationDrawer onClose={() => setNotifOpen(false)} />
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
-            <span className="text-[10px] text-white/40 font-bold uppercase">Language</span>
-            <LanguageSelector />
-          </div>
-        </div>
-      ) : (
-        <div className="flex justify-center mb-4">
-          {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
-            <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
+              <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+                <span className="text-[10px] text-white/40 font-bold uppercase">Language</span>
+                <LanguageSelector />
+              </div>
+            </motion.div>
           ) : (
-            <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
-              <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
-            </div>
+            <motion.div
+              key="collapsed-user"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              className="flex justify-center mb-4"
+            >
+              {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
+                <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
+              ) : (
+                <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
+                  <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
+                </div>
+              )}
+            </motion.div>
           )}
-        </div>
-      )}
+        </AnimatePresence>
+      </div>
 
       {/* Navigation — scrollable */}
       <nav
-        className="flex-1 px-3 py-1 overflow-y-auto"
+        className="flex-1 px-3 py-1 overflow-y-auto overflow-x-hidden"
         style={{
           scrollbarWidth: 'thin',
           scrollbarColor: 'rgba(255,255,255,0.1) transparent',
         }}
       >
         {/* Global Search */}
-        {!collapsed && (
-          <div className="mb-2">
-            <GlobalSearchBar />
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mb-2 overflow-hidden"
+            >
+              <GlobalSearchBar />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="space-y-1">
           {links.map((link) => (
             <Link
@@ -242,23 +277,47 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
               className={`sidebar-link ${location.pathname === link.to ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''}`}
               title={collapsed ? link.label : undefined}
             >
-              <span className="text-base">{link.icon}</span>
-              {!collapsed && <span>{link.label}</span>}
+              <span className="text-base flex-shrink-0">{link.icon}</span>
+              <AnimatePresence initial={false} mode="wait">
+                {!collapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -5 }}
+                    transition={{ duration: 0.15 }}
+                    className="whitespace-nowrap overflow-hidden text-ellipsis"
+                  >
+                    {link.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
           ))}
         </div>
       </nav>
 
       {/* Logout / Toggle */}
-      <div className="p-4 flex flex-col items-center gap-2">
+      <div className="p-4 flex flex-col items-center gap-2 overflow-hidden">
         <button
           onClick={handleLogout}
           className={`sidebar-link w-full justify-center ${collapsed ? 'px-0' : ''}`}
-          style={{ background: 'rgba(252,129,129,0.08)', color: 'rgba(252,129,129,0.8)', border: '1px solid rgba(252,129,129,0.15)' }}
+          style={{ background: 'rgba(192,82,74,0.08)', color: 'rgba(192,82,74,0.8)', border: '1px solid rgba(192,82,74,0.15)' }}
           title={collapsed ? 'Sign Out' : undefined}
         >
-          <span>🚪</span>
-          {!collapsed && <span className="text-sm">Sign Out</span>}
+          <span className="flex-shrink-0">🚪</span>
+          <AnimatePresence initial={false} mode="wait">
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -5 }}
+                transition={{ duration: 0.15 }}
+                className="text-sm whitespace-nowrap overflow-hidden"
+              >
+                Sign Out
+              </motion.span>
+            )}
+          </AnimatePresence>
         </button>
         {onToggleCollapse && (
           <button
@@ -268,8 +327,21 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
             {collapsed ? '▶' : '◀ Collapse'}
           </button>
         )}
-        {!collapsed && <OnboardingTrigger />}
+        <AnimatePresence initial={false} mode="wait">
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="w-full overflow-hidden"
+            >
+              <OnboardingTrigger />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 };
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth.store';
 import { activityService, ActivityLog } from '../services/activity.service';
@@ -472,7 +472,7 @@ export const ActivityTimelinePage: React.FC = () => {
                         </span>
                         <span style={{
                           fontSize: 10.5, fontWeight: 600,
-                          color: '#818cf8', background: 'rgba(99,102,241,0.1)',
+                          color: '#7b87d4', background: 'rgba(99,102,241,0.1)',
                           padding: '2px 8px', borderRadius: 6, marginLeft: 10,
                         }}>
                           {log.module}

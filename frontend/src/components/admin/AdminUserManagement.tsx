@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
@@ -373,7 +373,7 @@ export const AdminUserManagement: React.FC = () => {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-bold text-white"
-                          style={{ background: user.role === 'admin' ? '#f6ad55' : user.role === 'faculty' ? '#9f7aea' : '#4f63ff' }}>
+                          style={{ background: user.role === 'admin' ? '#c4893a' : user.role === 'faculty' ? '#7c6fc2' : '#4f5dc8' }}>
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="font-semibold text-white">{user.name}</span>

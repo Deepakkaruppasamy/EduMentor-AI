@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConceptMapProps {
@@ -126,8 +126,8 @@ export const ConceptMap: React.FC<ConceptMapProps> = ({ conceptMapText }) => {
         <svg width="100%" height="100%" className="absolute inset-0">
           <defs>
             <linearGradient id="linkGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#4f63ff" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#9f7aea" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="#4f5dc8" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#7c6fc2" stopOpacity="0.2" />
             </linearGradient>
             <filter id="nodeGlow" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="3" result="blur" />
@@ -163,10 +163,10 @@ export const ConceptMap: React.FC<ConceptMapProps> = ({ conceptMapText }) => {
           {nodes.map(node => {
             const isSelected = selectedNode?.id === node.id;
             const nodeColor = node.level === 0 
-              ? '#4f63ff' // Primary blue for root
+              ? '#4f5dc8' // Primary blue for root
               : node.level <= 2 
-              ? '#805ad5' // Purple for main concepts
-              : '#38bdf8'; // Sky blue for leaf nodes
+              ? '#6359a8' // Purple for main concepts
+              : '#4da89a'; // Sky blue for leaf nodes
 
             return (
               <g key={node.id} className="cursor-pointer" onClick={() => setSelectedNode(node)}>

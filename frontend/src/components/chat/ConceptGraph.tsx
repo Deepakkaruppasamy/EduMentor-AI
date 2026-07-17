@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { accordionVariants } from '../../utils/motion';
+
 
 export interface ConceptNode {
   concept: string;
@@ -111,24 +113,32 @@ const ConceptTreeNode: React.FC<{ node: ConceptNode; isLast: boolean; level: num
       </div>
 
       {/* Children list */}
-      {hasChildren && isOpen && (
-        <div className="flex flex-col">
-          {node.children?.map((child, idx) => {
-            const isChildLast = idx === (node.children?.length ?? 0) - 1;
-            // The vertical line continues for this level if the parent is NOT the last child
-            const nextLineMap = [...parentLineMap, !isLast];
-            return (
-              <ConceptTreeNode 
-                key={idx} 
-                node={child} 
-                isLast={isChildLast} 
-                level={level + 1} 
-                parentLineMap={nextLineMap} 
-              />
-            );
-          })}
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {hasChildren && isOpen && (
+          <motion.div
+            variants={accordionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="flex flex-col"
+          >
+            {node.children?.map((child, idx) => {
+              const isChildLast = idx === (node.children?.length ?? 0) - 1;
+              // The vertical line continues for this level if the parent is NOT the last child
+              const nextLineMap = [...parentLineMap, !isLast];
+              return (
+                <ConceptTreeNode 
+                  key={idx} 
+                  node={child} 
+                  isLast={isChildLast} 
+                  level={level + 1} 
+                  parentLineMap={nextLineMap} 
+                />
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

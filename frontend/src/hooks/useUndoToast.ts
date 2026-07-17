@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useUndoToast.ts
  * Hook for the optimistic-delete + undo toast pattern.
  *
@@ -94,7 +94,7 @@ export function useUndoToast() {
               React.createElement('div', {
                 style: {
                   height: '100%',
-                  background: 'linear-gradient(90deg, #4f63ff, #7c3aed)',
+                  background: 'linear-gradient(90deg, #4f5dc8, #6359a8)',
                   borderRadius: '2px',
                   animation: `undoCountdown ${UNDO_WINDOW_MS}ms linear forwards`,
                 },
@@ -108,9 +108,9 @@ export function useUndoToast() {
               style: {
                 padding: '6px 12px',
                 borderRadius: '8px',
-                background: 'rgba(79,99,255,0.2)',
-                border: '1px solid rgba(79,99,255,0.3)',
-                color: '#7c8fff',
+                background: 'rgba(79,93,200,0.14)',
+                border: '1px solid rgba(79,93,200,0.22)',
+                color: '#8b94e0',
                 fontSize: '11px',
                 fontWeight: 700,
                 cursor: 'pointer',

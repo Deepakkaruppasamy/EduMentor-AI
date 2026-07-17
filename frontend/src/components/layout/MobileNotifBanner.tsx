@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MobileNotifBanner.tsx
  *
  * A native-app-style "heads-up" notification banner for mobile / PWA.
@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useNotificationStore, AppNotification } from '../../store/notification.store';
 
 const TYPE_META: Record<AppNotification['type'], { icon: string; accent: string }> = {
-  quiz_assigned:   { icon: '📝', accent: '#7c8fff' },
+  quiz_assigned:   { icon: '📝', accent: '#8b94e0' },
   live_battle:     { icon: '⚔️', accent: '#ec4899' },
   document_status: { icon: '📁', accent: '#3b82f6' },
   evaluation:      { icon: '📋', accent: '#10b981' },
@@ -88,7 +88,7 @@ export const MobileNotifBanner: React.FC = () => {
 
   if (!visible || !current) return null;
 
-  const meta = TYPE_META[current.type] || { icon: '🔔', accent: '#4f63ff' };
+  const meta = TYPE_META[current.type] || { icon: '🔔', accent: '#4f5dc8' };
 
   const handleTap = () => {
     markAsRead(current.id);

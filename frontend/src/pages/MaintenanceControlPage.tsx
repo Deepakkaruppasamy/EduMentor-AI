@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { maintenanceService, MaintenanceSettings } from '../services/maintenance.service';
 import toast from 'react-hot-toast';
 
@@ -236,7 +236,7 @@ export const MaintenanceControlPage: React.FC = () => {
                   background: 'rgba(99,102,241,0.08)',
                   border: '1px solid rgba(99,102,241,0.2)',
                   borderRadius: 10, padding: '8px 14px',
-                  fontSize: 11, color: '#818cf8', fontWeight: 600,
+                  fontSize: 11, color: '#7b87d4', fontWeight: 600,
                 }}>
                   ⏱️ Estimated End: {new Date(endTime).toLocaleString()}
                 </div>

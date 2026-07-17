@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { authService } from '../services/auth.service';
 import { useAuthStore } from '../store/auth.store';
 import { Logo } from '../components/common/Logo';
+import { scaleInVariants } from '../utils/motion';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -63,13 +64,17 @@ export const LoginPage: React.FC = () => {
           }} 
         />
         <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full blur-3xl opacity-20"
-          style={{ background: 'radial-gradient(circle, #4f63ff, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #4f5dc8, transparent)' }} />
         <div className="absolute -bottom-40 -right-40 h-80 w-80 rounded-full blur-3xl opacity-15"
-          style={{ background: 'radial-gradient(circle, #9f7aea, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #7c6fc2, transparent)' }} />
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="glass-card w-full max-w-sm p-8">
+      <motion.div
+        variants={scaleInVariants}
+        initial="hidden"
+        animate="visible"
+        className="glass-card w-full max-w-sm p-8"
+      >
 
         {/* Logo */}
         <div className="mb-8 text-center">

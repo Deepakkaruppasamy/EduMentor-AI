@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Quiz, QuizResults } from '../../types';
@@ -59,7 +59,7 @@ export const QuizViewer: React.FC<QuizViewerProps> = ({ quiz, onComplete }) => {
           className="glass-card p-5 space-y-3">
           <div className="flex items-start gap-3">
             <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg text-[11px] font-bold"
-              style={{ background: 'rgba(79,99,255,0.2)', color: '#7c8fff', border: '1px solid rgba(79,99,255,0.3)' }}>
+              style={{ background: 'rgba(79,93,200,0.14)', color: '#8b94e0', border: '1px solid rgba(79,93,200,0.22)' }}>
               {idx + 1}
             </div>
             <p className="text-sm font-medium text-white leading-relaxed">{q.question}</p>
@@ -71,9 +71,9 @@ export const QuizViewer: React.FC<QuizViewerProps> = ({ quiz, onComplete }) => {
                 <button key={opt.label} onClick={() => setAnswers(prev => ({ ...prev, [idx]: opt.label }))}
                   className="flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition-all"
                   style={{
-                    background: answers[idx] === opt.label ? 'rgba(79,99,255,0.2)' : 'rgba(255,255,255,0.04)',
-                    border: answers[idx] === opt.label ? '1px solid rgba(79,99,255,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                    color: answers[idx] === opt.label ? '#7c8fff' : 'rgba(255,255,255,0.7)',
+                    background: answers[idx] === opt.label ? 'rgba(79,93,200,0.14)' : 'rgba(255,255,255,0.04)',
+                    border: answers[idx] === opt.label ? '1px solid rgba(79,93,200,0.45)' : '1px solid rgba(255,255,255,0.08)',
+                    color: answers[idx] === opt.label ? '#8b94e0' : 'rgba(255,255,255,0.7)',
                   }}>
                   <div className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border text-[10px] font-bold
                     ${answers[idx] === opt.label ? 'border-primary-500 bg-primary-500/20 text-primary-400' : 'border-white/20 text-white/40'}`}>

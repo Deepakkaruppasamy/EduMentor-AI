@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { MsgAttachment } from '../../types/messaging.types';
 
 const ICONS: Record<string, string> = {
@@ -27,7 +27,7 @@ export const FileAttachment: React.FC<{ attachment: MsgAttachment }> = ({ attach
     >
       <div
         className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-lg"
-        style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.15), rgba(159,122,234,0.1))' }}
+        style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.10), rgba(124,111,194,0.1))' }}
       >
         {icon}
       </div>

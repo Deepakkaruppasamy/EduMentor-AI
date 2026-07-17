@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/auth.store';
 import { useMessagingStore } from '../../store/messaging.store';
 import { messagingService } from '../../services/messaging.service';
@@ -54,12 +54,12 @@ export const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ onSelectDi
   };
 
   const categoryColors: Record<string, string> = {
-    'General Questions': '#4f63ff',
-    'Assignments': '#f6ad55',
-    'Exams': '#fc8181',
-    'Lab': '#48bb78',
-    'Course Materials': '#9f7aea',
-    'Announcements': '#38b2ac',
+    'General Questions': '#4f5dc8',
+    'Assignments': '#c4893a',
+    'Exams': '#c0524a',
+    'Lab': '#34a87a',
+    'Course Materials': '#7c6fc2',
+    'Announcements': '#2d9a8a',
   };
 
   return (
@@ -71,7 +71,7 @@ export const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ onSelectDi
           <button
             onClick={onCreateNew}
             className="h-7 px-2.5 rounded-lg text-[10px] font-semibold flex items-center gap-1"
-            style={{ background: 'linear-gradient(135deg, #4f63ff, #7c3aed)', color: 'white' }}
+            style={{ background: 'linear-gradient(135deg, #4f5dc8, #6359a8)', color: 'white' }}
           >
             + New
           </button>
@@ -81,7 +81,7 @@ export const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ onSelectDi
         <select
           value={selectedCourse}
           onChange={(e) => setSelectedCourse(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/[0.08] text-white/80 outline-none focus:border-[#4f63ff]/40 mb-2 appearance-none"
+          className="w-full px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/[0.08] text-white/80 outline-none focus:border-[#4f5dc8]/35 mb-2 appearance-none"
           style={{ backgroundImage: 'none' }}
         >
           <option value="" disabled>Select course…</option>
@@ -97,7 +97,7 @@ export const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ onSelectDi
           <button
             onClick={() => setSelectedCategory('')}
             className={`px-2 py-1 rounded-md text-[10px] transition-colors ${
-              !selectedCategory ? 'bg-[#4f63ff]/20 text-[#7c8fff]' : 'text-white/30 hover:text-white/50 hover:bg-white/5'
+              !selectedCategory ? 'bg-[#4f5dc8]/15 text-[#8b94e0]' : 'text-white/30 hover:text-white/50 hover:bg-white/5'
             }`}
           >
             All
@@ -126,7 +126,7 @@ export const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ onSelectDi
             <div className="text-2xl mb-2">💭</div>
             <div className="text-white/25">No discussions yet</div>
             {selectedCourse && (
-              <button onClick={onCreateNew} className="mt-2 text-[#7c8fff] hover:underline text-[10px]">
+              <button onClick={onCreateNew} className="mt-2 text-[#8b94e0] hover:underline text-[10px]">
                 Start a discussion →
               </button>
             )}
@@ -140,14 +140,14 @@ export const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ onSelectDi
                 onClick={() => onSelectDiscussion(disc)}
                 className={`w-full px-4 py-3 text-left transition-all border-l-2 ${
                   isActive
-                    ? 'bg-[#4f63ff]/10 border-l-[#4f63ff]'
+                    ? 'bg-[#4f5dc8]/10 border-l-[#4f5dc8]'
                     : 'border-l-transparent hover:bg-white/[0.03]'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span
                     className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: categoryColors[disc.category] || '#4f63ff' }}
+                    style={{ background: categoryColors[disc.category] || '#4f5dc8' }}
                   />
                   <span className="text-[10px] text-white/30 truncate">{disc.category}</span>
                   {disc.isResolved && (

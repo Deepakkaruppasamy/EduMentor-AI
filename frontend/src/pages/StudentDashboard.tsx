@@ -19,16 +19,29 @@ import { WidgetWrapper } from '../components/dashboard/WidgetWrapper';
 import { useOnboardingStore } from '../store/onboarding.store';
 import { studentDashboardTour } from '../components/onboarding/tours/studentDashboardTour';
 import toast from 'react-hot-toast';
+import { pageVariants, pageChildVariants, listContainerVariants, listItemVariants } from '../utils/motion';
+import { AnimatedNumber } from '../components/common/AnimatedNumber';
+import { PageTransition } from '../components/common/PageTransition';
 
 
 const StatCard: React.FC<{ icon: string; label: string; value: string | number; sub?: string; gradient: string }> = ({ icon, label, value, sub, gradient }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5 hover:scale-[1.02] transition-transform duration-200">
+  <motion.div
+    variants={pageChildVariants}
+    className="glass-card p-5"
+    whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(0,0,0,0.16)', transition: { duration: 0.18 } }}
+    whileTap={{ scale: 0.985, transition: { duration: 0.1 } }}
+  >
     <div className="flex items-start gap-4">
       <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl ${gradient}`}>
         {icon}
       </div>
       <div>
-        <div className="text-2xl font-bold text-white">{value}</div>
+        <div className="text-2xl font-bold text-white">
+          {typeof value === 'number'
+            ? <AnimatedNumber value={value} />
+            : value
+          }
+        </div>
         <div className="text-xs text-white/50">{label}</div>
         {sub && <div className="mt-0.5 text-[10px] text-white/30">{sub}</div>}
       </div>
@@ -615,7 +628,7 @@ export const StudentDashboard: React.FC = () => {
       ].map(item => (
         <Link key={item.to} to={item.to} className="flex items-center gap-3 rounded-xl p-3 transition-all"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,99,255,0.08)')}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,93,200,0.06)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}>
           <span className="text-lg">{item.icon}</span>
           <div className="flex-1 min-w-0">
@@ -636,7 +649,7 @@ export const StudentDashboard: React.FC = () => {
             <Link key={chat._id} to={`/chat?chatId=${chat._id}`}
               className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,99,255,0.08)')}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,93,200,0.06)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}>
               <span className="text-base">💬</span>
               <div className="flex-1 min-w-0">
@@ -660,8 +673,8 @@ export const StudentDashboard: React.FC = () => {
           <BarChart data={quizScoreData} barCategoryGap="30%">
             <defs>
               <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4f63ff" />
-                <stop offset="100%" stopColor="#9f7aea" />
+                <stop offset="0%" stopColor="#4f5dc8" />
+                <stop offset="100%" stopColor="#7c6fc2" />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -812,9 +825,12 @@ export const StudentDashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <PageTransition className="p-6 space-y-6">
       {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div
+        variants={pageChildVariants}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
           <h1 id="dashboard-welcome" className="text-2xl font-bold text-white">
             Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋
@@ -830,15 +846,18 @@ export const StudentDashboard: React.FC = () => {
             🎛️ Customize Dashboard Widgets
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* Stats Grid — staggered entrance */}
+      <motion.div
+        variants={listContainerVariants}
+        className="grid grid-cols-2 gap-4 lg:grid-cols-4"
+      >
         <StatCard icon="💬" label="Total Queries" value={progress?.totalQueries || 0} gradient="stat-gradient-blue" />
         <StatCard icon="📋" label="Quizzes Taken" value={progress?.totalQuizzesTaken || 0} gradient="stat-gradient-purple" />
         <StatCard icon="🎯" label="Avg Quiz Score" value={`${progress?.avgQuizScore || 0}%`} gradient="stat-gradient-green" />
         <StatCard icon="🔥" label="Active Courses" value={progress?.courseProgress?.length || progress?.courses?.length || user?.courses?.length || 0} gradient="stat-gradient-amber" />
-      </div>
+      </motion.div>
 
       {/* ── Learning Heatmap & Subject Mastery ── */}
       {(progress?.courseProgress || user?.courses) && (
@@ -849,9 +868,7 @@ export const StudentDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quiz Performance Trend */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          variants={pageChildVariants}
           className="glass-card p-5 space-y-4 lg:col-span-2"
         >
           <div className="flex items-center justify-between">
@@ -865,8 +882,8 @@ export const StudentDashboard: React.FC = () => {
               <AreaChart data={quizScoreData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <defs>
                   <linearGradient id="quizAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#4f63ff" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#4f63ff" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#4f5dc8" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#4f5dc8" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -876,7 +893,7 @@ export const StudentDashboard: React.FC = () => {
                   contentStyle={{ background: 'rgba(20,22,32,0.97)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '12px' }}
                   formatter={(v: any) => [`${v}%`, 'Score']}
                 />
-                <Area type="monotone" dataKey="score" stroke="#4f63ff" strokeWidth={2} fill="url(#quizAreaGrad)" dot={{ fill: '#4f63ff', r: 4 }} activeDot={{ r: 6 }} />
+                <Area type="monotone" dataKey="score" stroke="#4f5dc8" strokeWidth={2} fill="url(#quizAreaGrad)" dot={{ fill: '#4f5dc8', r: 4 }} activeDot={{ r: 6 }} />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
@@ -1105,6 +1122,6 @@ export const StudentDashboard: React.FC = () => {
           onSaved={(newPrefs) => setPrefs(newPrefs)}
         />
       )}
-    </div>
+    </PageTransition>
   );
 };

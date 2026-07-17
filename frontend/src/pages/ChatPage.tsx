@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useChatStore } from '../store/chat.store';
@@ -206,7 +206,7 @@ export const ChatPage: React.FC = () => {
           <div key={chat._id} onClick={() => { loadChat(chat._id); setLeftPanelOpen(false); }}
             className="w-full rounded-xl p-3 text-left text-xs transition-all cursor-pointer flex items-center justify-between group"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,99,255,0.08)')}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(79,93,200,0.06)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium text-white/70">{chat.title}</p>

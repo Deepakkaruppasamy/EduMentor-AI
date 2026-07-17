@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+﻿import React, { useRef, useState, useEffect } from 'react';
 
 interface AudioRecorderProps {
   onSend: (blob: Blob) => void;
@@ -143,7 +143,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSend, onCancel }
           <button
             onClick={handleSend}
             className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
-            style={{ background: 'linear-gradient(135deg, #4f63ff, #7c3aed)' }}
+            style={{ background: 'linear-gradient(135deg, #4f5dc8, #6359a8)' }}
             title="Send"
           >
             ➤

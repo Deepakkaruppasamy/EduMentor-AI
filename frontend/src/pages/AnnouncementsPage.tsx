@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { announcementService } from '../services/announcement.service';
 import { format } from 'date-fns';
@@ -7,18 +7,18 @@ import { Loader } from '../components/common/Loader';
 import { recentlyViewedService } from '../services/recently-viewed.service';
 
 const TYPE_CONFIG: Record<string, { color: string; icon: string; bg: string }> = {
-  General: { color: '#7c8fff', bg: 'rgba(79,99,255,0.1)', icon: '📢' },
-  Academic: { color: '#48bb78', bg: 'rgba(72,187,120,0.1)', icon: '🎓' },
-  Placement: { color: '#f6ad55', bg: 'rgba(246,173,85,0.1)', icon: '💼' },
-  Event: { color: '#9f7aea', bg: 'rgba(159,122,234,0.1)', icon: '🎉' },
-  Emergency: { color: '#fc8181', bg: 'rgba(252,129,129,0.1)', icon: '🚨' },
+  General: { color: '#8b94e0', bg: 'rgba(79,93,200,0.08)', icon: '📢' },
+  Academic: { color: '#34a87a', bg: 'rgba(52,168,122,0.1)', icon: '🎓' },
+  Placement: { color: '#c4893a', bg: 'rgba(196,137,58,0.1)', icon: '💼' },
+  Event: { color: '#7c6fc2', bg: 'rgba(124,111,194,0.1)', icon: '🎉' },
+  Emergency: { color: '#c0524a', bg: 'rgba(192,82,74,0.1)', icon: '🚨' },
 };
 
 const PRIORITY_CONFIG: Record<string, { color: string; label: string }> = {
   Low: { color: 'rgba(255,255,255,0.3)', label: 'Low' },
-  Medium: { color: '#7c8fff', label: 'Medium' },
-  High: { color: '#f6ad55', label: 'High' },
-  Urgent: { color: '#fc8181', label: 'URGENT' },
+  Medium: { color: '#8b94e0', label: 'Medium' },
+  High: { color: '#c4893a', label: 'High' },
+  Urgent: { color: '#c0524a', label: 'URGENT' },
 };
 
 export const AnnouncementsPage: React.FC = () => {
@@ -127,13 +127,13 @@ export const AnnouncementsPage: React.FC = () => {
         <div>
           <h1 className="text-lg font-bold text-white/90">📣 Announcements</h1>
           <p className="text-xs text-white/40 mt-0.5">
-            {unreadCount > 0 ? <><span className="text-[#f6ad55] font-semibold">{unreadCount} unread</span> announcements</> : 'All caught up!'}
+            {unreadCount > 0 ? <><span className="text-[#c4893a] font-semibold">{unreadCount} unread</span> announcements</> : 'All caught up!'}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {unreadCount > 0 && <button onClick={handleMarkAllRead} className="px-3 py-2 rounded-xl text-xs font-semibold text-white/50 border border-white/10 hover:text-white">✓ Mark All Read</button>}
           <button onClick={() => setShowBookmarked(!showBookmarked)}
-            className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${showBookmarked ? 'text-[#f6ad55] border-[#f6ad55]/30 bg-[#f6ad55]/10' : 'text-white/40 border-white/10'}`}>
+            className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${showBookmarked ? 'text-[#c4893a] border-[#c4893a]/30 bg-[#c4893a]/10' : 'text-white/40 border-white/10'}`}>
             🔖 Bookmarked
           </button>
           {canCreate && <button onClick={() => setShowCreateModal(true)} className="btn-primary text-xs px-4 py-2">+ Publish</button>}
@@ -178,7 +178,7 @@ export const AnnouncementsPage: React.FC = () => {
                       <h3 className={`text-sm font-bold truncate ${!ann.isRead ? 'text-white/90' : 'text-white/65'}`}>{ann.title}</h3>
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${pc.color}20`, color: pc.color }}>{pc.label}</span>
                       <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: tc.bg, color: tc.color }}>{ann.type}</span>
-                      {!ann.isRead && <span className="w-2 h-2 rounded-full bg-[#4f63ff] animate-pulse flex-shrink-0" />}
+                      {!ann.isRead && <span className="w-2 h-2 rounded-full bg-[#4f5dc8] animate-pulse flex-shrink-0" />}
                     </div>
                     <div className="text-[10px] text-white/30 mt-0.5">By {ann.createdBy?.name} · {format(new Date(ann.createdAt), 'MMM d, yyyy')}</div>
                     <div className={`mt-2 text-xs text-white/65 leading-relaxed ${!isExpanded ? 'line-clamp-2' : ''}`}>{ann.content}</div>
@@ -196,7 +196,7 @@ export const AnnouncementsPage: React.FC = () => {
                           }).catch(() => {});
                         }
                       }}
-                        className="text-[10px] text-[#7c8fff] mt-1 hover:underline">
+                        className="text-[10px] text-[#8b94e0] mt-1 hover:underline">
                         {isExpanded ? 'Show less' : 'Read more'}
                       </button>
                     )}
@@ -206,7 +206,7 @@ export const AnnouncementsPage: React.FC = () => {
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {ann.attachments.map((att: any, i: number) => (
                           <a key={i} href={`/uploads/announcements/${att.filename}`} target="_blank" rel="noopener noreferrer"
-                            className="text-[9px] px-2 py-1 rounded-lg font-semibold text-[#7c8fff] flex items-center gap-1" style={{ background: 'rgba(79,99,255,0.1)' }}>
+                            className="text-[9px] px-2 py-1 rounded-lg font-semibold text-[#8b94e0] flex items-center gap-1" style={{ background: 'rgba(79,93,200,0.08)' }}>
                             📎 {att.originalName}
                           </a>
                         ))}
@@ -215,8 +215,8 @@ export const AnnouncementsPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button onClick={() => handleToggleBookmark(ann._id)}
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-all ${ann.isBookmarked ? 'text-[#f6ad55]' : 'text-white/30 hover:text-white/60'}`}
-                      style={{ background: ann.isBookmarked ? 'rgba(246,173,85,0.1)' : 'rgba(255,255,255,0.03)' }}>
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-all ${ann.isBookmarked ? 'text-[#c4893a]' : 'text-white/30 hover:text-white/60'}`}
+                      style={{ background: ann.isBookmarked ? 'rgba(196,137,58,0.1)' : 'rgba(255,255,255,0.03)' }}>
                       🔖
                     </button>
                     {!ann.isRead && (
@@ -227,7 +227,7 @@ export const AnnouncementsPage: React.FC = () => {
                     )}
                     {canCreate && ann.createdBy?._id === user?.id && (
                       <button onClick={() => handleDelete(ann._id)}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] text-[#fc8181] opacity-60 hover:opacity-100" style={{ background: 'rgba(252,129,129,0.05)' }}>
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] text-[#c0524a] opacity-60 hover:opacity-100" style={{ background: 'rgba(192,82,74,0.05)' }}>
                         🗑
                       </button>
                     )}
@@ -268,7 +268,7 @@ export const AnnouncementsPage: React.FC = () => {
                 <div className="flex gap-2">
                   {['student', 'faculty', 'admin'].map(role => (
                     <button key={role} onClick={() => setNewTargetRoles(prev => prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role])}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold border transition-all capitalize ${newTargetRoles.includes(role) ? 'text-[#7c8fff] border-[#4f63ff]/30 bg-[#4f63ff]/10' : 'text-white/40 border-white/10'}`}>
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold border transition-all capitalize ${newTargetRoles.includes(role) ? 'text-[#8b94e0] border-[#4f5dc8]/25 bg-[#4f5dc8]/10' : 'text-white/40 border-white/10'}`}>
                       {role}
                     </button>
                   ))}

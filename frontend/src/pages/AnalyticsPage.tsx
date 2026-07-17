@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -109,10 +109,10 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Usage & Performance Summary Cards */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-        <StatCard icon="👥" label="Class Enrollments" value={gradebook.length} color="#4f63ff" />
-        <StatCard icon="🎯" label="Class Avg Score" value={`${classAvgScore}%`} color="#48bb78" />
-        <StatCard icon="💬" label="Chat Interactions" value={totalClassQueries} color="#9f7aea" />
-        <StatCard icon="🚨" label="Students at Risk" value={atRiskStudents.length} color="#fc8181" />
+        <StatCard icon="👥" label="Class Enrollments" value={gradebook.length} color="#4f5dc8" />
+        <StatCard icon="🎯" label="Class Avg Score" value={`${classAvgScore}%`} color="#34a87a" />
+        <StatCard icon="💬" label="Chat Interactions" value={totalClassQueries} color="#7c6fc2" />
+        <StatCard icon="🚨" label="Students at Risk" value={atRiskStudents.length} color="#c0524a" />
       </div>
 
       {/* Charts Grid */}
@@ -127,8 +127,8 @@ export const AnalyticsPage: React.FC = () => {
                 <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
-                <Line type="monotone" dataKey="queries" stroke="#4f63ff" strokeWidth={2} dot={{ fill: '#4f63ff', r: 3 }} name="Queries" />
-                <Line type="monotone" dataKey="trust" stroke="#48bb78" strokeWidth={2} dot={{ fill: '#48bb78', r: 3 }} name="Trust %" />
+                <Line type="monotone" dataKey="queries" stroke="#4f5dc8" strokeWidth={2} dot={{ fill: '#4f5dc8', r: 3 }} name="Queries" />
+                <Line type="monotone" dataKey="trust" stroke="#34a87a" strokeWidth={2} dot={{ fill: '#34a87a', r: 3 }} name="Trust %" />
               </LineChart>
             </ResponsiveContainer>
           ) : (
@@ -148,8 +148,8 @@ export const AnalyticsPage: React.FC = () => {
                 <Bar dataKey="count" fill="url(#topicGrad)" radius={[0, 6, 6, 0]} />
                 <defs>
                   <linearGradient id="topicGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#4f63ff" />
-                    <stop offset="100%" stopColor="#9f7aea" />
+                    <stop offset="0%" stopColor="#4f5dc8" />
+                    <stop offset="100%" stopColor="#7c6fc2" />
                   </linearGradient>
                 </defs>
               </BarChart>
@@ -172,7 +172,7 @@ export const AnalyticsPage: React.FC = () => {
                 <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 9 }} axisLine={false} tickLine={false} />
                 <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
-                <Bar dataKey="avgScore" fill="#fc8181" radius={[6, 6, 0, 0]} name="Avg Score (%)" />
+                <Bar dataKey="avgScore" fill="#c0524a" radius={[6, 6, 0, 0]} name="Avg Score (%)" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -250,9 +250,9 @@ export const AnalyticsPage: React.FC = () => {
                 <XAxis dataKey="department" tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#f0f2f8', fontSize: '11px' }} />
-                <Bar dataKey="aiUsage" fill="#4f63ff" name="AI Usage (Queries)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="avgQuizScore" fill="#48bb78" name="Quiz Average (%)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="learningProgress" fill="#9f7aea" name="Learning Progress (%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="aiUsage" fill="#4f5dc8" name="AI Usage (Queries)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgQuizScore" fill="#34a87a" name="Quiz Average (%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="learningProgress" fill="#7c6fc2" name="Learning Progress (%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

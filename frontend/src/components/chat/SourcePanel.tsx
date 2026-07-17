@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 import { ExplainabilityInfo, HallucinationInfo } from '../../types';
 import { useChatStore } from '../../store/chat.store';
@@ -34,19 +34,19 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({ explainability, halluc
           <div className="rounded-lg p-3"
             style={{
               background: hallucination.trustScore >= 75
-                ? 'rgba(72,187,120,0.08)'
+                ? 'rgba(52,168,122,0.08)'
                 : hallucination.trustScore >= 45
-                ? 'rgba(246,173,85,0.08)'
-                : 'rgba(252,129,129,0.08)',
-              border: `1px solid ${hallucination.trustScore >= 75 ? 'rgba(72,187,120,0.2)' : hallucination.trustScore >= 45 ? 'rgba(246,173,85,0.2)' : 'rgba(252,129,129,0.2)'}`,
+                ? 'rgba(196,137,58,0.08)'
+                : 'rgba(192,82,74,0.08)',
+              border: `1px solid ${hallucination.trustScore >= 75 ? 'rgba(52,168,122,0.2)' : hallucination.trustScore >= 45 ? 'rgba(196,137,58,0.2)' : 'rgba(192,82,74,0.2)'}`,
             }}>
             <div className="flex items-center justify-between mb-1">
               <span className="font-medium" style={{
-                color: hallucination.trustScore >= 75 ? '#48bb78' : hallucination.trustScore >= 45 ? '#f6ad55' : '#fc8181'
+                color: hallucination.trustScore >= 75 ? '#34a87a' : hallucination.trustScore >= 45 ? '#c4893a' : '#c0524a'
               }}>
                 {hallucination.status === 'verified' ? '✅ Verified' : hallucination.status === 'partially_verified' ? '⚠️ Partially Verified' : '❌ Unverified'}
               </span>
-              <span className="font-bold" style={{ color: hallucination.trustScore >= 75 ? '#48bb78' : hallucination.trustScore >= 45 ? '#f6ad55' : '#fc8181' }}>
+              <span className="font-bold" style={{ color: hallucination.trustScore >= 75 ? '#34a87a' : hallucination.trustScore >= 45 ? '#c4893a' : '#c0524a' }}>
                 Trust: {hallucination.trustScore}%
               </span>
             </div>
@@ -61,7 +61,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({ explainability, halluc
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <div className="flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-bold flex-shrink-0"
-                    style={{ background: 'rgba(79,99,255,0.2)', color: '#7c8fff' }}>
+                    style={{ background: 'rgba(79,93,200,0.14)', color: '#8b94e0' }}>
                     {source.rank}
                   </div>
                   <span className="font-semibold text-white/80 truncate flex-1 min-w-0" title={source.documentName}>
@@ -79,7 +79,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({ explainability, halluc
                     🔎 Inspect
                   </button>
                   <div className="flex-shrink-0 rounded-full px-2 py-0.5"
-                    style={{ background: 'rgba(79,99,255,0.15)', color: '#7c8fff' }}>
+                    style={{ background: 'rgba(79,93,200,0.10)', color: '#8b94e0' }}>
                     {source.confidencePercent}%
                   </div>
                 </div>

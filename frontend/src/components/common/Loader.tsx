@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from './Logo';
 
@@ -107,7 +107,7 @@ export const Loader: React.FC<LoaderProps> = ({ message, fullscreen = false, sma
             className="h-1 w-4 rounded-full bg-primary-500"
             animate={{
               opacity: [0.2, 0.8, 0.2],
-              backgroundColor: ['#4f63ff', '#9f7aea', '#4f63ff']
+              backgroundColor: ['#4f5dc8', '#7c6fc2', '#4f5dc8']
             }}
             transition={{
               duration: 1.5,

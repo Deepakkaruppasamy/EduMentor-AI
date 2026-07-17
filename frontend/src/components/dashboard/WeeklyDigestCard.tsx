@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { motion } from 'framer-motion';
 import { Loader } from '../common/Loader';
@@ -191,7 +191,7 @@ export const WeeklyDigestCard: React.FC = () => {
                 <div
                   key={item.id}
                   className="flex items-center justify-between p-3 rounded-xl border border-white/[0.04] transition-colors"
-                  style={{ background: item.done ? 'rgba(72,187,120,0.04)' : 'rgba(255,255,255,0.01)' }}
+                  style={{ background: item.done ? 'rgba(52,168,122,0.04)' : 'rgba(255,255,255,0.01)' }}
                 >
                   <div className="flex items-center gap-2.5">
                     <div className={`h-4.5 w-4.5 rounded-md border flex items-center justify-center text-[10px] ${
@@ -323,7 +323,7 @@ export const WeeklyDigestCard: React.FC = () => {
                 <div
                   key={item.id}
                   className="flex items-center justify-between p-3 rounded-xl border border-white/[0.04]"
-                  style={{ background: item.done ? 'rgba(72,187,120,0.04)' : 'rgba(255,255,255,0.01)' }}
+                  style={{ background: item.done ? 'rgba(52,168,122,0.04)' : 'rgba(255,255,255,0.01)' }}
                 >
                   <div className="flex items-center gap-2.5">
                     <div className={`h-4.5 w-4.5 rounded-md border flex items-center justify-center text-[10px] ${

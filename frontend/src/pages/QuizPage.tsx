@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BookmarkButton } from '../components/common/BookmarkButton';
 import { recentlyViewedService } from '../services/recently-viewed.service';
@@ -138,7 +138,7 @@ export const QuizPage: React.FC = () => {
             <button
               onClick={() => setShowLiveBattle(true)}
               className="px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-indigo-500/20"
-              style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #9f7aea 100%)' }}
+              style={{ background: 'linear-gradient(135deg, #4f5dc8 0%, #7c6fc2 100%)' }}
             >
               ⚔️ {isFaculty ? 'Host Live Quiz Battle' : 'Join Live Quiz Battle'}
             </button>
@@ -158,8 +158,8 @@ export const QuizPage: React.FC = () => {
                 onClick={() => setActiveTab('practice')}
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all"
                 style={{
-                  background: activeTab === 'practice' ? 'rgba(79,99,255,0.15)' : 'transparent',
-                  color: activeTab === 'practice' ? '#7c8fff' : 'rgba(255,255,255,0.4)',
+                  background: activeTab === 'practice' ? 'rgba(79,93,200,0.10)' : 'transparent',
+                  color: activeTab === 'practice' ? '#8b94e0' : 'rgba(255,255,255,0.4)',
                 }}
               >
                 Practice Arena
@@ -168,8 +168,8 @@ export const QuizPage: React.FC = () => {
                 onClick={() => setActiveTab('assigned')}
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5"
                 style={{
-                  background: activeTab === 'assigned' ? 'rgba(79,99,255,0.15)' : 'transparent',
-                  color: activeTab === 'assigned' ? '#7c8fff' : 'rgba(255,255,255,0.4)',
+                  background: activeTab === 'assigned' ? 'rgba(79,93,200,0.10)' : 'transparent',
+                  color: activeTab === 'assigned' ? '#8b94e0' : 'rgba(255,255,255,0.4)',
                 }}
               >
                 Class Assignments
@@ -263,17 +263,17 @@ export const QuizPage: React.FC = () => {
                 const isOverdue = !isCompleted && quiz.dueDate && new Date() > new Date(quiz.dueDate);
 
                 let badgeText = 'Pending';
-                let badgeBg = 'rgba(79,99,255,0.1)';
-                let badgeColor = '#7c8fff';
+                let badgeBg = 'rgba(79,93,200,0.08)';
+                let badgeColor = '#8b94e0';
 
                 if (isCompleted) {
                   badgeText = `Completed (${quiz.maxScore > 0 ? Math.round(((quiz.score || 0) / quiz.maxScore) * 100) : 0}%)`;
-                  badgeBg = 'rgba(72,187,120,0.1)';
-                  badgeColor = '#48bb78';
+                  badgeBg = 'rgba(52,168,122,0.1)';
+                  badgeColor = '#34a87a';
                 } else if (isOverdue) {
                   badgeText = 'Overdue';
-                  badgeBg = 'rgba(252,129,129,0.1)';
-                  badgeColor = '#fc8181';
+                  badgeBg = 'rgba(192,82,74,0.1)';
+                  badgeColor = '#c0524a';
                 }
 
                 const courseCode = quiz.course && typeof quiz.course === 'object' ? quiz.course.code : 'Course';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { messagingService } from '../../services/messaging.service';
 import { MsgConversation, MsgMessage, MsgDiscussion, MsgDiscussionReply } from '../../types/messaging.types';
 import { format } from 'date-fns';
@@ -273,7 +273,7 @@ export const AdminModerationPanel: React.FC = () => {
         <button
           onClick={() => setSubTab('chats')}
           className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-            subTab === 'chats' ? 'bg-[#4f63ff]/20 text-[#7c8fff]' : 'text-white/40 hover:text-white/60'
+            subTab === 'chats' ? 'bg-[#4f5dc8]/15 text-[#8b94e0]' : 'text-white/40 hover:text-white/60'
           }`}
         >
           💬 Private Chats Log
@@ -281,7 +281,7 @@ export const AdminModerationPanel: React.FC = () => {
         <button
           onClick={() => setSubTab('discussions')}
           className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-            subTab === 'discussions' ? 'bg-[#4f63ff]/20 text-[#7c8fff]' : 'text-white/40 hover:text-white/60'
+            subTab === 'discussions' ? 'bg-[#4f5dc8]/15 text-[#8b94e0]' : 'text-white/40 hover:text-white/60'
           }`}
         >
           🗣️ Public Discussions
@@ -289,7 +289,7 @@ export const AdminModerationPanel: React.FC = () => {
         <button
           onClick={() => setSubTab('aichats')}
           className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-            subTab === 'aichats' ? 'bg-[#4f63ff]/20 text-[#7c8fff]' : 'text-white/40 hover:text-white/60'
+            subTab === 'aichats' ? 'bg-[#4f5dc8]/15 text-[#8b94e0]' : 'text-white/40 hover:text-white/60'
           }`}
         >
           🧙‍♂️ AI Tutor Chat Logs
@@ -297,7 +297,7 @@ export const AdminModerationPanel: React.FC = () => {
         <button
           onClick={() => setSubTab('quizzes')}
           className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-            subTab === 'quizzes' ? 'bg-[#4f63ff]/20 text-[#7c8fff]' : 'text-white/40 hover:text-white/60'
+            subTab === 'quizzes' ? 'bg-[#4f5dc8]/15 text-[#8b94e0]' : 'text-white/40 hover:text-white/60'
           }`}
         >
           📝 Quiz Attempts Log
@@ -305,7 +305,7 @@ export const AdminModerationPanel: React.FC = () => {
         <button
           onClick={() => setSubTab('users')}
           className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-            subTab === 'users' ? 'bg-[#4f63ff]/20 text-[#7c8fff]' : 'text-white/40 hover:text-white/60'
+            subTab === 'users' ? 'bg-[#4f5dc8]/15 text-[#8b94e0]' : 'text-white/40 hover:text-white/60'
           }`}
         >
           🔒 Permissions
@@ -334,7 +334,7 @@ export const AdminModerationPanel: React.FC = () => {
                         isActive ? 'bg-white/5' : 'hover:bg-white/[0.02]'
                       }`}
                     >
-                      <div className="text-xs font-bold text-[#7c8fff] truncate">
+                      <div className="text-xs font-bold text-[#8b94e0] truncate">
                         👤 {student?.name || 'Unknown student'}
                       </div>
                       <div className="text-[10px] text-white/40 mt-1 truncate">
@@ -371,7 +371,7 @@ export const AdminModerationPanel: React.FC = () => {
                         <div key={msg._id} className="flex items-start justify-between gap-4 p-3 rounded-2xl bg-white/[0.02] border border-white/[0.05] group hover:bg-white/[0.04] transition-all">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 mb-1.5">
-                              <span className="text-xs font-semibold text-[#7c8fff]">{msg.sender?.name}</span>
+                              <span className="text-xs font-semibold text-[#8b94e0]">{msg.sender?.name}</span>
                               <span className="text-[9px] text-white/25 capitalize">{msg.sender?.role}</span>
                               <span className="text-[9px] text-white/20">•</span>
                               <span className="text-[9px] text-white/20">{format(new Date(msg.createdAt), 'MMM d, h:mm a')}</span>
@@ -426,7 +426,7 @@ export const AdminModerationPanel: React.FC = () => {
                 <select
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/[0.08] text-white/80 outline-none focus:border-[#4f63ff]/40 appearance-none"
+                  className="w-full px-3 py-2 rounded-lg text-xs bg-white/5 border border-white/[0.08] text-white/80 outline-none focus:border-[#4f5dc8]/35 appearance-none"
                 >
                   {courses.map((c) => (
                     <option key={c._id} value={c._id} className="bg-[#111318]">{c.code} — {c.title}</option>
@@ -467,7 +467,7 @@ export const AdminModerationPanel: React.FC = () => {
                   <div className="p-5 border-b border-white/5 bg-white/[0.01] flex justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] bg-[#4f63ff]/15 text-[#7c8fff] px-2 py-0.5 rounded font-medium">{selectedDiscussion.category}</span>
+                        <span className="text-[10px] bg-[#4f5dc8]/15 text-[#8b94e0] px-2 py-0.5 rounded font-medium">{selectedDiscussion.category}</span>
                         {selectedDiscussion.isResolved && (
                           <span className="text-[10px] bg-green-500/15 text-green-400 px-2 py-0.5 rounded font-medium">✓ Resolved</span>
                         )}
@@ -497,7 +497,7 @@ export const AdminModerationPanel: React.FC = () => {
                         <div key={reply._id} className="flex items-start justify-between gap-3 p-3 rounded-xl bg-white/[0.01] border border-white/5 group hover:bg-white/[0.03]">
                           <div className="min-w-0 flex-1" style={{ marginLeft: reply.depth * 16 }}>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold text-[#7c8fff]">{reply.author?.name}</span>
+                              <span className="text-xs font-semibold text-[#8b94e0]">{reply.author?.name}</span>
                               <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/5 text-white/40 capitalize">{reply.author?.role}</span>
                               <span className="text-[9px] text-white/20">{format(new Date(reply.createdAt), 'MMM d, h:mm a')}</span>
                             </div>
@@ -542,7 +542,7 @@ export const AdminModerationPanel: React.FC = () => {
                         isSessionActive ? 'bg-white/5' : 'hover:bg-white/[0.02]'
                       }`}
                     >
-                      <div className="text-xs font-bold text-[#7c8fff] truncate">👤 {session.user?.name || 'Unknown Student'}</div>
+                      <div className="text-xs font-bold text-[#8b94e0] truncate">👤 {session.user?.name || 'Unknown Student'}</div>
                       <div className="text-[10px] text-white/40 mt-1 truncate">📖 Course: {session.course?.code}</div>
                       <div className="text-[10px] text-white/35 mt-1 truncate">Title: "{session.title}"</div>
                       <div className="text-[9px] text-white/20 mt-1.5 text-right">{format(new Date(session.updatedAt), 'MMM d, h:mm a')}</div>
@@ -577,8 +577,8 @@ export const AdminModerationPanel: React.FC = () => {
                           <div
                             className="rounded-2xl px-4 py-2.5 text-xs leading-relaxed"
                             style={{
-                              background: isUser ? 'rgba(79, 99, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                              border: isUser ? '1px solid rgba(79, 99, 255, 0.25)' : '1px solid rgba(255, 255, 255, 0.07)',
+                              background: isUser ? 'rgba(79, 93, 200, 0.10)' : 'rgba(255, 255, 255, 0.05)',
+                              border: isUser ? '1px solid rgba(79, 93, 200, 0.16)' : '1px solid rgba(255, 255, 255, 0.07)',
                             }}
                           >
                             {msg.content}
@@ -624,7 +624,7 @@ export const AdminModerationPanel: React.FC = () => {
                         isQuizActive ? 'bg-white/5' : 'hover:bg-white/[0.02]'
                       }`}
                     >
-                      <div className="text-xs font-bold text-[#7c8fff] truncate">👤 {quiz.student?.name || 'Unknown Student'}</div>
+                      <div className="text-xs font-bold text-[#8b94e0] truncate">👤 {quiz.student?.name || 'Unknown Student'}</div>
                       <div className="text-[10px] text-white/40 mt-1 truncate">📖 Course: {quiz.course?.code}</div>
                       <div className="text-[10px] text-white/35 mt-1 truncate">Topic: "{quiz.title}"</div>
                       <div className="flex items-center justify-between mt-1.5">
@@ -680,15 +680,15 @@ export const AdminModerationPanel: React.FC = () => {
                                   style={{
                                     background: isSelected
                                       ? isCorrectOption
-                                        ? 'rgba(72,187,120,0.15)'
-                                        : 'rgba(252,129,129,0.15)'
+                                        ? 'rgba(52,168,122,0.15)'
+                                        : 'rgba(192,82,74,0.15)'
                                       : 'rgba(255,255,255,0.01)',
                                     borderColor: isSelected
                                       ? isCorrectOption
-                                        ? 'rgba(72,187,120,0.3)'
-                                        : 'rgba(252,129,129,0.3)'
+                                        ? 'rgba(52,168,122,0.3)'
+                                        : 'rgba(192,82,74,0.3)'
                                       : isCorrectOption
-                                        ? 'rgba(72,187,120,0.4)'
+                                        ? 'rgba(52,168,122,0.4)'
                                         : 'rgba(255,255,255,0.05)',
                                   }}
                                 >
@@ -702,7 +702,7 @@ export const AdminModerationPanel: React.FC = () => {
                         )}
 
                         {q.explanation && (
-                          <div className="mt-2 p-2.5 rounded bg-white/[0.02] border-l-2 border-[#4f63ff] text-[10px] text-white/50 leading-relaxed">
+                          <div className="mt-2 p-2.5 rounded bg-white/[0.02] border-l-2 border-[#4f5dc8] text-[10px] text-white/50 leading-relaxed">
                             <span className="font-semibold text-white/70 block mb-0.5">Explanation:</span>
                             {q.explanation}
                           </div>

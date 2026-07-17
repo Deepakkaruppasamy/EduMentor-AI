@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth.store';
 import { feedbackService } from '../services/feedback.service';
@@ -64,9 +64,9 @@ const StarRating: React.FC<{ value: number; onChange?: (v: number) => void; read
 };
 
 const statusColors: Record<string, { bg: string; text: string; border: string }> = {
-  pending: { bg: 'rgba(246,173,85,0.1)', text: '#f6ad55', border: 'rgba(246,173,85,0.3)' },
-  reviewed: { bg: 'rgba(79,99,255,0.1)', text: '#7c8fff', border: 'rgba(79,99,255,0.3)' },
-  acknowledged: { bg: 'rgba(72,187,120,0.1)', text: '#48bb78', border: 'rgba(72,187,120,0.3)' },
+  pending: { bg: 'rgba(196,137,58,0.1)', text: '#c4893a', border: 'rgba(196,137,58,0.3)' },
+  reviewed: { bg: 'rgba(79,93,200,0.08)', text: '#8b94e0', border: 'rgba(79,93,200,0.22)' },
+  acknowledged: { bg: 'rgba(52,168,122,0.1)', text: '#34a87a', border: 'rgba(52,168,122,0.3)' },
 };
 
 // ── Student: Submit Form ──────────────────────────────────────
@@ -118,9 +118,9 @@ const StudentSubmitForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                 onClick={() => setTargetType(t)}
                 className="py-2.5 rounded-xl text-xs font-semibold transition-all capitalize"
                 style={{
-                  background: targetType === t ? 'rgba(79,99,255,0.15)' : 'rgba(255,255,255,0.03)',
-                  border: targetType === t ? '1px solid rgba(79,99,255,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                  color: targetType === t ? '#7c8fff' : 'rgba(255,255,255,0.5)',
+                  background: targetType === t ? 'rgba(79,93,200,0.10)' : 'rgba(255,255,255,0.03)',
+                  border: targetType === t ? '1px solid rgba(79,93,200,0.32)' : '1px solid rgba(255,255,255,0.06)',
+                  color: targetType === t ? '#8b94e0' : 'rgba(255,255,255,0.5)',
                 }}
               >
                 {t === 'platform' ? '🖥️ Platform' : t === 'faculty' ? '👨‍🏫 Faculty' : '📚 Course'}
@@ -184,7 +184,7 @@ const StudentSubmitForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
           <button
             onClick={() => setIsAnonymous(!isAnonymous)}
             className="relative h-5 w-9 rounded-full transition-all flex-shrink-0"
-            style={{ background: isAnonymous ? 'rgba(79,99,255,0.6)' : 'rgba(255,255,255,0.1)' }}
+            style={{ background: isAnonymous ? 'rgba(79,93,200,0.55)' : 'rgba(255,255,255,0.1)' }}
           >
             <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all shadow ${isAnonymous ? 'left-4' : 'left-0.5'}`} />
           </button>
@@ -239,7 +239,7 @@ const FeedbackCard: React.FC<{
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <StarRating value={fb.rating} readonly size="text-sm" />
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(79,99,255,0.1)', color: '#7c8fff' }}>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(79,93,200,0.08)', color: '#8b94e0' }}>
                 {fb.category}
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize" style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}>
@@ -271,7 +271,7 @@ const FeedbackCard: React.FC<{
               <p className="text-xs text-white/60 leading-relaxed pt-4 whitespace-pre-wrap">{fb.message}</p>
 
               {fb.adminNote && (
-                <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(79,99,255,0.05)', border: '1px solid rgba(79,99,255,0.15)' }}>
+                <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(79,93,200,0.04)', border: '1px solid rgba(79,93,200,0.10)' }}>
                   <span className="text-primary-400 font-bold block mb-1">📝 Admin Note</span>
                   <p className="text-white/60">{fb.adminNote}</p>
                 </div>
@@ -329,10 +329,10 @@ const AdminAnalytics: React.FC<{ analytics: Analytics }> = ({ analytics }) => {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Total Feedback', value: analytics.total, icon: '💬', color: '#7c8fff' },
-          { label: 'Avg. Rating', value: `${analytics.averageRating} ⭐`, icon: '⭐', color: '#f6ad55' },
-          { label: 'Platform Reviews', value: analytics.byTargetType.find(t => t._id === 'platform')?.count || 0, icon: '🖥️', color: '#48bb78' },
-          { label: 'Faculty Reviews', value: analytics.byTargetType.find(t => t._id === 'faculty')?.count || 0, icon: '👨‍🏫', color: '#fc8181' },
+          { label: 'Total Feedback', value: analytics.total, icon: '💬', color: '#8b94e0' },
+          { label: 'Avg. Rating', value: `${analytics.averageRating} ⭐`, icon: '⭐', color: '#c4893a' },
+          { label: 'Platform Reviews', value: analytics.byTargetType.find(t => t._id === 'platform')?.count || 0, icon: '🖥️', color: '#34a87a' },
+          { label: 'Faculty Reviews', value: analytics.byTargetType.find(t => t._id === 'faculty')?.count || 0, icon: '👨‍🏫', color: '#c0524a' },
         ].map((kpi, i) => (
           <div key={i} className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="text-2xl mb-1">{kpi.icon}</div>
@@ -359,7 +359,7 @@ const AdminAnalytics: React.FC<{ analytics: Analytics }> = ({ analytics }) => {
                     animate={{ width: `${pct}%` }}
                     transition={{ duration: 0.8, delay: (5 - star) * 0.1 }}
                     className="h-full rounded-full"
-                    style={{ background: `linear-gradient(90deg, #4f63ff, #9f7aea)` }}
+                    style={{ background: `linear-gradient(90deg, #4f5dc8, #7c6fc2)` }}
                   />
                 </div>
                 <span className="text-xs text-white/40 w-6">{count}</span>
@@ -486,7 +486,7 @@ export const FeedbackPage: React.FC = () => {
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center text-xl" style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2), rgba(159,122,234,0.2))', border: '1px solid rgba(79,99,255,0.3)' }}>
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center text-xl" style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.14), rgba(124,111,194,0.2))', border: '1px solid rgba(79,93,200,0.22)' }}>
               💬
             </div>
             <div>
@@ -508,9 +508,9 @@ export const FeedbackPage: React.FC = () => {
               onClick={() => setActiveTab(tab.key)}
               className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
               style={{
-                background: activeTab === tab.key ? 'rgba(79,99,255,0.15)' : 'rgba(255,255,255,0.03)',
-                border: activeTab === tab.key ? '1px solid rgba(79,99,255,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                color: activeTab === tab.key ? '#7c8fff' : 'rgba(255,255,255,0.45)',
+                background: activeTab === tab.key ? 'rgba(79,93,200,0.10)' : 'rgba(255,255,255,0.03)',
+                border: activeTab === tab.key ? '1px solid rgba(79,93,200,0.32)' : '1px solid rgba(255,255,255,0.06)',
+                color: activeTab === tab.key ? '#8b94e0' : 'rgba(255,255,255,0.45)',
               }}
             >
               {tab.label}
@@ -525,7 +525,7 @@ export const FeedbackPage: React.FC = () => {
               <StudentSubmitForm onSuccess={() => setActiveTab('my')} />
             </div>
             <div className="space-y-3">
-              <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(79,99,255,0.05)', border: '1px solid rgba(79,99,255,0.15)' }}>
+              <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(79,93,200,0.04)', border: '1px solid rgba(79,93,200,0.10)' }}>
                 <h3 className="text-xs font-bold text-primary-400 uppercase">💡 Tips</h3>
                 <ul className="text-xs text-white/50 space-y-2 leading-relaxed">
                   <li>• Be specific and constructive</li>
@@ -579,7 +579,7 @@ export const FeedbackPage: React.FC = () => {
                 {feedbackList.length > 0 && (() => {
                   const avg = feedbackList.reduce((s, f) => s + f.rating, 0) / feedbackList.length;
                   return (
-                    <div className="rounded-2xl p-4 flex items-center gap-6" style={{ background: 'rgba(79,99,255,0.05)', border: '1px solid rgba(79,99,255,0.15)' }}>
+                    <div className="rounded-2xl p-4 flex items-center gap-6" style={{ background: 'rgba(79,93,200,0.04)', border: '1px solid rgba(79,93,200,0.10)' }}>
                       <div>
                         <p className="text-2xl font-bold text-yellow-400">{avg.toFixed(1)} ⭐</p>
                         <p className="text-[10px] text-white/30">Average Rating</p>

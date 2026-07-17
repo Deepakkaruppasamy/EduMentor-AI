@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { MsgMessage } from '../../types/messaging.types';
 import { useAuthStore } from '../../store/auth.store';
 import { ReplyPreview } from './ReplyPreview';
@@ -32,7 +32,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   // Read/delivered status
   const getStatus = () => {
     if (!isMine) return null;
-    if (message.readBy?.some((r) => r.user !== user?.id)) return { icon: '✓✓', color: '#4f63ff', label: 'Read' };
+    if (message.readBy?.some((r) => r.user !== user?.id)) return { icon: '✓✓', color: '#4f5dc8', label: 'Read' };
     if (message.deliveredTo?.some((d) => d.user !== user?.id)) return { icon: '✓✓', color: 'rgba(255,255,255,0.3)', label: 'Delivered' };
     return { icon: '✓', color: 'rgba(255,255,255,0.2)', label: 'Sent' };
   };
@@ -49,7 +49,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     >
       {/* Avatar */}
       {!isMine && (
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2), rgba(159,122,234,0.15))' }}>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.14), rgba(124,111,194,0.15))' }}>
           {message.sender?.name?.[0]?.toUpperCase() || '?'}
         </div>
       )}
@@ -58,7 +58,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div className={`max-w-[65%] min-w-[80px] ${isMine ? 'items-end' : 'items-start'}`}>
         {/* Sender name */}
         {!isMine && (
-          <div className="text-[10px] font-semibold text-[#7c8fff] mb-0.5 px-1">
+          <div className="text-[10px] font-semibold text-[#8b94e0] mb-0.5 px-1">
             {message.sender?.name}
             <span className="text-white/20 font-normal ml-1.5 capitalize">{message.sender?.role}</span>
           </div>
@@ -76,7 +76,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           }`}
           style={{
             background: isMine
-              ? 'linear-gradient(135deg, #4f63ff, #5a45c9)'
+              ? 'linear-gradient(135deg, #4f5dc8, #5a45c9)'
               : 'rgba(255,255,255,0.06)',
             border: isMine ? 'none' : '1px solid rgba(255,255,255,0.06)',
           }}

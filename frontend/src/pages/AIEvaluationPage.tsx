@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -12,7 +12,7 @@ import * as XLSX from 'xlsx';
 import { Loader } from '../components/common/Loader';
 
 // ── Constants ────────────────────────────────────────────────
-const COLORS = ['#4f63ff', '#9f7aea', '#48bb78', '#f6ad55', '#fc8181', '#06b6d4', '#e879f9'];
+const COLORS = ['#4f5dc8', '#7c6fc2', '#34a87a', '#c4893a', '#c0524a', '#2d9a8a', '#a78bcd'];
 const TOOLTIP_STYLE = {
   background: 'rgba(15,16,26,0.97)',
   border: '1px solid rgba(255,255,255,0.1)',
@@ -49,7 +49,7 @@ const SECTIONS: { id: Section; label: string; icon: string }[] = [
 // ── Sub-components ───────────────────────────────────────────
 const MetricCard: React.FC<{
   icon: string; label: string; value: string | number; sub?: string; color?: string; trend?: number;
-}> = ({ icon, label, value, sub, color = '#7c8fff', trend }) => (
+}> = ({ icon, label, value, sub, color = '#8b94e0', trend }) => (
   <div
     className="rounded-2xl p-4 flex flex-col gap-2"
     style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -57,7 +57,7 @@ const MetricCard: React.FC<{
     <div className="flex items-center justify-between">
       <span className="text-xl">{icon}</span>
       {trend !== undefined && (
-        <span className="text-[10px] font-bold" style={{ color: trend >= 0 ? '#48bb78' : '#fc8181' }}>
+        <span className="text-[10px] font-bold" style={{ color: trend >= 0 ? '#34a87a' : '#c0524a' }}>
           {trend >= 0 ? '▲' : '▼'} {Math.abs(trend)}%
         </span>
       )}
@@ -69,7 +69,7 @@ const MetricCard: React.FC<{
 );
 
 const GaugeBar: React.FC<{ label: string; value: number; color?: string; max?: number }> = ({
-  label, value, color = '#4f63ff', max = 100,
+  label, value, color = '#4f5dc8', max = 100,
 }) => (
   <div className="space-y-1.5">
     <div className="flex items-center justify-between">
@@ -91,7 +91,7 @@ const GaugeBar: React.FC<{ label: string; value: number; color?: string; max?: n
 const SectionHeader: React.FC<{ icon: string; title: string; subtitle?: string }> = ({ icon, title, subtitle }) => (
   <div className="flex items-center gap-3 mb-6">
     <div className="h-10 w-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-      style={{ background: 'linear-gradient(135deg,rgba(79,99,255,0.2),rgba(159,122,234,0.2))', border: '1px solid rgba(79,99,255,0.3)' }}>
+      style={{ background: 'linear-gradient(135deg,rgba(79,93,200,0.14),rgba(124,111,194,0.2))', border: '1px solid rgba(79,93,200,0.22)' }}>
       {icon}
     </div>
     <div>
@@ -137,19 +137,19 @@ const ChatbotPanel: React.FC<{ data: any }> = ({ data }) => (
   <div className="space-y-6">
     <SectionHeader icon="🤖" title="AI Educational Chatbot" subtitle="Response quality, hallucination detection & usage metrics" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <MetricCard icon="🎯" label="Response Accuracy" value={`${data.responseAccuracy}%`} color="#48bb78" />
-      <MetricCard icon="📐" label="Precision" value={`${data.precision}%`} color="#4f63ff" />
-      <MetricCard icon="🔄" label="Recall" value={`${data.recall}%`} color="#9f7aea" />
-      <MetricCard icon="⚖️" label="F1 Score" value={`${data.f1Score}%`} color="#06b6d4" />
-      <MetricCard icon="🔍" label="Retrieval Accuracy" value={`${data.retrievalAccuracy}%`} color="#f6ad55" />
-      <MetricCard icon="⚠️" label="Hallucination Rate" value={`${data.hallucinationRate}%`} color="#fc8181" />
-      <MetricCard icon="📎" label="Citation Accuracy" value={`${data.sourceCitationAccuracy}%`} color="#e879f9" />
-      <MetricCard icon="🧠" label="Avg Confidence" value={`${data.avgConfidenceScore}%`} color="#48bb78" />
+      <MetricCard icon="🎯" label="Response Accuracy" value={`${data.responseAccuracy}%`} color="#34a87a" />
+      <MetricCard icon="📐" label="Precision" value={`${data.precision}%`} color="#4f5dc8" />
+      <MetricCard icon="🔄" label="Recall" value={`${data.recall}%`} color="#7c6fc2" />
+      <MetricCard icon="⚖️" label="F1 Score" value={`${data.f1Score}%`} color="#2d9a8a" />
+      <MetricCard icon="🔍" label="Retrieval Accuracy" value={`${data.retrievalAccuracy}%`} color="#c4893a" />
+      <MetricCard icon="⚠️" label="Hallucination Rate" value={`${data.hallucinationRate}%`} color="#c0524a" />
+      <MetricCard icon="📎" label="Citation Accuracy" value={`${data.sourceCitationAccuracy}%`} color="#a78bcd" />
+      <MetricCard icon="🧠" label="Avg Confidence" value={`${data.avgConfidenceScore}%`} color="#34a87a" />
     </div>
     <div className="grid grid-cols-3 gap-3">
       <MetricCard icon="💬" label="Total Queries" value={data.totalQueries.toLocaleString()} sub="All time" />
-      <MetricCard icon="✅" label="Correct Responses" value={data.correctResponses.toLocaleString()} color="#48bb78" />
-      <MetricCard icon="❌" label="Incorrect Responses" value={data.incorrectResponses.toLocaleString()} color="#fc8181" />
+      <MetricCard icon="✅" label="Correct Responses" value={data.correctResponses.toLocaleString()} color="#34a87a" />
+      <MetricCard icon="❌" label="Incorrect Responses" value={data.incorrectResponses.toLocaleString()} color="#c0524a" />
     </div>
     <div className="grid md:grid-cols-2 gap-4">
       <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -161,8 +161,8 @@ const ChatbotPanel: React.FC<{ data: any }> = ({ data }) => (
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
-            <Area type="monotone" dataKey="avgTrustScore" stroke="#48bb78" fill="rgba(72,187,120,0.1)" name="Trust Score" />
-            <Area type="monotone" dataKey="hallucinationRate" stroke="#fc8181" fill="rgba(252,129,129,0.1)" name="Hallucination %" />
+            <Area type="monotone" dataKey="avgTrustScore" stroke="#34a87a" fill="rgba(52,168,122,0.1)" name="Trust Score" />
+            <Area type="monotone" dataKey="hallucinationRate" stroke="#c0524a" fill="rgba(192,82,74,0.1)" name="Hallucination %" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -177,7 +177,7 @@ const ChatbotPanel: React.FC<{ data: any }> = ({ data }) => (
             <Bar dataKey="queries" fill="url(#chatGrad)" radius={[4,4,0,0]} name="Queries">
               <defs>
                 <linearGradient id="chatGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4f63ff" /><stop offset="100%" stopColor="#9f7aea" />
+                  <stop offset="0%" stopColor="#4f5dc8" /><stop offset="100%" stopColor="#7c6fc2" />
                 </linearGradient>
               </defs>
             </Bar>
@@ -194,7 +194,7 @@ const ChatbotPanel: React.FC<{ data: any }> = ({ data }) => (
             <XAxis dataKey="range" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
-            <Bar dataKey="count" fill="#06b6d4" radius={[4,4,0,0]} name="Messages" />
+            <Bar dataKey="count" fill="#2d9a8a" radius={[4,4,0,0]} name="Messages" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -206,12 +206,12 @@ const RAGPanel: React.FC<{ data: any }> = ({ data }) => (
   <div className="space-y-6">
     <SectionHeader icon="🔍" title="Hybrid RAG Performance" subtitle="Vector + BM25 retrieval accuracy and latency metrics" />
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      <MetricCard icon="🧲" label="Vector Retrieval" value={`${data.vectorRetrievalAccuracy}%`} color="#4f63ff" />
-      <MetricCard icon="📚" label="BM25 Retrieval" value={`${data.bm25RetrievalAccuracy}%`} color="#9f7aea" />
-      <MetricCard icon="🔀" label="Hybrid Retrieval" value={`${data.hybridRetrievalAccuracy}%`} color="#48bb78" />
-      <MetricCard icon="⚡" label="Avg Retrieval Time" value={`${data.avgRetrievalTime}s`} color="#f6ad55" />
-      <MetricCard icon="🎯" label="Top-K Accuracy" value={`${data.topKAccuracy}%`} color="#06b6d4" />
-      <MetricCard icon="📏" label="Context Relevance" value={`${data.contextRelevanceScore}%`} color="#e879f9" />
+      <MetricCard icon="🧲" label="Vector Retrieval" value={`${data.vectorRetrievalAccuracy}%`} color="#4f5dc8" />
+      <MetricCard icon="📚" label="BM25 Retrieval" value={`${data.bm25RetrievalAccuracy}%`} color="#7c6fc2" />
+      <MetricCard icon="🔀" label="Hybrid Retrieval" value={`${data.hybridRetrievalAccuracy}%`} color="#34a87a" />
+      <MetricCard icon="⚡" label="Avg Retrieval Time" value={`${data.avgRetrievalTime}s`} color="#c4893a" />
+      <MetricCard icon="🎯" label="Top-K Accuracy" value={`${data.topKAccuracy}%`} color="#2d9a8a" />
+      <MetricCard icon="📏" label="Context Relevance" value={`${data.contextRelevanceScore}%`} color="#a78bcd" />
     </div>
     <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <h4 className="text-xs font-bold text-white/50 mb-1">⚡ Retrieval Latency Trend (30 days)</h4>
@@ -249,13 +249,13 @@ const RAGPanel: React.FC<{ data: any }> = ({ data }) => (
           <Line
             yAxisId="latency"
             type="monotone" dataKey="latency"
-            stroke="#f6ad55" strokeWidth={2} dot={{ r: 3, fill: '#f6ad55' }}
+            stroke="#c4893a" strokeWidth={2} dot={{ r: 3, fill: '#c4893a' }}
             name="Latency (s)"
           />
           <Line
             yAxisId="accuracy"
             type="monotone" dataKey="retrievalAccuracy"
-            stroke="#48bb78" strokeWidth={2} dot={{ r: 3, fill: '#48bb78' }}
+            stroke="#34a87a" strokeWidth={2} dot={{ r: 3, fill: '#34a87a' }}
             name="Accuracy %"
           />
         </LineChart>
@@ -263,11 +263,11 @@ const RAGPanel: React.FC<{ data: any }> = ({ data }) => (
     </div>
     <div className="space-y-3 rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <h4 className="text-xs font-bold text-white/50 mb-4">📊 Retrieval Performance Comparison</h4>
-      <GaugeBar label="Vector Search Accuracy" value={data.vectorRetrievalAccuracy} color="#4f63ff" />
-      <GaugeBar label="BM25 Keyword Accuracy" value={data.bm25RetrievalAccuracy} color="#9f7aea" />
-      <GaugeBar label="Hybrid Combined Accuracy" value={data.hybridRetrievalAccuracy} color="#48bb78" />
-      <GaugeBar label="Top-K Retrieval" value={data.topKAccuracy} color="#06b6d4" />
-      <GaugeBar label="Context Relevance Score" value={data.contextRelevanceScore} color="#e879f9" />
+      <GaugeBar label="Vector Search Accuracy" value={data.vectorRetrievalAccuracy} color="#4f5dc8" />
+      <GaugeBar label="BM25 Keyword Accuracy" value={data.bm25RetrievalAccuracy} color="#7c6fc2" />
+      <GaugeBar label="Hybrid Combined Accuracy" value={data.hybridRetrievalAccuracy} color="#34a87a" />
+      <GaugeBar label="Top-K Retrieval" value={data.topKAccuracy} color="#2d9a8a" />
+      <GaugeBar label="Context Relevance Score" value={data.contextRelevanceScore} color="#a78bcd" />
     </div>
   </div>
 );
@@ -277,11 +277,11 @@ const ExplainPanel: React.FC<{ data: any }> = ({ data }) => (
   <div className="space-y-6">
     <SectionHeader icon="💡" title="AI Explain Mode Evaluation" subtitle="Explanation quality across all 5 modes" />
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      <MetricCard icon="🧒" label="Explain Simply" value={`${data.explainSimplyAccuracy}%`} color="#4f63ff" />
-      <MetricCard icon="📖" label="Detailed Explanation" value={`${data.detailedExplanationAccuracy}%`} color="#9f7aea" />
-      <MetricCard icon="💎" label="Example Quality" value={`${data.exampleQualityScore}%`} color="#48bb78" />
-      <MetricCard icon="🌍" label="Real-world Examples" value={`${data.realWorldExampleScore}%`} color="#f6ad55" />
-      <MetricCard icon="📋" label="Exam Point Accuracy" value={`${data.examPointAccuracy}%`} color="#06b6d4" />
+      <MetricCard icon="🧒" label="Explain Simply" value={`${data.explainSimplyAccuracy}%`} color="#4f5dc8" />
+      <MetricCard icon="📖" label="Detailed Explanation" value={`${data.detailedExplanationAccuracy}%`} color="#7c6fc2" />
+      <MetricCard icon="💎" label="Example Quality" value={`${data.exampleQualityScore}%`} color="#34a87a" />
+      <MetricCard icon="🌍" label="Real-world Examples" value={`${data.realWorldExampleScore}%`} color="#c4893a" />
+      <MetricCard icon="📋" label="Exam Point Accuracy" value={`${data.examPointAccuracy}%`} color="#2d9a8a" />
       <MetricCard icon="🔢" label="Total Explanations" value={data.totalExplanations.toLocaleString()} />
     </div>
     <div className="grid md:grid-cols-2 gap-4">
@@ -292,17 +292,17 @@ const ExplainPanel: React.FC<{ data: any }> = ({ data }) => (
             <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <YAxis dataKey="name" type="category" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} width={100} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
-            <Bar dataKey="count" fill="#4f63ff" radius={[0,4,4,0]} name="Usage Count" />
+            <Bar dataKey="count" fill="#4f5dc8" radius={[0,4,4,0]} name="Usage Count" />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h4 className="text-xs font-bold text-white/50 mb-4">🎯 Quality Scores</h4>
-        <GaugeBar label="Explain Simply Accuracy" value={data.explainSimplyAccuracy} color="#4f63ff" />
-        <GaugeBar label="Detailed Explanation Accuracy" value={data.detailedExplanationAccuracy} color="#9f7aea" />
-        <GaugeBar label="Example Quality Score" value={data.exampleQualityScore} color="#48bb78" />
-        <GaugeBar label="Real-World Example Score" value={data.realWorldExampleScore} color="#f6ad55" />
-        <GaugeBar label="Exam Point Accuracy" value={data.examPointAccuracy} color="#06b6d4" />
+        <GaugeBar label="Explain Simply Accuracy" value={data.explainSimplyAccuracy} color="#4f5dc8" />
+        <GaugeBar label="Detailed Explanation Accuracy" value={data.detailedExplanationAccuracy} color="#7c6fc2" />
+        <GaugeBar label="Example Quality Score" value={data.exampleQualityScore} color="#34a87a" />
+        <GaugeBar label="Real-World Example Score" value={data.realWorldExampleScore} color="#c4893a" />
+        <GaugeBar label="Exam Point Accuracy" value={data.examPointAccuracy} color="#2d9a8a" />
       </div>
     </div>
   </div>
@@ -313,10 +313,10 @@ const AssignmentPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="📝" title="AI Assignment Evaluator" subtitle="Evaluation accuracy, MAE and feedback quality metrics" />
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
       <MetricCard icon="📋" label="Total Evaluations" value={data.total.toLocaleString()} />
-      <MetricCard icon="🎯" label="Avg AI Score" value={`${data.avgScore}%`} color="#48bb78" />
-      <MetricCard icon="📐" label="Mean Absolute Error" value={data.mae} color="#fc8181" sub="Lower is better" />
-      <MetricCard icon="💬" label="Feedback Quality" value={`${data.feedbackQuality}%`} color="#4f63ff" />
-      <MetricCard icon="✏️" label="Suggestion Accuracy" value={`${data.suggestionAccuracy}%`} color="#9f7aea" />
+      <MetricCard icon="🎯" label="Avg AI Score" value={`${data.avgScore}%`} color="#34a87a" />
+      <MetricCard icon="📐" label="Mean Absolute Error" value={data.mae} color="#c0524a" sub="Lower is better" />
+      <MetricCard icon="💬" label="Feedback Quality" value={`${data.feedbackQuality}%`} color="#4f5dc8" />
+      <MetricCard icon="✏️" label="Suggestion Accuracy" value={`${data.suggestionAccuracy}%`} color="#7c6fc2" />
     </div>
     <div className="grid md:grid-cols-2 gap-4">
       <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -330,7 +330,7 @@ const AssignmentPanel: React.FC<{ data: any }> = ({ data }) => (
             <Bar dataKey="count" fill="url(#assignGrad)" radius={[4,4,0,0]} name="Assignments">
               <defs>
                 <linearGradient id="assignGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f6ad55"/><stop offset="100%" stopColor="#e879f9"/>
+                  <stop offset="0%" stopColor="#c4893a"/><stop offset="100%" stopColor="#a78bcd"/>
                 </linearGradient>
               </defs>
             </Bar>
@@ -345,8 +345,8 @@ const AssignmentPanel: React.FC<{ data: any }> = ({ data }) => (
             <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
-            <Line type="monotone" dataKey="avgScore" stroke="#48bb78" strokeWidth={2} dot={false} name="Avg Score %" />
-            <Line type="monotone" dataKey="count" stroke="#4f63ff" strokeWidth={2} dot={false} name="Count" />
+            <Line type="monotone" dataKey="avgScore" stroke="#34a87a" strokeWidth={2} dot={false} name="Avg Score %" />
+            <Line type="monotone" dataKey="count" stroke="#4f5dc8" strokeWidth={2} dot={false} name="Count" />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -359,10 +359,10 @@ const NotesPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="📒" title="AI Notes Generator" subtitle="Generation metrics, note types and readability scores" />
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
       <MetricCard icon="📒" label="Total Notes" value={data.total.toLocaleString()} />
-      <MetricCard icon="👥" label="Unique Students" value={data.uniqueStudents.toLocaleString()} color="#4f63ff" />
-      <MetricCard icon="✅" label="Generation Accuracy" value={`${data.noteGenerationAccuracy}%`} color="#48bb78" />
-      <MetricCard icon="📖" label="Readability Score" value={`${data.readabilityScore}%`} color="#9f7aea" />
-      <MetricCard icon="🗺️" label="Topic Coverage" value={`${data.topicCoverage}%`} color="#f6ad55" />
+      <MetricCard icon="👥" label="Unique Students" value={data.uniqueStudents.toLocaleString()} color="#4f5dc8" />
+      <MetricCard icon="✅" label="Generation Accuracy" value={`${data.noteGenerationAccuracy}%`} color="#34a87a" />
+      <MetricCard icon="📖" label="Readability Score" value={`${data.readabilityScore}%`} color="#7c6fc2" />
+      <MetricCard icon="🗺️" label="Topic Coverage" value={`${data.topicCoverage}%`} color="#c4893a" />
     </div>
     <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <h4 className="text-xs font-bold text-white/50 mb-4">📊 Notes by Type</h4>
@@ -388,16 +388,16 @@ const StudyPlannerPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="📅" title="AI Study Planner" subtitle="Plan generation, student acceptance and schedule effectiveness" />
     <div className="grid grid-cols-2 gap-3">
       <MetricCard icon="📅" label="Plans Generated" value={data.totalPlansGenerated.toLocaleString()} />
-      <MetricCard icon="👥" label="Unique Students" value={data.uniqueStudents.toLocaleString()} color="#4f63ff" />
-      <MetricCard icon="⏱️" label="Avg Daily Study Hours" value={`${data.avgDailyHours}h`} color="#f6ad55" />
-      <MetricCard icon="🎯" label="Recommendation Accuracy" value={`${data.recommendationAccuracy}%`} color="#48bb78" />
+      <MetricCard icon="👥" label="Unique Students" value={data.uniqueStudents.toLocaleString()} color="#4f5dc8" />
+      <MetricCard icon="⏱️" label="Avg Daily Study Hours" value={`${data.avgDailyHours}h`} color="#c4893a" />
+      <MetricCard icon="🎯" label="Recommendation Accuracy" value={`${data.recommendationAccuracy}%`} color="#34a87a" />
     </div>
     <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <h4 className="text-xs font-bold text-white/50">📊 Effectiveness Metrics</h4>
-      <GaugeBar label="Student Acceptance Rate" value={data.studentAcceptanceRate} color="#9f7aea" />
-      <GaugeBar label="Plan Completion Rate" value={data.planCompletionRate} color="#48bb78" />
-      <GaugeBar label="Schedule Effectiveness" value={data.scheduleEffectiveness} color="#06b6d4" />
-      <GaugeBar label="Recommendation Accuracy" value={data.recommendationAccuracy} color="#f6ad55" />
+      <GaugeBar label="Student Acceptance Rate" value={data.studentAcceptanceRate} color="#7c6fc2" />
+      <GaugeBar label="Plan Completion Rate" value={data.planCompletionRate} color="#34a87a" />
+      <GaugeBar label="Schedule Effectiveness" value={data.scheduleEffectiveness} color="#2d9a8a" />
+      <GaugeBar label="Recommendation Accuracy" value={data.recommendationAccuracy} color="#c4893a" />
     </div>
   </div>
 );
@@ -407,11 +407,11 @@ const ResearchPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="🔬" title="AI Research Assistant" subtitle="Paper summarization, citation and literature review accuracy" />
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
       <MetricCard icon="🔬" label="Total Researches" value={data.totalResearches.toLocaleString()} />
-      <MetricCard icon="👥" label="Unique Users" value={data.uniqueUsers.toLocaleString()} color="#4f63ff" />
-      <MetricCard icon="📝" label="Summary Accuracy" value={`${data.summaryAccuracy}%`} color="#48bb78" />
-      <MetricCard icon="📌" label="Citation Accuracy" value={`${data.citationAccuracy}%`} color="#9f7aea" />
-      <MetricCard icon="📚" label="Literature Review" value={`${data.literatureReviewAccuracy}%`} color="#f6ad55" />
-      <MetricCard icon="🔀" label="Paper Comparison" value={`${data.paperComparisonAccuracy}%`} color="#06b6d4" />
+      <MetricCard icon="👥" label="Unique Users" value={data.uniqueUsers.toLocaleString()} color="#4f5dc8" />
+      <MetricCard icon="📝" label="Summary Accuracy" value={`${data.summaryAccuracy}%`} color="#34a87a" />
+      <MetricCard icon="📌" label="Citation Accuracy" value={`${data.citationAccuracy}%`} color="#7c6fc2" />
+      <MetricCard icon="📚" label="Literature Review" value={`${data.literatureReviewAccuracy}%`} color="#c4893a" />
+      <MetricCard icon="🔀" label="Paper Comparison" value={`${data.paperComparisonAccuracy}%`} color="#2d9a8a" />
     </div>
     <div className="grid md:grid-cols-2 gap-4">
       <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -430,11 +430,11 @@ const ResearchPanel: React.FC<{ data: any }> = ({ data }) => (
       </div>
       <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h4 className="text-xs font-bold text-white/50 mb-4">🎯 Accuracy Scores</h4>
-        <GaugeBar label="Summary Accuracy" value={data.summaryAccuracy} color="#48bb78" />
-        <GaugeBar label="Citation Accuracy" value={data.citationAccuracy} color="#9f7aea" />
-        <GaugeBar label="Literature Review" value={data.literatureReviewAccuracy} color="#f6ad55" />
-        <GaugeBar label="Paper Comparison" value={data.paperComparisonAccuracy} color="#06b6d4" />
-        <GaugeBar label="Future Scope Extraction" value={data.futureScopeExtractionAccuracy} color="#e879f9" />
+        <GaugeBar label="Summary Accuracy" value={data.summaryAccuracy} color="#34a87a" />
+        <GaugeBar label="Citation Accuracy" value={data.citationAccuracy} color="#7c6fc2" />
+        <GaugeBar label="Literature Review" value={data.literatureReviewAccuracy} color="#c4893a" />
+        <GaugeBar label="Paper Comparison" value={data.paperComparisonAccuracy} color="#2d9a8a" />
+        <GaugeBar label="Future Scope Extraction" value={data.futureScopeExtractionAccuracy} color="#a78bcd" />
       </div>
     </div>
   </div>
@@ -445,11 +445,11 @@ const SupportBotPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="🛠️" title="AI Support Bot" subtitle="Ticket resolution, auto-resolve rate and satisfaction ratings" />
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
       <MetricCard icon="🎫" label="Total Tickets" value={data.totalTickets.toLocaleString()} />
-      <MetricCard icon="✅" label="Resolution Accuracy" value={`${data.resolutionAccuracy}%`} color="#48bb78" />
-      <MetricCard icon="🤖" label="Auto-Resolved" value={data.autoResolvedTickets.toLocaleString()} color="#4f63ff" />
-      <MetricCard icon="🚨" label="Escalated Tickets" value={data.escalatedTickets.toLocaleString()} color="#fc8181" />
-      <MetricCard icon="⭐" label="Feedback Rating" value={`${data.avgFeedbackRating}/5`} color="#f6ad55" />
-      <MetricCard icon="⏱️" label="Avg Resolution Time" value={`${data.avgResolutionTimeHours}h`} color="#9f7aea" />
+      <MetricCard icon="✅" label="Resolution Accuracy" value={`${data.resolutionAccuracy}%`} color="#34a87a" />
+      <MetricCard icon="🤖" label="Auto-Resolved" value={data.autoResolvedTickets.toLocaleString()} color="#4f5dc8" />
+      <MetricCard icon="🚨" label="Escalated Tickets" value={data.escalatedTickets.toLocaleString()} color="#c0524a" />
+      <MetricCard icon="⭐" label="Feedback Rating" value={`${data.avgFeedbackRating}/5`} color="#c4893a" />
+      <MetricCard icon="⏱️" label="Avg Resolution Time" value={`${data.avgResolutionTimeHours}h`} color="#7c6fc2" />
     </div>
     <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <h4 className="text-xs font-bold text-white/50 mb-4">📈 Ticket Resolution Trend (30 days)</h4>
@@ -460,8 +460,8 @@ const SupportBotPanel: React.FC<{ data: any }> = ({ data }) => (
           <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
           <Tooltip contentStyle={TOOLTIP_STYLE} />
           <Legend wrapperStyle={{ fontSize: 10 }} />
-          <Area type="monotone" dataKey="created" stroke="#fc8181" fill="rgba(252,129,129,0.1)" name="Created" />
-          <Area type="monotone" dataKey="resolved" stroke="#48bb78" fill="rgba(72,187,120,0.1)" name="Resolved" />
+          <Area type="monotone" dataKey="created" stroke="#c0524a" fill="rgba(192,82,74,0.1)" name="Created" />
+          <Area type="monotone" dataKey="resolved" stroke="#34a87a" fill="rgba(52,168,122,0.1)" name="Resolved" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -473,12 +473,12 @@ const CommunicationPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="💬" title="Communication Module Analytics" subtitle="Messaging activity and delivery performance metrics" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <MetricCard icon="📨" label="Total Messages" value={data.totalMessages.toLocaleString()} />
-      <MetricCard icon="🔒" label="Private Chats" value={data.privateChats.toLocaleString()} color="#4f63ff" />
-      <MetricCard icon="👥" label="Group Discussions" value={data.publicDiscussions.toLocaleString()} color="#9f7aea" />
-      <MetricCard icon="🎙️" label="Audio Messages" value={data.audioMessages.toLocaleString()} color="#f6ad55" />
-      <MetricCard icon="🖼️" label="Image Messages" value={data.imageMessages.toLocaleString()} color="#e879f9" />
-      <MetricCard icon="⏱️" label="Avg Response Time" value={`${data.avgResponseTimeMinutes}m`} color="#06b6d4" />
-      <MetricCard icon="📡" label="Delivery Success" value={`${data.messageDeliverySuccessRate}%`} color="#48bb78" />
+      <MetricCard icon="🔒" label="Private Chats" value={data.privateChats.toLocaleString()} color="#4f5dc8" />
+      <MetricCard icon="👥" label="Group Discussions" value={data.publicDiscussions.toLocaleString()} color="#7c6fc2" />
+      <MetricCard icon="🎙️" label="Audio Messages" value={data.audioMessages.toLocaleString()} color="#c4893a" />
+      <MetricCard icon="🖼️" label="Image Messages" value={data.imageMessages.toLocaleString()} color="#a78bcd" />
+      <MetricCard icon="⏱️" label="Avg Response Time" value={`${data.avgResponseTimeMinutes}m`} color="#2d9a8a" />
+      <MetricCard icon="📡" label="Delivery Success" value={`${data.messageDeliverySuccessRate}%`} color="#34a87a" />
     </div>
   </div>
 );
@@ -488,13 +488,13 @@ const FacultyPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="👨‍🏫" title="Faculty Analytics" subtitle="Activity, uploads, course management and student interaction" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <MetricCard icon="👨‍🏫" label="Total Faculty" value={data.totalFaculty.toLocaleString()} />
-      <MetricCard icon="🟢" label="Active Faculty" value={data.activeFaculty.toLocaleString()} color="#48bb78" />
-      <MetricCard icon="📁" label="Notes Uploaded" value={data.notesUploaded.toLocaleString()} color="#4f63ff" />
-      <MetricCard icon="📝" label="Assignments Created" value={data.assignmentsCreated.toLocaleString()} color="#9f7aea" />
-      <MetricCard icon="📋" label="Quizzes Created" value={data.quizzesCreated.toLocaleString()} color="#f6ad55" />
-      <MetricCard icon="💬" label="Queries Answered" value={data.studentQueriesAnswered.toLocaleString()} color="#06b6d4" />
-      <MetricCard icon="📅" label="Meetings Approved" value={data.meetingRequestsApproved.toLocaleString()} color="#e879f9" />
-      <MetricCard icon="🏫" label="Office Hours Usage" value={data.officeHoursUsage.toLocaleString()} color="#fc8181" />
+      <MetricCard icon="🟢" label="Active Faculty" value={data.activeFaculty.toLocaleString()} color="#34a87a" />
+      <MetricCard icon="📁" label="Notes Uploaded" value={data.notesUploaded.toLocaleString()} color="#4f5dc8" />
+      <MetricCard icon="📝" label="Assignments Created" value={data.assignmentsCreated.toLocaleString()} color="#7c6fc2" />
+      <MetricCard icon="📋" label="Quizzes Created" value={data.quizzesCreated.toLocaleString()} color="#c4893a" />
+      <MetricCard icon="💬" label="Queries Answered" value={data.studentQueriesAnswered.toLocaleString()} color="#2d9a8a" />
+      <MetricCard icon="📅" label="Meetings Approved" value={data.meetingRequestsApproved.toLocaleString()} color="#a78bcd" />
+      <MetricCard icon="🏫" label="Office Hours Usage" value={data.officeHoursUsage.toLocaleString()} color="#c0524a" />
     </div>
     <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <h4 className="text-xs font-bold text-white/50 mb-4">📊 Faculty Activity Overview</h4>
@@ -523,13 +523,13 @@ const StudentPanel: React.FC<{ data: any }> = ({ data }) => (
     <SectionHeader icon="🎓" title="Student Analytics" subtitle="Usage across all AI modules, progress, and topic mastery" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <MetricCard icon="🎓" label="Total Students" value={data.totalStudents.toLocaleString()} />
-      <MetricCard icon="🟢" label="Active Students" value={data.activeStudents.toLocaleString()} color="#48bb78" />
-      <MetricCard icon="🤖" label="Chatbot Users" value={data.chatbotUsage.toLocaleString()} color="#4f63ff" />
-      <MetricCard icon="📒" label="Notes AI Users" value={data.aiNotesUsage.toLocaleString()} color="#9f7aea" />
-      <MetricCard icon="📝" label="Assignment Evals" value={data.assignmentEvaluations.toLocaleString()} color="#f6ad55" />
-      <MetricCard icon="📅" label="Study Planner Users" value={data.studyPlannerUsage.toLocaleString()} color="#06b6d4" />
-      <MetricCard icon="🔬" label="Research AI Users" value={data.researchAssistantUsage.toLocaleString()} color="#e879f9" />
-      <MetricCard icon="📋" label="Quizzes Completed" value={data.totalQuizzesCompleted.toLocaleString()} color="#fc8181" />
+      <MetricCard icon="🟢" label="Active Students" value={data.activeStudents.toLocaleString()} color="#34a87a" />
+      <MetricCard icon="🤖" label="Chatbot Users" value={data.chatbotUsage.toLocaleString()} color="#4f5dc8" />
+      <MetricCard icon="📒" label="Notes AI Users" value={data.aiNotesUsage.toLocaleString()} color="#7c6fc2" />
+      <MetricCard icon="📝" label="Assignment Evals" value={data.assignmentEvaluations.toLocaleString()} color="#c4893a" />
+      <MetricCard icon="📅" label="Study Planner Users" value={data.studyPlannerUsage.toLocaleString()} color="#2d9a8a" />
+      <MetricCard icon="🔬" label="Research AI Users" value={data.researchAssistantUsage.toLocaleString()} color="#a78bcd" />
+      <MetricCard icon="📋" label="Quizzes Completed" value={data.totalQuizzesCompleted.toLocaleString()} color="#c0524a" />
     </div>
     <div className="grid md:grid-cols-2 gap-4">
       {data.weakTopics?.length > 0 && (
@@ -540,7 +540,7 @@ const StudentPanel: React.FC<{ data: any }> = ({ data }) => (
               <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
               <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} width={100} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Bar dataKey="count" fill="#fc8181" radius={[0,4,4,0]} name="Students Struggling" />
+              <Bar dataKey="count" fill="#c0524a" radius={[0,4,4,0]} name="Students Struggling" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -553,7 +553,7 @@ const StudentPanel: React.FC<{ data: any }> = ({ data }) => (
               <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
               <YAxis dataKey="topic" type="category" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} width={100} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Bar dataKey="count" fill="#48bb78" radius={[0,4,4,0]} name="Students Mastered" />
+              <Bar dataKey="count" fill="#34a87a" radius={[0,4,4,0]} name="Students Mastered" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -566,14 +566,14 @@ const SystemPanel: React.FC<{ data: any }> = ({ data }) => (
   <div className="space-y-6">
     <SectionHeader icon="⚙️" title="System Performance" subtitle="API latency, memory, database health and uptime" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <MetricCard icon="⚡" label="API Response Time" value={`${data.apiResponseTime}ms`} color="#4f63ff" />
-      <MetricCard icon="🗄️" label="DB Query Time" value={`${data.dbQueryTime}ms`} color="#9f7aea" />
-      <MetricCard icon="🔍" label="ChromaDB Retrieval" value={`${data.chromaRetrievalTime}ms`} color="#06b6d4" />
-      <MetricCard icon="💾" label="Memory Usage" value={`${data.memoryUsagePct}%`} color={data.memoryUsagePct > 80 ? '#fc8181' : '#48bb78'} sub={`${data.memUsedMB}/${data.memTotalMB} MB`} />
-      <MetricCard icon="🖥️" label="CPU Usage" value={`${data.cpuUsagePct}%`} color={data.cpuUsagePct > 80 ? '#fc8181' : '#48bb78'} />
-      <MetricCard icon="💿" label="Storage Used" value={`${data.storageGB} GB`} color="#f6ad55" />
-      <MetricCard icon="👥" label="Concurrent Users" value={data.concurrentUsers.toLocaleString()} color="#e879f9" />
-      <MetricCard icon="🟢" label="Uptime" value={`${data.uptimeDays}d ${data.uptimeHours}h`} color="#48bb78" />
+      <MetricCard icon="⚡" label="API Response Time" value={`${data.apiResponseTime}ms`} color="#4f5dc8" />
+      <MetricCard icon="🗄️" label="DB Query Time" value={`${data.dbQueryTime}ms`} color="#7c6fc2" />
+      <MetricCard icon="🔍" label="ChromaDB Retrieval" value={`${data.chromaRetrievalTime}ms`} color="#2d9a8a" />
+      <MetricCard icon="💾" label="Memory Usage" value={`${data.memoryUsagePct}%`} color={data.memoryUsagePct > 80 ? '#c0524a' : '#34a87a'} sub={`${data.memUsedMB}/${data.memTotalMB} MB`} />
+      <MetricCard icon="🖥️" label="CPU Usage" value={`${data.cpuUsagePct}%`} color={data.cpuUsagePct > 80 ? '#c0524a' : '#34a87a'} />
+      <MetricCard icon="💿" label="Storage Used" value={`${data.storageGB} GB`} color="#c4893a" />
+      <MetricCard icon="👥" label="Concurrent Users" value={data.concurrentUsers.toLocaleString()} color="#a78bcd" />
+      <MetricCard icon="🟢" label="Uptime" value={`${data.uptimeDays}d ${data.uptimeHours}h`} color="#34a87a" />
     </div>
     <div className="grid md:grid-cols-2 gap-4">
       <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -584,16 +584,16 @@ const SystemPanel: React.FC<{ data: any }> = ({ data }) => (
             <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
-            <Area type="monotone" dataKey="responseTime" stroke="#4f63ff" fill="rgba(79,99,255,0.1)" name="Response Time (ms)" />
+            <Area type="monotone" dataKey="responseTime" stroke="#4f5dc8" fill="rgba(79,93,200,0.08)" name="Response Time (ms)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
       <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h4 className="text-xs font-bold text-white/50 mb-4">🔧 Resource Utilization</h4>
-        <GaugeBar label="CPU Usage" value={data.cpuUsagePct} color={data.cpuUsagePct > 80 ? '#fc8181' : '#48bb78'} />
-        <GaugeBar label="Memory Usage" value={data.memoryUsagePct} color={data.memoryUsagePct > 80 ? '#fc8181' : '#9f7aea'} />
-        <GaugeBar label="Error Rate" value={data.errorRate} max={10} color="#fc8181" />
-        <div className="mt-4 p-3 rounded-xl" style={{ background: 'rgba(72,187,120,0.05)', border: '1px solid rgba(72,187,120,0.15)' }}>
+        <GaugeBar label="CPU Usage" value={data.cpuUsagePct} color={data.cpuUsagePct > 80 ? '#c0524a' : '#34a87a'} />
+        <GaugeBar label="Memory Usage" value={data.memoryUsagePct} color={data.memoryUsagePct > 80 ? '#c0524a' : '#7c6fc2'} />
+        <GaugeBar label="Error Rate" value={data.errorRate} max={10} color="#c0524a" />
+        <div className="mt-4 p-3 rounded-xl" style={{ background: 'rgba(52,168,122,0.05)', border: '1px solid rgba(52,168,122,0.15)' }}>
           <div className="flex items-center gap-2 text-xs">
             <span className="text-green-400">●</span>
             <span className="text-white/60">System Uptime: <strong className="text-white">{data.uptimeDays}d {data.uptimeHours}h</strong></span>
@@ -612,12 +612,12 @@ const SecurityPanel: React.FC<{ data: any }> = ({ data }) => (
   <div className="space-y-6">
     <SectionHeader icon="🛡️" title="Security Analytics" subtitle="Login events, OTP, password resets and unauthorized access audit" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <MetricCard icon="✅" label="Successful Logins" value={data.successfulLogins.toLocaleString()} color="#48bb78" />
-      <MetricCard icon="❌" label="Failed Attempts" value={data.failedLoginAttempts.toLocaleString()} color="#fc8181" />
-      <MetricCard icon="🔐" label="OTP Success Rate" value={`${data.otpSuccessRate}%`} color="#4f63ff" />
-      <MetricCard icon="🔑" label="Password Resets" value={data.passwordResetRequests.toLocaleString()} color="#9f7aea" />
-      <MetricCard icon="🚫" label="Unauthorized Attempts" value={data.unauthorizedAccessAttempts.toLocaleString()} color="#fc8181" />
-      <MetricCard icon="🔒" label="Account Lock Events" value={data.accountLockEvents.toLocaleString()} color="#f6ad55" />
+      <MetricCard icon="✅" label="Successful Logins" value={data.successfulLogins.toLocaleString()} color="#34a87a" />
+      <MetricCard icon="❌" label="Failed Attempts" value={data.failedLoginAttempts.toLocaleString()} color="#c0524a" />
+      <MetricCard icon="🔐" label="OTP Success Rate" value={`${data.otpSuccessRate}%`} color="#4f5dc8" />
+      <MetricCard icon="🔑" label="Password Resets" value={data.passwordResetRequests.toLocaleString()} color="#7c6fc2" />
+      <MetricCard icon="🚫" label="Unauthorized Attempts" value={data.unauthorizedAccessAttempts.toLocaleString()} color="#c0524a" />
+      <MetricCard icon="🔒" label="Account Lock Events" value={data.accountLockEvents.toLocaleString()} color="#c4893a" />
     </div>
     <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <h4 className="text-xs font-bold text-white/50 mb-4">📈 Login Activity Trend (30 days)</h4>
@@ -628,8 +628,8 @@ const SecurityPanel: React.FC<{ data: any }> = ({ data }) => (
           <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
           <Tooltip contentStyle={TOOLTIP_STYLE} />
           <Legend wrapperStyle={{ fontSize: 10 }} />
-          <Area type="monotone" dataKey="success" stroke="#48bb78" fill="rgba(72,187,120,0.1)" name="Successful" />
-          <Area type="monotone" dataKey="failed" stroke="#fc8181" fill="rgba(252,129,129,0.1)" name="Failed" />
+          <Area type="monotone" dataKey="success" stroke="#34a87a" fill="rgba(52,168,122,0.1)" name="Successful" />
+          <Area type="monotone" dataKey="failed" stroke="#c0524a" fill="rgba(192,82,74,0.1)" name="Failed" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -652,8 +652,8 @@ const SecurityPanel: React.FC<{ data: any }> = ({ data }) => (
                 <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }} className="hover:bg-white/2">
                   <td className="px-4 py-2">
                     <span className="px-2 py-0.5 rounded text-[9px] font-bold" style={{
-                      background: log.action.includes('SUCCESS') || log.action.includes('VERIFIED') ? 'rgba(72,187,120,0.1)' : 'rgba(252,129,129,0.1)',
-                      color: log.action.includes('SUCCESS') || log.action.includes('VERIFIED') ? '#48bb78' : '#fc8181',
+                      background: log.action.includes('SUCCESS') || log.action.includes('VERIFIED') ? 'rgba(52,168,122,0.1)' : 'rgba(192,82,74,0.1)',
+                      color: log.action.includes('SUCCESS') || log.action.includes('VERIFIED') ? '#34a87a' : '#c0524a',
                     }}>{log.action}</span>
                   </td>
                   <td className="px-4 py-2 text-white/60">{log.performedBy}</td>
@@ -693,8 +693,8 @@ const TAMPanel: React.FC<{ data: any }> = ({ data }) => {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <MetricCard icon="📋" label="Total Responses" value={data.totalResponses.toLocaleString()} />
-        <MetricCard icon="⭐" label="Overall Score" value={`${data.overallScore}/5`} color="#f6ad55" />
-        <MetricCard icon="📐" label="Cronbach's Alpha" value={data.cronbachAlpha} color={data.cronbachAlpha >= 0.7 ? '#48bb78' : '#fc8181'} sub={data.cronbachAlpha >= 0.7 ? '✓ Reliable (α ≥ 0.7)' : '⚠ Needs improvement'} />
+        <MetricCard icon="⭐" label="Overall Score" value={`${data.overallScore}/5`} color="#c4893a" />
+        <MetricCard icon="📐" label="Cronbach's Alpha" value={data.cronbachAlpha} color={data.cronbachAlpha >= 0.7 ? '#34a87a' : '#c0524a'} sub={data.cronbachAlpha >= 0.7 ? '✓ Reliable (α ≥ 0.7)' : '⚠ Needs improvement'} />
       </div>
 
       {data.totalResponses === 0 ? (
@@ -712,7 +712,7 @@ const TAMPanel: React.FC<{ data: any }> = ({ data }) => {
                 <PolarGrid stroke="rgba(255,255,255,0.08)" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 8 }} />
-                <Radar name="Score" dataKey="value" stroke="#4f63ff" fill="rgba(79,99,255,0.2)" strokeWidth={2} />
+                <Radar name="Score" dataKey="value" stroke="#4f5dc8" fill="rgba(79,93,200,0.14)" strokeWidth={2} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Score']} />
               </RadarChart>
             </ResponsiveContainer>
@@ -720,7 +720,7 @@ const TAMPanel: React.FC<{ data: any }> = ({ data }) => {
           <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <h4 className="text-xs font-bold text-white/50 mb-4">📊 Dimension Scores</h4>
             {data.dimensions?.map((d: any) => (
-              <GaugeBar key={d.dimension} label={DIMENSION_LABELS[d.dimension] || d.dimension} value={Math.round((d.avg / 5) * 100)} color="#4f63ff" />
+              <GaugeBar key={d.dimension} label={DIMENSION_LABELS[d.dimension] || d.dimension} value={Math.round((d.avg / 5) * 100)} color="#4f5dc8" />
             ))}
           </div>
           <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -783,7 +783,7 @@ const ReportsPanel: React.FC<{ allData: any }> = ({ allData }) => {
                 onClick={() => allData[r.key] && exportToPDF(r.label, allData[r.key])}
                 disabled={!allData[r.key]}
                 className="flex-1 py-2 text-xs font-semibold rounded-xl transition-all disabled:opacity-30"
-                style={{ background: 'rgba(252,129,129,0.1)', border: '1px solid rgba(252,129,129,0.25)', color: '#fc8181' }}
+                style={{ background: 'rgba(192,82,74,0.1)', border: '1px solid rgba(192,82,74,0.25)', color: '#c0524a' }}
               >
                 📄 PDF
               </button>
@@ -797,7 +797,7 @@ const ReportsPanel: React.FC<{ allData: any }> = ({ allData }) => {
                 }}
                 disabled={!allData[r.key]}
                 className="flex-1 py-2 text-xs font-semibold rounded-xl transition-all disabled:opacity-30"
-                style={{ background: 'rgba(72,187,120,0.1)', border: '1px solid rgba(72,187,120,0.25)', color: '#48bb78' }}
+                style={{ background: 'rgba(52,168,122,0.1)', border: '1px solid rgba(52,168,122,0.25)', color: '#34a87a' }}
               >
                 📊 Excel
               </button>
@@ -820,17 +820,17 @@ const OverviewPanel: React.FC<{ allData: any }> = ({ allData }) => {
     <div className="space-y-6">
       <SectionHeader icon="🏠" title="AI Evaluation Overview" subtitle="Platform-wide intelligence performance at a glance" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <MetricCard icon="🎯" label="AI Accuracy" value={chatbot ? `${chatbot.responseAccuracy}%` : '—'} color="#48bb78" />
-        <MetricCard icon="⚠️" label="Hallucination Rate" value={chatbot ? `${chatbot.hallucinationRate}%` : '—'} color="#fc8181" />
-        <MetricCard icon="🔐" label="Login Success Rate" value={security ? `${Math.round((security.successfulLogins / Math.max(security.successfulLogins + security.failedLoginAttempts, 1)) * 100)}%` : '—'} color="#4f63ff" />
-        <MetricCard icon="🎓" label="Active Students" value={students ? students.activeStudents.toLocaleString() : '—'} color="#9f7aea" />
+        <MetricCard icon="🎯" label="AI Accuracy" value={chatbot ? `${chatbot.responseAccuracy}%` : '—'} color="#34a87a" />
+        <MetricCard icon="⚠️" label="Hallucination Rate" value={chatbot ? `${chatbot.hallucinationRate}%` : '—'} color="#c0524a" />
+        <MetricCard icon="🔐" label="Login Success Rate" value={security ? `${Math.round((security.successfulLogins / Math.max(security.successfulLogins + security.failedLoginAttempts, 1)) * 100)}%` : '—'} color="#4f5dc8" />
+        <MetricCard icon="🎓" label="Active Students" value={students ? students.activeStudents.toLocaleString() : '—'} color="#7c6fc2" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricCard icon="💬" label="Total AI Queries" value={chatbot ? chatbot.totalQueries.toLocaleString() : '—'} />
         <MetricCard
           icon="⚡" label="Avg API Response"
           value={system ? `${system.apiResponseTime}${system.apiResponseUnit || 's'}` : '—'}
-          color="#06b6d4"
+          color="#2d9a8a"
         />
         <MetricCard
           icon="🟢" label="System Uptime"
@@ -839,11 +839,11 @@ const OverviewPanel: React.FC<{ allData: any }> = ({ allData }) => {
                 ? `${system.uptimeDays}d ${system.uptimeHours}h`
                 : `${system.uptimeHours}h`)
             : '—'}
-          color="#48bb78"
+          color="#34a87a"
         />
-        <MetricCard icon="📊" label="TAM Overall Score" value={allData.tam?.overallScore ? `${allData.tam.overallScore}/5` : '—'} color="#f6ad55" />
+        <MetricCard icon="📊" label="TAM Overall Score" value={allData.tam?.overallScore ? `${allData.tam.overallScore}/5` : '—'} color="#c4893a" />
       </div>
-      <div className="rounded-2xl p-5" style={{ background: 'rgba(79,99,255,0.04)', border: '1px solid rgba(79,99,255,0.15)' }}>
+      <div className="rounded-2xl p-5" style={{ background: 'rgba(79,93,200,0.03)', border: '1px solid rgba(79,93,200,0.10)' }}>
         <h4 className="text-xs font-bold text-primary-400 mb-3">🧪 Module Health Summary</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
@@ -857,7 +857,7 @@ const OverviewPanel: React.FC<{ allData: any }> = ({ allData }) => {
             { label: 'Security', status: security?.otpSuccessRate > 80 ? 'good' : 'warn' },
           ].map(m => (
             <div key={m.label} className="flex items-center gap-2 text-xs">
-              <span style={{ color: m.status === 'good' ? '#48bb78' : m.status === 'warn' ? '#f6ad55' : '#7c8fff' }}>●</span>
+              <span style={{ color: m.status === 'good' ? '#34a87a' : m.status === 'warn' ? '#c4893a' : '#8b94e0' }}>●</span>
               <span className="text-white/60">{m.label}</span>
             </div>
           ))}
@@ -978,8 +978,8 @@ export const AIEvaluationPage: React.FC = () => {
             onClick={() => setActiveSection(s.id)}
             className={`flex items-center gap-2.5 px-3 py-2.5 text-left transition-all flex-shrink-0 ${activeSection === s.id ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
             style={{
-              background: activeSection === s.id ? 'rgba(79,99,255,0.12)' : 'transparent',
-              borderLeft: activeSection === s.id ? '2px solid #4f63ff' : '2px solid transparent',
+              background: activeSection === s.id ? 'rgba(79,93,200,0.09)' : 'transparent',
+              borderLeft: activeSection === s.id ? '2px solid #4f5dc8' : '2px solid transparent',
               minWidth: 0,
             }}
           >
@@ -1026,9 +1026,9 @@ export const AIEvaluationPage: React.FC = () => {
               onClick={() => setActiveSection(s.id)}
               className="flex-shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-semibold whitespace-nowrap transition-all"
               style={{
-                background: activeSection === s.id ? 'rgba(79,99,255,0.15)' : 'rgba(255,255,255,0.03)',
-                border: activeSection === s.id ? '1px solid rgba(79,99,255,0.4)' : '1px solid rgba(255,255,255,0.05)',
-                color: activeSection === s.id ? '#7c8fff' : 'rgba(255,255,255,0.4)',
+                background: activeSection === s.id ? 'rgba(79,93,200,0.10)' : 'rgba(255,255,255,0.03)',
+                border: activeSection === s.id ? '1px solid rgba(79,93,200,0.32)' : '1px solid rgba(255,255,255,0.05)',
+                color: activeSection === s.id ? '#8b94e0' : 'rgba(255,255,255,0.4)',
               }}
             >
               {s.icon} {s.label}

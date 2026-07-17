@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { researchService } from '../services/research.service';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
@@ -102,7 +102,7 @@ export const ResearchAssistantPage: React.FC = () => {
           {(['analyze', 'history'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/60'}`}
-              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f63ff,#7c3aed)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: activeTab === tab ? 'linear-gradient(135deg,#4f5dc8,#6359a8)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               {tab === 'analyze' ? '🔬 Analyze Paper' : `History (${history.length})`}
             </button>
           ))}
@@ -118,7 +118,7 @@ export const ResearchAssistantPage: React.FC = () => {
               onDragOver={e => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={handleDrop}
-              className={`p-5 rounded-2xl text-center cursor-pointer transition-all border-2 border-dashed ${dragging ? 'border-[#4f63ff] bg-[#4f63ff]/5' : 'border-white/10 hover:border-white/20'}`}
+              className={`p-5 rounded-2xl text-center cursor-pointer transition-all border-2 border-dashed ${dragging ? 'border-[#4f5dc8] bg-[#4f5dc8]/5' : 'border-white/10 hover:border-white/20'}`}
               onClick={() => document.getElementById('research-file-input')?.click()}>
               <input id="research-file-input" type="file" multiple accept=".pdf,.docx,.txt" className="hidden"
                 onChange={e => e.target.files && handleFiles(e.target.files)} />
@@ -133,9 +133,9 @@ export const ResearchAssistantPage: React.FC = () => {
                 <div className="text-[10px] text-white/40 uppercase font-bold">Uploaded Papers</div>
                 {uploadedPapers.map((p, i) => (
                   <div key={i} className="flex items-center gap-2 text-[10px]">
-                    <span className="text-[#48bb78]">📄</span>
+                    <span className="text-[#34a87a]">📄</span>
                     <span className="text-white/70 truncate flex-1">{p.name}</span>
-                    <button onClick={() => setUploadedPapers(prev => prev.filter((_, idx) => idx !== i))} className="text-[#fc8181] opacity-60 hover:opacity-100">✕</button>
+                    <button onClick={() => setUploadedPapers(prev => prev.filter((_, idx) => idx !== i))} className="text-[#c0524a] opacity-60 hover:opacity-100">✕</button>
                   </div>
                 ))}
               </div>
@@ -147,7 +147,7 @@ export const ResearchAssistantPage: React.FC = () => {
               {FEATURES.map(f => (
                 <button key={f.value} onClick={() => setSelectedFeature(f.value)}
                   className={`w-full flex items-center gap-2 p-2 rounded-lg text-left transition-all`}
-                  style={{ background: selectedFeature === f.value ? 'rgba(79,99,255,0.15)' : 'transparent', color: selectedFeature === f.value ? '#7c8fff' : 'rgba(255,255,255,0.4)' }}>
+                  style={{ background: selectedFeature === f.value ? 'rgba(79,93,200,0.10)' : 'transparent', color: selectedFeature === f.value ? '#8b94e0' : 'rgba(255,255,255,0.4)' }}>
                   <span className="text-sm">{f.icon}</span>
                   <div>
                     <div className="text-[10px] font-bold">{f.label}</div>
@@ -159,7 +159,7 @@ export const ResearchAssistantPage: React.FC = () => {
 
             <button onClick={handleAnalyze} disabled={analyzing || uploadedPapers.length === 0}
               className="w-full py-3 rounded-xl text-xs font-bold text-white disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg,#4f63ff,#7c3aed)' }}>
+              style={{ background: 'linear-gradient(135deg,#4f5dc8,#6359a8)' }}>
               {analyzing ? `🤖 Analyzing (${featureData?.label})…` : `✦ Run ${featureData?.label}`}
             </button>
           </div>
@@ -234,7 +234,7 @@ export const ResearchAssistantPage: React.FC = () => {
                         url: `/research-assistant`
                       }).catch(() => {});
                     }}
-                      className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#7c8fff]" style={{ background: 'rgba(79,99,255,0.08)' }}>View</button>
+                      className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#8b94e0]" style={{ background: 'rgba(79,93,200,0.06)' }}>View</button>
                     <BookmarkButton
                       itemType="research"
                       itemId={item._id}
@@ -243,7 +243,7 @@ export const ResearchAssistantPage: React.FC = () => {
                       className="px-2 py-1 text-[9px] font-semibold"
                     />
                     <button onClick={() => handleDeleteHistory(item._id)}
-                      className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#fc8181]" style={{ background: 'rgba(252,129,129,0.08)' }}>Del</button>
+                      className="px-2 py-1 rounded-lg text-[9px] font-semibold text-[#c0524a]" style={{ background: 'rgba(192,82,74,0.08)' }}>Del</button>
                   </div>
                 </div>
               </div>

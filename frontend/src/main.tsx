@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -85,7 +85,7 @@ window.addEventListener('online', async () => {
     id: 'network-status',
     position: 'bottom-left',
     duration: 3000,
-    style: { background: '#1e293b', border: '1px solid rgba(72,187,120,0.2)', color: '#fff', fontSize: '13px' }
+    style: { background: '#1e293b', border: '1px solid rgba(52,168,122,0.2)', color: '#fff', fontSize: '13px' }
   });
 
   // Trigger queue replay (fallback if SW Background Sync not available)
@@ -113,7 +113,7 @@ window.addEventListener('offline', () => {
     id: 'network-offline',
     position: 'bottom-left',
     duration: Infinity,
-    style: { background: '#1e293b', border: '1px solid rgba(252,129,129,0.2)', color: '#fff', fontSize: '13px' }
+    style: { background: '#1e293b', border: '1px solid rgba(192,82,74,0.2)', color: '#fff', fontSize: '13px' }
   });
 });
 

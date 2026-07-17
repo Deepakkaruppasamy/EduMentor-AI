@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -378,8 +378,8 @@ export const SystemHealthPage: React.FC = () => {
         <div style={{ position: 'relative', marginBottom: 20 }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
-            border: '3px solid rgba(79,99,255,0.2)',
-            borderTop: '3px solid #4f63ff',
+            border: '3px solid rgba(79,93,200,0.14)',
+            borderTop: '3px solid #4f5dc8',
             animation: 'spin 0.9s linear infinite',
           }} />
         </div>
@@ -512,8 +512,8 @@ export const SystemHealthPage: React.FC = () => {
             {/* Export */}
             <button id="health-export-btn" onClick={handleExport} style={{
               padding: '8px 16px', borderRadius: 10,
-              border: '1px solid rgba(79,99,255,0.3)',
-              background: 'rgba(79,99,255,0.1)', color: '#818cf8',
+              border: '1px solid rgba(79,93,200,0.22)',
+              background: 'rgba(79,93,200,0.08)', color: '#7b87d4',
               cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
             }}>📥 Export</button>
           </div>
@@ -580,7 +580,7 @@ export const SystemHealthPage: React.FC = () => {
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>HEAP</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#818cf8', marginTop: 2 }}>{data.application.heapUsedMb}MB</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#7b87d4', marginTop: 2 }}>{data.application.heapUsedMb}MB</div>
               </div>
             </div>
           </motion.div>
@@ -620,9 +620,9 @@ export const SystemHealthPage: React.FC = () => {
                 <SectionTitle>Application Telemetry</SectionTitle>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
                   {[
-                    { label: 'HEAP USED', value: `${data.application.heapUsedMb} MB`, sub: `Allocated: ${data.application.heapTotalMb} MB`, color: '#818cf8' },
+                    { label: 'HEAP USED', value: `${data.application.heapUsedMb} MB`, sub: `Allocated: ${data.application.heapTotalMb} MB`, color: '#7b87d4' },
                     { label: 'NODE ENV', value: data.application.environment.toUpperCase(), sub: `v${data.application.nodeVersion.slice(1)}`, color: '#22c55e' },
-                    { label: 'RSS MEMORY', value: `${data.application.rssMb} MB`, sub: `External: ${data.application.externalMb} MB`, color: '#06b6d4' },
+                    { label: 'RSS MEMORY', value: `${data.application.rssMb} MB`, sub: `External: ${data.application.externalMb} MB`, color: '#2d9a8a' },
                     { label: 'PROCESS UPTIME', value: formatUptime(data.application.processUptime), sub: `Handles: ${data.application.activeHandles}`, color: '#f59e0b' },
                   ].map(({ label, value, sub, color }) => (
                     <div key={label} style={{
@@ -671,14 +671,14 @@ export const SystemHealthPage: React.FC = () => {
                       <AreaChart data={history} margin={{ top: 4, right: 0, left: -30, bottom: 0 }}>
                         <defs>
                           <linearGradient id="memGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
+                            <stop offset="5%" stopColor="#7b87d4" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#7b87d4" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <XAxis dataKey="timestamp" hide />
                         <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.25)' }} />
                         <Tooltip content={<SparkTooltip />} />
-                        <Area type="monotone" dataKey="memPercent" name="Memory" unit="%" stroke="#818cf8" fill="url(#memGrad)" strokeWidth={1.5} dot={false} />
+                        <Area type="monotone" dataKey="memPercent" name="Memory" unit="%" stroke="#7b87d4" fill="url(#memGrad)" strokeWidth={1.5} dot={false} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -762,9 +762,9 @@ export const SystemHealthPage: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showDiagnostics ? 16 : 0 }}>
                 <SectionTitle>🔍 Diagnostics Panel</SectionTitle>
                 <button id="health-diagnostics-toggle" onClick={() => setShowDiagnostics(v => !v)} style={{
-                  background: showDiagnostics ? 'rgba(79,99,255,0.15)' : 'none',
-                  border: '1px solid rgba(79,99,255,0.3)',
-                  color: '#818cf8', borderRadius: 8,
+                  background: showDiagnostics ? 'rgba(79,93,200,0.10)' : 'none',
+                  border: '1px solid rgba(79,93,200,0.22)',
+                  color: '#7b87d4', borderRadius: 8,
                   padding: '4px 12px', fontSize: 11, cursor: 'pointer', fontWeight: 600,
                 }}>
                   {showDiagnostics ? '▲ Hide' : '▼ Show Details'}

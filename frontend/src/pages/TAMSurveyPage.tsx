@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { aiEvaluationService } from '../services/ai-evaluation.service';
 import toast from 'react-hot-toast';
@@ -82,7 +82,7 @@ export const TAMSurveyPage: React.FC = () => {
           <p className="text-white/50 text-sm leading-relaxed">
             Your TAM survey response has been recorded. Your feedback helps us improve EduMentor AI for everyone.
           </p>
-          <div className="mt-6 rounded-2xl p-4 text-left" style={{ background: 'rgba(79,99,255,0.05)', border: '1px solid rgba(79,99,255,0.15)' }}>
+          <div className="mt-6 rounded-2xl p-4 text-left" style={{ background: 'rgba(79,93,200,0.04)', border: '1px solid rgba(79,93,200,0.10)' }}>
             <h4 className="text-xs font-bold text-primary-400 mb-2">Your ratings were submitted ✓</h4>
             <div className="space-y-1">
               {DIMENSIONS.map(d => (
@@ -108,7 +108,7 @@ export const TAMSurveyPage: React.FC = () => {
           <p className="text-sm text-white/40 max-w-lg mx-auto leading-relaxed">
             Help us evaluate EduMentor AI using the Technology Acceptance Model (TAM). Your honest responses help improve the platform.
           </p>
-          <div className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full mt-2" style={{ background: 'rgba(79,99,255,0.1)', border: '1px solid rgba(79,99,255,0.2)', color: '#7c8fff' }}>
+          <div className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full mt-2" style={{ background: 'rgba(79,93,200,0.08)', border: '1px solid rgba(79,93,200,0.14)', color: '#8b94e0' }}>
             🔒 Anonymous & Confidential · Takes ~2 minutes
           </div>
         </div>
@@ -123,8 +123,8 @@ export const TAMSurveyPage: React.FC = () => {
               transition={{ delay: i * 0.05 }}
               className="rounded-2xl p-5"
               style={{
-                background: ratings[dim.key] ? 'rgba(79,99,255,0.04)' : 'rgba(255,255,255,0.02)',
-                border: ratings[dim.key] ? '1px solid rgba(79,99,255,0.2)' : '1px solid rgba(255,255,255,0.07)',
+                background: ratings[dim.key] ? 'rgba(79,93,200,0.03)' : 'rgba(255,255,255,0.02)',
+                border: ratings[dim.key] ? '1px solid rgba(79,93,200,0.14)' : '1px solid rgba(255,255,255,0.07)',
                 transition: 'all 0.2s',
               }}
             >
@@ -135,7 +135,7 @@ export const TAMSurveyPage: React.FC = () => {
                   <p className="text-xs text-white/40 mt-0.5">{dim.desc}</p>
                 </div>
                 {ratings[dim.key] > 0 && (
-                  <span className="ml-auto text-xs px-2 py-1 rounded-lg font-semibold" style={{ background: 'rgba(72,187,120,0.1)', color: '#48bb78' }}>✓ Rated</span>
+                  <span className="ml-auto text-xs px-2 py-1 rounded-lg font-semibold" style={{ background: 'rgba(52,168,122,0.1)', color: '#34a87a' }}>✓ Rated</span>
                 )}
               </div>
               <StarRating
@@ -165,7 +165,7 @@ export const TAMSurveyPage: React.FC = () => {
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${(Object.values(ratings).filter(v => v > 0).length / 7) * 100}%`,
-                background: 'linear-gradient(90deg, #4f63ff, #9f7aea)',
+                background: 'linear-gradient(90deg, #4f5dc8, #7c6fc2)',
               }}
             />
           </div>

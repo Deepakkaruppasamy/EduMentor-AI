@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -79,9 +79,9 @@ export const FirstLoginChangePage: React.FC = () => {
           }} 
         />
         <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full blur-3xl opacity-20"
-          style={{ background: 'radial-gradient(circle, #4f63ff, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #4f5dc8, transparent)' }} />
         <div className="absolute -bottom-40 -right-40 h-80 w-80 rounded-full blur-3xl opacity-15"
-          style={{ background: 'radial-gradient(circle, #9f7aea, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #7c6fc2, transparent)' }} />
       </div>
 
       <motion.div 

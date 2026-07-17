@@ -24,6 +24,8 @@ import { JobsDrawer } from '../jobs/JobsDrawer';
 import { JobsButton } from '../jobs/JobsButton';
 import { OnboardingOverlay } from '../onboarding/OnboardingOverlay';
 import { ContextualActionToolbar, ContextualActionResult, useTextSelection } from '../../modules/contextual-actions';
+import { motion, AnimatePresence } from 'framer-motion';
+import { backdropVariants, slideFromLeftVariants } from '../../utils/motion';
 
 
 interface LayoutProps {
@@ -441,16 +443,33 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       </aside>
 
       {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSidebarOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-64 z-10"
-            style={{ borderRight: '1px solid rgba(255,255,255,0.08)' }}>
-            <Sidebar onClose={() => setSidebarOpen(false)} />
-          </aside>
-        </div>
-      )}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            key="mobile-sidebar"
+            className="fixed inset-0 z-50 lg:hidden"
+          >
+            <motion.div
+              variants={backdropVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.aside
+              variants={slideFromLeftVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="absolute left-0 top-0 h-full w-64 z-10"
+              style={{ borderRight: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              <Sidebar onClose={() => setSidebarOpen(false)} />
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -512,8 +531,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <span
                   className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-black text-white rounded-full px-1"
                   style={{
-                    background: 'linear-gradient(135deg, #4f63ff, #7c3aed)',
-                    boxShadow: '0 0 8px rgba(79,99,255,0.7)',
+                    background: 'linear-gradient(135deg, #4f5dc8, #6359a8)',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
                     animation: 'bellBadgePop 0.3s cubic-bezier(0.34,1.56,0.64,1)',
                   }}
                 >
@@ -553,8 +572,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             borderRadius: '12px',
             fontSize: '13px',
           },
-          success: { iconTheme: { primary: '#48bb78', secondary: 'transparent' } },
-          error: { iconTheme: { primary: '#fc8181', secondary: 'transparent' } },
+          success: { iconTheme: { primary: '#34a87a', secondary: 'transparent' } },
+          error: { iconTheme: { primary: '#c0524a', secondary: 'transparent' } },
         }}
       />
       {/* Global AI Learning Assistant Widget — floats on every authenticated page */}

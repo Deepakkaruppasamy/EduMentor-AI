@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { calendarService } from '../services/calendar.service';
 import { BookmarkButton } from '../components/common/BookmarkButton';
@@ -6,16 +6,16 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday
 import toast from 'react-hot-toast';
 
 const EVENT_TYPE_CONFIG: Record<string, { color: string; icon: string }> = {
-  Holiday: { color: '#fc8181', icon: '🏖️' },
-  Exam: { color: '#f6ad55', icon: '📝' },
-  Assignment: { color: '#4f63ff', icon: '📋' },
-  Workshop: { color: '#48bb78', icon: '🔧' },
-  Lecture: { color: '#38b2ac', icon: '📖' },
-  Event: { color: '#9f7aea', icon: '🎉' },
-  Placement: { color: '#ed8936', icon: '💼' },
+  Holiday: { color: '#c0524a', icon: '🏖️' },
+  Exam: { color: '#c4893a', icon: '📝' },
+  Assignment: { color: '#4f5dc8', icon: '📋' },
+  Workshop: { color: '#34a87a', icon: '🔧' },
+  Lecture: { color: '#2d9a8a', icon: '📖' },
+  Event: { color: '#7c6fc2', icon: '🎉' },
+  Placement: { color: '#c4893a', icon: '💼' },
   Announcement: { color: '#63b3ed', icon: '📢' },
-  ClassCancellation: { color: '#fc8181', icon: '🚫' },
-  Lab: { color: '#48bb78', icon: '🔬' },
+  ClassCancellation: { color: '#c0524a', icon: '🚫' },
+  Lab: { color: '#34a87a', icon: '🔬' },
 };
 
 const EVENT_TYPES = Object.keys(EVENT_TYPE_CONFIG);
@@ -37,7 +37,7 @@ export const AcademicCalendarPage: React.FC = () => {
   const [newType, setNewType] = useState('Event');
   const [newStart, setNewStart] = useState('');
   const [newEnd, setNewEnd] = useState('');
-  const [newColor, setNewColor] = useState('#4f63ff');
+  const [newColor, setNewColor] = useState('#4f5dc8');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -139,12 +139,12 @@ export const AcademicCalendarPage: React.FC = () => {
               return (
                 <button key={day.toISOString()} onClick={() => setSelectedDay(day)}
                   className={`relative min-h-[60px] p-1 rounded-xl flex flex-col items-start transition-all text-left ${isSelected ? '' : 'hover:bg-white/[0.02]'}`}
-                  style={{ background: isSelected ? 'rgba(79,99,255,0.15)' : isToday(day) ? 'rgba(79,99,255,0.05)' : 'transparent', border: `1px solid ${isSelected ? 'rgba(79,99,255,0.3)' : 'rgba(255,255,255,0.03)'}` }}>
-                  <span className={`text-[10px] font-bold mb-1 ${isToday(day) ? 'text-[#7c8fff]' : 'text-white/50'}`}>{format(day, 'd')}</span>
+                  style={{ background: isSelected ? 'rgba(79,93,200,0.10)' : isToday(day) ? 'rgba(79,93,200,0.04)' : 'transparent', border: `1px solid ${isSelected ? 'rgba(79,93,200,0.22)' : 'rgba(255,255,255,0.03)'}` }}>
+                  <span className={`text-[10px] font-bold mb-1 ${isToday(day) ? 'text-[#8b94e0]' : 'text-white/50'}`}>{format(day, 'd')}</span>
                   <div className="w-full space-y-0.5">
                     {dayEvents.slice(0, 3).map(ev => (
                       <div key={ev._id} className="text-[8px] font-semibold truncate w-full px-1 rounded"
-                        style={{ background: `${ev.color || EVENT_TYPE_CONFIG[ev.type]?.color || '#4f63ff'}20`, color: ev.color || EVENT_TYPE_CONFIG[ev.type]?.color || '#4f63ff' }}>
+                        style={{ background: `${ev.color || EVENT_TYPE_CONFIG[ev.type]?.color || '#4f5dc8'}20`, color: ev.color || EVENT_TYPE_CONFIG[ev.type]?.color || '#4f5dc8' }}>
                         {ev.title}
                       </div>
                     ))}
@@ -167,9 +167,9 @@ export const AcademicCalendarPage: React.FC = () => {
           {selectedDay && eventsOnDay(selectedDay).map(ev => {
             const tc = EVENT_TYPE_CONFIG[ev.type];
             return (
-              <div key={ev._id} className="mb-3 p-3 rounded-xl" style={{ background: `${tc?.color || '#4f63ff'}08`, border: `1px solid ${tc?.color || '#4f63ff'}20` }}>
+              <div key={ev._id} className="mb-3 p-3 rounded-xl" style={{ background: `${tc?.color || '#4f5dc8'}08`, border: `1px solid ${tc?.color || '#4f5dc8'}20` }}>
                 <div className="flex justify-between items-start gap-2">
-                  <div className="text-[10px] font-bold" style={{ color: tc?.color || '#7c8fff' }}>{tc?.icon} {ev.type}</div>
+                  <div className="text-[10px] font-bold" style={{ color: tc?.color || '#8b94e0' }}>{tc?.icon} {ev.type}</div>
                   <div className="flex items-center gap-1.5">
                     <BookmarkButton
                       itemType="calendar"
@@ -179,7 +179,7 @@ export const AcademicCalendarPage: React.FC = () => {
                       className="p-1 border-0 bg-transparent text-white/40 hover:text-white"
                     />
                     {canCreate && (
-                      <button onClick={e => handleDelete(ev._id, e)} className="text-[10px] text-[#fc8181] opacity-60 hover:opacity-100">✕</button>
+                      <button onClick={e => handleDelete(ev._id, e)} className="text-[10px] text-[#c0524a] opacity-60 hover:opacity-100">✕</button>
                     )}
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { MsgMessage } from '../../types/messaging.types';
 
 interface ReplyPreviewProps {
@@ -20,10 +20,10 @@ export const ReplyPreview: React.FC<ReplyPreviewProps> = ({ replyTo, onClear, is
     >
       <div
         className="w-0.5 self-stretch rounded-full flex-shrink-0"
-        style={{ background: 'linear-gradient(180deg, #4f63ff, #9f7aea)' }}
+        style={{ background: 'linear-gradient(180deg, #4f5dc8, #7c6fc2)' }}
       />
       <div className="min-w-0 flex-1">
-        <div className="font-semibold text-[#7c8fff] truncate">{replyTo.sender?.name || 'Unknown'}</div>
+        <div className="font-semibold text-[#8b94e0] truncate">{replyTo.sender?.name || 'Unknown'}</div>
         <div className="text-white/40 truncate">
           {replyTo.messageType === 'image' ? '📷 Image' :
            replyTo.messageType === 'audio' ? '🎤 Voice message' :

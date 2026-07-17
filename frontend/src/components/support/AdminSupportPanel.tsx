@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { supportService, SupportTicketData, SupportMessageData } from '../../services/support.service';
 import { useSupportStore } from '../../store/support.store';
 import { format } from 'date-fns';
@@ -164,7 +164,7 @@ export const AdminSupportPanel: React.FC = () => {
   });
 
   // Recharts Colors
-  const COLORS = ['#4f63ff', '#f6ad55', '#fc8181', '#48bb78', '#9f7aea', '#38b2ac'];
+  const COLORS = ['#4f5dc8', '#c4893a', '#c0524a', '#34a87a', '#7c6fc2', '#2d9a8a'];
 
   const categoryChartData = analytics?.categories?.map((cat: any) => ({
     name: cat._id,
@@ -187,19 +187,19 @@ export const AdminSupportPanel: React.FC = () => {
           </div>
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
             <div className="text-[10px] text-white/30 font-semibold uppercase">Open Tickets</div>
-            <div className="text-xl font-bold text-[#f6ad55] mt-1">{analytics.openTickets}</div>
+            <div className="text-xl font-bold text-[#c4893a] mt-1">{analytics.openTickets}</div>
           </div>
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
             <div className="text-[10px] text-white/30 font-semibold uppercase">Resolved</div>
-            <div className="text-xl font-bold text-[#48bb78] mt-1">{analytics.resolvedTickets}</div>
+            <div className="text-xl font-bold text-[#34a87a] mt-1">{analytics.resolvedTickets}</div>
           </div>
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
             <div className="text-[10px] text-white/30 font-semibold uppercase">Critical Issues</div>
-            <div className="text-xl font-bold text-[#fc8181] mt-1">{analytics.criticalTickets}</div>
+            <div className="text-xl font-bold text-[#c0524a] mt-1">{analytics.criticalTickets}</div>
           </div>
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
             <div className="text-[10px] text-white/30 font-semibold uppercase">CSAT Score</div>
-            <div className="text-xl font-bold text-[#7c8fff] mt-1">{analytics.csatScore}%</div>
+            <div className="text-xl font-bold text-[#8b94e0] mt-1">{analytics.csatScore}%</div>
           </div>
         </div>
       )}
@@ -249,11 +249,11 @@ export const AdminSupportPanel: React.FC = () => {
                     <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" fontSize={10} />
                     <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} />
                     <Tooltip contentStyle={{ background: '#111318', border: '1px solid rgba(255,255,255,0.1)' }} />
-                    <Bar dataKey="count" fill="#4f63ff" radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="count" fill="#4f5dc8" radius={[4, 4, 0, 0]}>
                       {ratingsChartData.map((item: any, index: number) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={item.name === 'Not Resolved' ? '#fc8181' : '#4f63ff'}
+                          fill={item.name === 'Not Resolved' ? '#c0524a' : '#4f5dc8'}
                         />
                       ))}
                     </Bar>
@@ -330,7 +330,7 @@ export const AdminSupportPanel: React.FC = () => {
                       key={t._id}
                       onClick={() => handleSelectTicket(t)}
                       className={`border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors cursor-pointer ${
-                        selectedTicket?._id === t._id ? 'bg-[#4f63ff]/10' : ''
+                        selectedTicket?._id === t._id ? 'bg-[#4f5dc8]/10' : ''
                       }`}
                     >
                       <td className="p-3 font-mono font-bold text-white/80">{t.ticketId}</td>
@@ -345,15 +345,15 @@ export const AdminSupportPanel: React.FC = () => {
                           style={{
                             background:
                               t.priority === 'Critical'
-                                ? 'rgba(252,129,129,0.15)'
+                                ? 'rgba(192,82,74,0.15)'
                                 : t.priority === 'High'
-                                ? 'rgba(246,173,85,0.15)'
+                                ? 'rgba(196,137,58,0.15)'
                                 : 'rgba(255,255,255,0.05)',
                             color:
                               t.priority === 'Critical'
-                                ? '#fc8181'
+                                ? '#c0524a'
                                 : t.priority === 'High'
-                                ? '#f6ad55'
+                                ? '#c4893a'
                                 : 'rgba(255,255,255,0.4)',
                           }}
                         >
@@ -366,12 +366,12 @@ export const AdminSupportPanel: React.FC = () => {
                           style={{
                             background:
                               t.status === 'Resolved' || t.status === 'Closed'
-                                ? 'rgba(72,187,120,0.15)'
-                                : 'rgba(79,99,255,0.15)',
+                                ? 'rgba(52,168,122,0.15)'
+                                : 'rgba(79,93,200,0.10)',
                             color:
                               t.status === 'Resolved' || t.status === 'Closed'
-                                ? '#48bb78'
-                                : '#7c8fff',
+                                ? '#34a87a'
+                                : '#8b94e0',
                           }}
                         >
                           {t.status}
@@ -455,7 +455,7 @@ export const AdminSupportPanel: React.FC = () => {
                       return (
                         <div key={msg._id} className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
                           <div className="flex justify-between items-center text-[9px] text-white/30 font-semibold mb-1">
-                            <span style={{ color: isAdmin ? '#9f7aea' : '#7c8fff' }}>{msg.senderName} ({msg.role})</span>
+                            <span style={{ color: isAdmin ? '#7c6fc2' : '#8b94e0' }}>{msg.senderName} ({msg.role})</span>
                             <span>{format(new Date(msg.createdAt), 'MMM d, h:mm a')}</span>
                           </div>
                           <p className="text-xs text-white/70 leading-relaxed">{msg.content}</p>
@@ -479,7 +479,7 @@ export const AdminSupportPanel: React.FC = () => {
                   onClick={handleSendReply}
                   disabled={!replyText.trim() || sendingReply}
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold disabled:opacity-40 flex-shrink-0 self-end"
-                  style={{ background: 'linear-gradient(135deg, #4f63ff, #7c3aed)' }}
+                  style={{ background: 'linear-gradient(135deg, #4f5dc8, #6359a8)' }}
                 >
                   {sendingReply ? '…' : '➤'}
                 </button>
@@ -514,7 +514,7 @@ export const AdminSupportPanel: React.FC = () => {
                   <button
                     onClick={() => setAnnTarget('all')}
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold border ${
-                      annTarget === 'all' ? 'bg-[#4f63ff]/20 text-[#7c8fff] border-[#4f63ff]/30' : 'text-white/40 border-transparent'
+                      annTarget === 'all' ? 'bg-[#4f5dc8]/15 text-[#8b94e0] border-[#4f5dc8]/25' : 'text-white/40 border-transparent'
                     }`}
                   >
                     All
@@ -522,7 +522,7 @@ export const AdminSupportPanel: React.FC = () => {
                   <button
                     onClick={() => setAnnTarget('student')}
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold border ${
-                      annTarget === 'student' ? 'bg-[#4f63ff]/20 text-[#7c8fff] border-[#4f63ff]/30' : 'text-white/40 border-transparent'
+                      annTarget === 'student' ? 'bg-[#4f5dc8]/15 text-[#8b94e0] border-[#4f5dc8]/25' : 'text-white/40 border-transparent'
                     }`}
                   >
                     Students
@@ -530,7 +530,7 @@ export const AdminSupportPanel: React.FC = () => {
                   <button
                     onClick={() => setAnnTarget('faculty')}
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold border ${
-                      annTarget === 'faculty' ? 'bg-[#4f63ff]/20 text-[#7c8fff] border-[#4f63ff]/30' : 'text-white/40 border-transparent'
+                      annTarget === 'faculty' ? 'bg-[#4f5dc8]/15 text-[#8b94e0] border-[#4f5dc8]/25' : 'text-white/40 border-transparent'
                     }`}
                   >
                     Faculty

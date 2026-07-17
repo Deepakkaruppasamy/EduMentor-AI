@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 import { Quiz, QuizResults } from '../../types';
 import { getGradeColor } from '../../utils/uuid';
@@ -16,7 +16,7 @@ export const QuizResultsView: React.FC<QuizResultsProps> = ({ quiz, results, onR
       {/* Score Card */}
       <div className="glass-card p-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-5"
-          style={{ background: 'radial-gradient(circle at 50% 50%, #4f63ff 0%, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle at 50% 50%, #4f5dc8 0%, transparent 70%)' }} />
         <div className="relative">
           <div className="text-6xl mb-3">{results.percentage >= 75 ? '🏆' : results.percentage >= 50 ? '📚' : '💪'}</div>
           <div className={`text-5xl font-black mb-1 ${getGradeColor(results.percentage)}`}>{results.grade}</div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 import { courseService } from '../services/course.service';
@@ -39,7 +39,7 @@ export const RecommendationsPage: React.FC = () => {
     }
   };
 
-  const strengthColors: Record<string, string> = { weak: '#fc8181', moderate: '#f6ad55', strong: '#48bb78' };
+  const strengthColors: Record<string, string> = { weak: '#c0524a', moderate: '#c4893a', strong: '#34a87a' };
 
   return (
     <div className="p-6 space-y-6">
@@ -78,7 +78,7 @@ export const RecommendationsPage: React.FC = () => {
                 { label: 'Avg Quiz Score', value: `${Math.round(recommendation.avgQuizScore)}%` },
                 { label: 'Learning Streak', value: `${recommendation.learningStreak}d` },
               ].map(s => (
-                <div key={s.label} className="rounded-xl p-3" style={{ background: 'rgba(79,99,255,0.1)', border: '1px solid rgba(79,99,255,0.2)' }}>
+                <div key={s.label} className="rounded-xl p-3" style={{ background: 'rgba(79,93,200,0.08)', border: '1px solid rgba(79,93,200,0.14)' }}>
                   <div className="text-xl font-bold text-white">{s.value}</div>
                   <div className="text-[10px] text-white/40">{s.label}</div>
                 </div>
@@ -113,7 +113,7 @@ export const RecommendationsPage: React.FC = () => {
                 <div className="flex flex-wrap gap-1.5">
                   {recommendation.weakTopics.map(t => (
                     <span key={t} className="rounded-full px-2.5 py-1 text-[11px]"
-                      style={{ background: 'rgba(252,129,129,0.1)', border: '1px solid rgba(252,129,129,0.2)', color: '#fc8181' }}>{t}</span>
+                      style={{ background: 'rgba(192,82,74,0.1)', border: '1px solid rgba(192,82,74,0.2)', color: '#c0524a' }}>{t}</span>
                   ))}
                 </div>
               </div>
@@ -125,7 +125,7 @@ export const RecommendationsPage: React.FC = () => {
                 <div className="flex flex-wrap gap-1.5">
                   {recommendation.suggestedTopics.map(t => (
                     <span key={t} className="rounded-full px-2.5 py-1 text-[11px]"
-                      style={{ background: 'rgba(79,99,255,0.1)', border: '1px solid rgba(79,99,255,0.2)', color: '#7c8fff' }}>{t}</span>
+                      style={{ background: 'rgba(79,93,200,0.08)', border: '1px solid rgba(79,93,200,0.14)', color: '#8b94e0' }}>{t}</span>
                   ))}
                 </div>
               </div>

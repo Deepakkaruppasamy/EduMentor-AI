@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { useMessagingStore } from '../store/messaging.store';
 import { messagingService } from '../services/messaging.service';
@@ -246,7 +246,7 @@ export const MessagesPage: React.FC = () => {
             onClick={() => { setActiveTab('chats'); setShowCreateDiscussion(false); }}
             className={`flex-1 py-3 text-xs font-semibold text-center transition-all border-b-2 ${
               activeTab === 'chats'
-                ? 'text-[#7c8fff] border-[#4f63ff]'
+                ? 'text-[#8b94e0] border-[#4f5dc8]'
                 : 'text-white/30 border-transparent hover:text-white/50'
             }`}
           >
@@ -256,7 +256,7 @@ export const MessagesPage: React.FC = () => {
             onClick={() => { setActiveTab('discussions'); setShowCreateDiscussion(false); }}
             className={`flex-1 py-3 text-xs font-semibold text-center transition-all border-b-2 ${
               activeTab === 'discussions'
-                ? 'text-[#7c8fff] border-[#4f63ff]'
+                ? 'text-[#8b94e0] border-[#4f5dc8]'
                 : 'text-white/30 border-transparent hover:text-white/50'
             }`}
           >
@@ -267,7 +267,7 @@ export const MessagesPage: React.FC = () => {
               onClick={() => { setActiveTab('moderate'); setActiveConversation(null); setActiveDiscussion(null); }}
               className={`flex-1 py-3 text-xs font-semibold text-center transition-all border-b-2 ${
                 activeTab === 'moderate'
-                  ? 'text-[#7c8fff] border-[#4f63ff]'
+                  ? 'text-[#8b94e0] border-[#4f5dc8]'
                   : 'text-white/30 border-transparent hover:text-white/50'
               }`}
             >
@@ -346,7 +346,7 @@ export const MessagesPage: React.FC = () => {
                 return (
                   <>
                     <div className="relative">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, rgba(79,99,255,0.2), rgba(159,122,234,0.15))' }}>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, rgba(79,93,200,0.14), rgba(124,111,194,0.15))' }}>
                         {other.name?.[0]?.toUpperCase()}
                       </div>
                       <OnlineStatus

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { useOnboardingStore } from '../../store/onboarding.store';
 
 export const OnboardingOverlay: React.FC = () => {
@@ -168,7 +168,7 @@ export const OnboardingOverlay: React.FC = () => {
             onClick={nextStep}
             className="text-[10px] font-extrabold text-white bg-indigo-600 hover:bg-indigo-500 px-3.5 py-1.5 rounded-lg transition-all"
             style={{
-              background: 'linear-gradient(135deg, #4f63ff, #7c3aed)',
+              background: 'linear-gradient(135deg, #4f5dc8, #6359a8)',
               boxShadow: '0 4px 12px rgba(79, 99, 255, 0.3)',
             }}
           >

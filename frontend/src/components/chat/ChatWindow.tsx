@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useChatStore } from '../../store/chat.store';
@@ -453,10 +453,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
             className="flex items-center gap-1 py-1 px-2 text-[10px] rounded-lg transition-all"
             style={{
               background: voiceMode
-                ? 'linear-gradient(135deg, rgba(79,99,255,0.2) 0%, rgba(159,122,234,0.2) 100%)'
+                ? 'linear-gradient(135deg, rgba(79,93,200,0.14) 0%, rgba(124,111,194,0.2) 100%)'
                 : 'rgba(255,255,255,0.05)',
-              border: voiceMode ? '1px solid rgba(79,99,255,0.4)' : '1px solid rgba(255,255,255,0.1)',
-              color: voiceMode ? '#7c8fff' : 'rgba(255,255,255,0.6)',
+              border: voiceMode ? '1px solid rgba(79,93,200,0.32)' : '1px solid rgba(255,255,255,0.1)',
+              color: voiceMode ? '#8b94e0' : 'rgba(255,255,255,0.6)',
             }}
           >
             <span>{voiceMode ? '🔊' : '🔇'}</span>
@@ -466,7 +466,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
           <LanguageSelector />
 
           <div className="hidden md:flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium"
-            style={{ background: 'rgba(72,187,120,0.1)', border: '1px solid rgba(72,187,120,0.2)', color: '#48bb78' }}>
+            style={{ background: 'rgba(52,168,122,0.1)', border: '1px solid rgba(52,168,122,0.2)', color: '#34a87a' }}>
             <div className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
             AI Ready
           </div>
@@ -490,9 +490,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
                   className="rounded-xl p-3 text-left text-xs transition-all"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
                   onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.background = 'rgba(79,99,255,0.1)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(79,99,255,0.3)';
-                    (e.currentTarget as HTMLElement).style.color = '#7c8fff';
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(79,93,200,0.08)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(79,93,200,0.22)';
+                    (e.currentTarget as HTMLElement).style.color = '#8b94e0';
                   }}
                   onMouseLeave={e => {
                     (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
@@ -543,9 +543,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
             disabled={isLoading || !isOnline}
             className="absolute bottom-3 right-14 flex h-9 w-9 items-center justify-center rounded-xl transition-all text-white/60 hover:text-white disabled:opacity-30"
             style={{ 
-              background: isListening ? 'rgba(252,129,129,0.2)' : 'transparent',
-              border: isListening ? '1px solid rgba(252,129,129,0.4)' : 'none',
-              color: isListening ? '#fc8181' : 'rgba(255,255,255,0.6)'
+              background: isListening ? 'rgba(192,82,74,0.2)' : 'transparent',
+              border: isListening ? '1px solid rgba(192,82,74,0.4)' : 'none',
+              color: isListening ? '#c0524a' : 'rgba(255,255,255,0.6)'
             }}
             title="Voice input"
           >
@@ -555,7 +555,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
             onClick={handleSend}
             disabled={!input.trim() || isLoading || !isOnline}
             className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-xl transition-all disabled:opacity-30"
-            style={{ background: 'linear-gradient(135deg, #4f63ff 0%, #7c3aed 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #4f5dc8 0%, #6359a8 100%)' }}
           >
             {isLoading ? (
               <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -569,9 +569,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
           {/* Animated Waveform Overlay when speaking */}
           {isSpeaking && (
             <div className="absolute inset-0 flex items-center justify-between px-5 rounded-2xl backdrop-blur-md"
-              style={{ background: 'rgba(15,23,42,0.85)', border: '1px solid rgba(79,99,255,0.2)' }}>
+              style={{ background: 'rgba(15,23,42,0.85)', border: '1px solid rgba(79,93,200,0.14)' }}>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-[#7c8fff] animate-pulse flex items-center gap-1.5">
+                <span className="text-xs font-medium text-[#8b94e0] animate-pulse flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-indigo-500" />
                   Voice Tutor speaking...
                 </span>
@@ -582,7 +582,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ course, onRefreshHistory
                     <motion.div
                       key={index}
                       className="w-[3px] rounded-full"
-                      style={{ background: 'linear-gradient(to top, #4f63ff, #9f7aea)' }}
+                      style={{ background: 'linear-gradient(to top, #4f5dc8, #7c6fc2)' }}
                       animate={{
                         height: ['4px', '20px', '4px'],
                       }}

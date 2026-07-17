@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { MsgMessage } from '../../types/messaging.types';
 import { format } from 'date-fns';
 
@@ -15,11 +15,11 @@ export const PinnedMessages: React.FC<PinnedMessagesProps> = ({ messages, onJump
   return (
     <div
       className="mx-3 mt-2 rounded-xl overflow-hidden"
-      style={{ background: 'rgba(79,99,255,0.06)', border: '1px solid rgba(79,99,255,0.15)' }}
+      style={{ background: 'rgba(79,93,200,0.05)', border: '1px solid rgba(79,93,200,0.10)' }}
     >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-3 py-2 flex items-center gap-2 text-xs text-[#7c8fff] hover:bg-white/5 transition-colors"
+        className="w-full px-3 py-2 flex items-center gap-2 text-xs text-[#8b94e0] hover:bg-white/5 transition-colors"
       >
         <span>📌</span>
         <span className="font-medium">{messages.length} pinned message{messages.length > 1 ? 's' : ''}</span>

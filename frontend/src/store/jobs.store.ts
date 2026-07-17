@@ -1,4 +1,4 @@
-/**
+﻿/**
  * jobs.store.ts
  * Persistent background job tracking for document processing,
  * assignment evaluation, plagiarism checks, AI note generation, etc.
@@ -134,6 +134,6 @@ export const JOB_TYPE_META: Record<JobType, { icon: string; label: string; color
   plagiarism_check:{ icon: '🔍', label: 'Plagiarism Check',    color: '#f59e0b' },
   ai_notes:        { icon: '📓', label: 'AI Notes Generation', color: '#8b5cf6' },
   quiz_gen:        { icon: '📝', label: 'Quiz Generation',     color: '#ec4899' },
-  research:        { icon: '🔬', label: 'Research Analysis',   color: '#06b6d4' },
+  research:        { icon: '🔬', label: 'Research Analysis',   color: '#2d9a8a' },
   ai_evaluation:   { icon: '🧪', label: 'AI Evaluation',      color: '#f97316' },
 };
