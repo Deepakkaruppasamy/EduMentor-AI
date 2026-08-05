@@ -12,6 +12,8 @@ import {
   getEvaluation4Congruency,
   getEvaluation5CostPerformance,
   getEvaluation6RetrievalMetrics,
+  exportResearchDataCSV,
+  exportResearchDataJSON,
 } from '../controllers/research-eval.controller';
 
 const router = Router();
@@ -38,4 +40,9 @@ router.get('/eval4-congruency', authorize('admin', 'faculty'), getEvaluation4Con
 router.get('/eval5-cost-performance', authorize('admin', 'faculty'), getEvaluation5CostPerformance);
 router.get('/eval6-retrieval', authorize('admin', 'faculty'), getEvaluation6RetrievalMetrics);
 
+// Data Export Endpoints (CSV & JSON)
+router.get('/export/csv', authorize('admin', 'faculty'), exportResearchDataCSV);
+router.get('/export/json', authorize('admin', 'faculty'), exportResearchDataJSON);
+
 export default router;
+

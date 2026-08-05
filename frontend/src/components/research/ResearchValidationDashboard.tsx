@@ -100,6 +100,38 @@ export const ResearchValidationDashboard: React.FC = () => {
     }
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const response = await aiEvaluationService.exportCSV();
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'edumentor_research_data.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Research data exported as CSV.');
+    } catch (err: any) {
+      toast.error('Failed to export CSV data.');
+    }
+  };
+
+  const handleExportJSON = async () => {
+    try {
+      const response = await aiEvaluationService.exportJSON();
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(response.data, null, 2));
+      const link = document.createElement('a');
+      link.href = dataStr;
+      link.setAttribute('download', 'edumentor_research_data.json');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Research data exported as JSON.');
+    } catch (err: any) {
+      toast.error('Failed to export JSON data.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-white/50 text-sm">
@@ -123,6 +155,18 @@ export const ResearchValidationDashboard: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           <button
+            onClick={handleExportCSV}
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+          >
+            📥 Export CSV
+          </button>
+          <button
+            onClick={handleExportJSON}
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+          >
+            📄 Export JSON
+          </button>
+          <button
             onClick={handleSeedBenchmarks}
             className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
           >
@@ -141,6 +185,7 @@ export const ResearchValidationDashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
 
       {/* 6-STUDY CARDS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

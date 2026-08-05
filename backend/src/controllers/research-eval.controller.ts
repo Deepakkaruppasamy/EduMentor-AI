@@ -49,19 +49,28 @@ function calculateIRMetrics(
     };
   }
 
-  const isChunkRelevant = (chunk: RetrievedChunk): boolean => {
-    return groundTruthSources.some((gt) => {
-      // Match by documentName or text similarity
-      const docMatch =
-        gt.documentName.toLowerCase().trim() === chunk.documentName.toLowerCase().trim();
-      const textMatch =
-        chunk.text.includes(gt.supportingText.substring(0, 50)) ||
-        gt.supportingText.includes(chunk.text.substring(0, 50));
-      return docMatch || textMatch;
-    });
+  // Strict relevance check: Chunk ID match or exact excerpt text overlap.
+  // Document name alone does NOT make a chunk relevant!
+  const getChunkRelevance = (chunk: RetrievedChunk): { isRelevant: boolean; grade: number } => {
+    for (const gt of groundTruthSources) {
+      const chunkIdMatch = Boolean(gt.chunkId && gt.chunkId === chunk.id);
+      const textMatch = Boolean(
+        gt.supportingText &&
+        gt.supportingText.trim().length > 10 &&
+        (chunk.text.toLowerCase().includes(gt.supportingText.substring(0, 40).toLowerCase()) ||
+         gt.supportingText.toLowerCase().includes(chunk.text.substring(0, 40).toLowerCase()))
+      );
+
+      if (chunkIdMatch || textMatch) {
+        return { isRelevant: true, grade: gt.relevanceGrade || 3 };
+      }
+    }
+    return { isRelevant: false, grade: 0 };
   };
 
-  const relevanceFlags = retrievedChunks.map((c) => (isChunkRelevant(c) ? 1 : 0));
+  const relevanceEvaluations = retrievedChunks.map(getChunkRelevance);
+  const relevanceFlags = relevanceEvaluations.map((e) => (e.isRelevant ? 1 : 0));
+  const relevanceGrades = relevanceEvaluations.map((e) => e.grade);
   const totalGroundTruth = groundTruthSources.length;
 
   const precisionAtK = (k: number) => {
@@ -85,21 +94,27 @@ function calculateIRMetrics(
   const firstHitIndex = relevanceFlags.findIndex((r) => r === 1);
   const mrr = firstHitIndex !== -1 ? 1 / (firstHitIndex + 1) : 0;
 
-  // Normalized Discounted Cumulative Gain (nDCG)
+  // Graded Normalized Discounted Cumulative Gain (nDCG@K)
   const calculateNDCG = (k: number) => {
-    const sub = relevanceFlags.slice(0, k);
+    const subGrades = relevanceGrades.slice(0, k);
     let dcg = 0;
-    for (let i = 0; i < sub.length; i++) {
-      if (sub[i] === 1) {
-        dcg += 1 / Math.log2(i + 2);
+    for (let i = 0; i < subGrades.length; i++) {
+      if (subGrades[i] > 0) {
+        dcg += (Math.pow(2, subGrades[i]) - 1) / Math.log2(i + 2);
       }
     }
-    // Ideal DCG
+
+    // Ideal DCG (sort ground truth grades descending)
+    const idealGrades = groundTruthSources
+      .map((gt) => gt.relevanceGrade || 3)
+      .sort((a, b) => b - a)
+      .slice(0, k);
+
     let idcg = 0;
-    const idealHits = Math.min(k, totalGroundTruth);
-    for (let i = 0; i < idealHits; i++) {
-      idcg += 1 / Math.log2(i + 2);
+    for (let i = 0; i < idealGrades.length; i++) {
+      idcg += (Math.pow(2, idealGrades[i]) - 1) / Math.log2(i + 2);
     }
+
     return idcg > 0 ? Number((dcg / idcg).toFixed(4)) : 0;
   };
 
@@ -119,6 +134,7 @@ function calculateIRMetrics(
     ndcgAt5: calculateNDCG(5),
   };
 }
+
 
 // ─────────────────────────────────────────────────────────────
 // BENCHMARK QUESTIONS CRUD
@@ -891,3 +907,147 @@ export const getEvaluation6RetrievalMetrics = async (_req: AuthRequest, res: Res
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+// HELPER: COHEN'S KAPPA INTER-RATER RELIABILITY (Audit 11)
+// ─────────────────────────────────────────────────────────────
+export function calculateCohensKappa(ratings: Array<{ rater1: boolean; rater2: boolean }>): {
+  cohensKappa: number;
+  observedAgreement: number;
+  expectedAgreement: number;
+  interpretation: string;
+} {
+  if (!ratings || ratings.length === 0) {
+    return { cohensKappa: 0, observedAgreement: 0, expectedAgreement: 0, interpretation: 'Insufficient ratings' };
+  }
+
+  let po11 = 0, po10 = 0, po01 = 0, po00 = 0;
+  for (const r of ratings) {
+    if (r.rater1 && r.rater2) po11++;
+    else if (r.rater1 && !r.rater2) po10++;
+    else if (!r.rater1 && r.rater2) po01++;
+    else po00++;
+  }
+
+  const n = ratings.length;
+  const observedAgreement = (po11 + po00) / n;
+
+  const rater1Yes = (po11 + po10) / n;
+  const rater1No = (po01 + po00) / n;
+  const rater2Yes = (po11 + po01) / n;
+  const rater2No = (po10 + po00) / n;
+
+  const expectedAgreement = rater1Yes * rater2Yes + rater1No * rater2No;
+
+  if (expectedAgreement === 1) {
+    return { cohensKappa: 1, observedAgreement: 1, expectedAgreement: 1, interpretation: 'Perfect agreement' };
+  }
+
+  const kappa = (observedAgreement - expectedAgreement) / (1 - expectedAgreement);
+  const formattedKappa = Number(kappa.toFixed(4));
+
+  let interpretation = 'Slight agreement';
+  if (kappa >= 0.81) interpretation = 'Almost perfect agreement';
+  else if (kappa >= 0.61) interpretation = 'Substantial agreement';
+  else if (kappa >= 0.41) interpretation = 'Moderate agreement';
+  else if (kappa >= 0.21) interpretation = 'Fair agreement';
+
+  return {
+    cohensKappa: formattedKappa,
+    observedAgreement: Number(observedAgreement.toFixed(4)),
+    expectedAgreement: Number(expectedAgreement.toFixed(4)),
+    interpretation,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// EXPORT RESEARCH DATA (Audit 28 — CSV & JSON)
+// ─────────────────────────────────────────────────────────────
+export const exportResearchDataJSON = async (_req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const [questions, reviews] = await Promise.all([
+      ResearchBenchmarkQuestion.find().lean(),
+      ExpertReview.find().populate('benchmarkQuestion', 'question courseName topic difficulty').lean(),
+    ]);
+
+    const sanitizedReviews = reviews.map((r: any) => ({
+      anonymousId: r.anonymousId,
+      configuration: r.configuration,
+      question: r.benchmarkQuestion?.question || '',
+      courseName: r.benchmarkQuestion?.courseName || '',
+      topic: r.benchmarkQuestion?.topic || '',
+      generatedAnswer: r.generatedAnswer,
+      irMetrics: r.irMetrics,
+      performance: r.performance,
+      hallucinationDetection: r.hallucinationDetection,
+      correctnessReviewsCount: r.correctnessReviews?.length || 0,
+      congruencyReviewsCount: r.congruencyReviews?.length || 0,
+    }));
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      datasetVersion: '1.0.0',
+      benchmarkCount: questions.length,
+      reviewCount: sanitizedReviews.length,
+      data: {
+        benchmarkQuestions: questions,
+        experimentReviews: sanitizedReviews,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const exportResearchDataCSV = async (_req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const reviews = await ExpertReview.find()
+      .populate('benchmarkQuestion', 'question courseName topic difficulty')
+      .lean();
+
+    const headers = [
+      'AnonymousID', 'Configuration', 'Question', 'Course', 'Topic',
+      'RetrievalMs', 'GenerationMs', 'TotalMs', 'PromptTokens', 'CompletionTokens', 'CostUSD',
+      'P@5', 'R@5', 'MRR', 'nDCG@5', 'TrustScore', 'CorrectnessRating', 'CourseCongruencyRating'
+    ];
+
+    const rows = reviews.map((r: any) => {
+      const p = r.performance || {};
+      const ir = r.irMetrics || {};
+      const h = r.hallucinationDetection || {};
+      const cr = r.correctnessReviews?.[0] || {};
+      const cg = r.congruencyReviews?.[0] || {};
+
+      return [
+        `"${r.anonymousId || ''}"`,
+        `"${r.configuration || ''}"`,
+        `"${(r.benchmarkQuestion?.question || '').replace(/"/g, '""')}"`,
+        `"${r.benchmarkQuestion?.courseName || ''}"`,
+        `"${r.benchmarkQuestion?.topic || ''}"`,
+        p.retrievalLatencyMs || 0,
+        p.generationLatencyMs || 0,
+        p.totalLatencyMs || 0,
+        p.promptTokens || 0,
+        p.completionTokens || 0,
+        p.estimatedCostUSD || 0,
+        ir.precisionAt5 || 0,
+        ir.recallAt5 || 0,
+        ir.mrr || 0,
+        ir.ndcgAt5 || 0,
+        h.trustScore || 0,
+        cr.correctnessRating || 'N/A',
+        cg.courseCongruencyRating || 'N/A',
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="edumentor_research_data.csv"');
+    res.status(200).send(csvContent);
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+

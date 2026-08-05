@@ -40,5 +40,8 @@ export const aiEvaluationService = {
   getEval4Congruency: () => api.get('/research-eval/eval4-congruency'),
   getEval5CostPerformance: () => api.get('/research-eval/eval5-cost-performance'),
   getEval6Retrieval: () => api.get('/research-eval/eval6-retrieval'),
+  exportCSV: () => api.get('/research-eval/export/csv', { responseType: 'blob' }),
+  exportJSON: () => api.get('/research-eval/export/json'),
 };
+
 

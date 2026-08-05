@@ -67,6 +67,18 @@ const ResearchBenchmarkQuestionSchema = new Schema<IResearchBenchmarkQuestion>(
       type: [GroundTruthSourceSchema],
       default: [],
     },
+    datasetSplit: {
+      type: String,
+      enum: ['development', 'validation', 'final_test'],
+      default: 'development',
+    },
+    validationStatus: {
+      type: String,
+      enum: ['draft', 'verified', 'rejected'],
+      default: 'draft',
+    },
+    verifiedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    datasetVersion: { type: String, default: '1.0.0' },
     isActive: { type: Boolean, default: true },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     notes: { type: String, trim: true },
@@ -74,7 +86,9 @@ const ResearchBenchmarkQuestionSchema = new Schema<IResearchBenchmarkQuestion>(
   { timestamps: true }
 );
 
+ResearchBenchmarkQuestionSchema.index({ datasetSplit: 1 });
 ResearchBenchmarkQuestionSchema.index({ course: 1, isActive: 1 });
+
 ResearchBenchmarkQuestionSchema.index({ topic: 1 });
 ResearchBenchmarkQuestionSchema.index({ difficulty: 1, questionType: 1 });
 
