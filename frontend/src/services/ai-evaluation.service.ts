@@ -42,6 +42,11 @@ export const aiEvaluationService = {
   getEval6Retrieval: () => api.get('/research-eval/eval6-retrieval'),
   exportCSV: () => api.get('/research-eval/export/csv', { responseType: 'blob' }),
   exportJSON: () => api.get('/research-eval/export/json'),
+
+  // Real AI Chat Sample Import & Management
+  getAIChatCandidates: (params?: any) => api.get('/research-eval/chat-candidates', { params }),
+  importAIChatSamples: (data: { selections: Array<{ chatId: string; messageId: string }>; samplingMethod?: string; randomSeed?: number }) => api.post('/research-eval/chat-samples/import', data),
+  getImportedAIChatSamples: (params?: any) => api.get('/research-eval/chat-samples', { params }),
 };
 
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { aiEvaluationService } from '../../services/ai-evaluation.service';
+import { AIChatSamplesManager } from './AIChatSamplesManager';
 import toast from 'react-hot-toast';
 
 export const ResearchValidationDashboard: React.FC = () => {
+  const [mainTab, setMainTab] = useState<'metrics' | 'chat_samples'>('metrics');
   const [loading, setLoading] = useState(true);
   const [eval1, setEval1] = useState<any>(null);
   const [eval2, setEval2] = useState<any>(null);
@@ -186,8 +188,36 @@ export const ResearchValidationDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Dataset / Module Tab Selector */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/[0.02] border border-white/10 w-fit text-xs font-semibold">
+        <button
+          onClick={() => setMainTab('metrics')}
+          className={`px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 ${
+            mainTab === 'metrics'
+              ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+              : 'text-white/60 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <span>🧪</span> Controlled Benchmark Studies (6-Eval Framework)
+        </button>
 
-      {/* 6-STUDY CARDS GRID */}
+        <button
+          onClick={() => setMainTab('chat_samples')}
+          className={`px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 ${
+            mainTab === 'chat_samples'
+              ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+              : 'text-white/60 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <span>💬</span> Real AI Chat Importer & Samples
+        </button>
+      </div>
+
+      {mainTab === 'chat_samples' ? (
+        <AIChatSamplesManager />
+      ) : (
+        <>
+          {/* 6-STUDY CARDS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* EVALUATION 1: TAM */}
         <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
@@ -584,6 +614,8 @@ export const ResearchValidationDashboard: React.FC = () => {
           "Cross-study values are descriptive and should not be interpreted as a controlled head-to-head comparison because the datasets, participants, models and experimental conditions differ."
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

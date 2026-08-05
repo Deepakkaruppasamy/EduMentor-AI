@@ -12,6 +12,7 @@ import ExpertReview, {
 } from '../models/ExpertReview';
 import Course from '../models/Course';
 import Chat from '../models/Chat';
+import ResearchChatSample from '../models/ResearchChatSample';
 import {
   hybridRetrieve,
   vectorOnlyRetrieve,
@@ -1278,4 +1279,314 @@ export const exportResearchDataCSV = async (_req: AuthRequest, res: Response): P
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+// REAL AI CHAT SAMPLES IMPORT & MANAGEMENT (PHASES 3 & 4)
+// ─────────────────────────────────────────────────────────────
+
+function checkChatEligibility(question: string, answer: string): { eligibleForResearch: boolean; exclusionReason: string | null } {
+  const qTrim = (question || '').trim().toLowerCase();
+  const aTrim = (answer || '').trim().toLowerCase();
+
+  if (!qTrim || qTrim.length < 3) {
+    return { eligibleForResearch: false, exclusionReason: 'Empty or trivial question' };
+  }
+
+  const greetings = ['hi', 'hello', 'hey', 'test', 'testing', 'ping', 'demo', '123', 'abc', 'hallo', 'yo'];
+  if (greetings.includes(qTrim) || (qTrim.length < 5 && greetings.some(g => qTrim.startsWith(g)))) {
+    return { eligibleForResearch: false, exclusionReason: 'Greeting / non-academic test prompt' };
+  }
+
+  if (aTrim.includes("outside this subject's scope") || aTrim.includes('off-topic refusal')) {
+    return { eligibleForResearch: false, exclusionReason: 'Off-topic refusal response' };
+  }
+
+  if (aTrim.includes('failed to generate') || aTrim.includes('generation error')) {
+    return { eligibleForResearch: false, exclusionReason: 'Failed generation response' };
+  }
+
+  return { eligibleForResearch: true, exclusionReason: null };
+}
+
+function anonymizeStudentId(userId: string): string {
+  const hash = crypto.createHmac('sha256', 'edumentor_research_salt_2025').update(userId.toString()).digest('hex').substring(0, 12);
+  return `anon_std_${hash}`;
+}
+
+export const getAIChatCandidates = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const {
+      courseId,
+      startDate,
+      endDate,
+      groundingMin,
+      groundingMax,
+      hasSources,
+      flaggedLowAlignment,
+      evaluatedStatus,
+      explanationMode,
+      search,
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    const chatFilter: any = {};
+    if (courseId) chatFilter.course = courseId;
+    if (startDate || endDate) {
+      chatFilter.createdAt = {};
+      if (startDate) chatFilter.createdAt.$gte = new Date(startDate as string);
+      if (endDate) chatFilter.createdAt.$lte = new Date(endDate as string);
+    }
+
+    const chats = await Chat.find(chatFilter)
+      .populate('course', 'title code')
+      .populate('user', '_id preferredLanguage')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const existingSamples = await ResearchChatSample.find().select('sourceChatId sourceMessageId').lean();
+    const importedMap = new Set(existingSamples.map(s => `${s.sourceChatId}_${s.sourceMessageId}`));
+
+    const candidates: any[] = [];
+
+    for (const chat of chats) {
+      const messages = chat.messages || [];
+      for (let i = 0; i < messages.length; i++) {
+        const msg = messages[i];
+        if (msg.role === 'assistant') {
+          let userQuestion = '';
+          for (let j = i - 1; j >= 0; j--) {
+            if (messages[j].role === 'user') {
+              userQuestion = messages[j].content;
+              break;
+            }
+          }
+
+          const messageId = (msg as any)._id ? (msg as any)._id.toString() : `msg_${i}`;
+          const isImported = importedMap.has(`${chat._id}_${messageId}`);
+
+          if (evaluatedStatus === 'not_evaluated' && isImported) continue;
+          if (evaluatedStatus === 'already_evaluated' && !isImported) continue;
+
+          const trustScore = msg.trustScore !== undefined ? msg.trustScore : 100;
+
+          if (groundingMin !== undefined && trustScore < Number(groundingMin)) continue;
+          if (groundingMax !== undefined && trustScore > Number(groundingMax)) continue;
+          if (flaggedLowAlignment === 'true' && trustScore >= 45) continue;
+
+          const sources = msg.sources || [];
+          if (hasSources === 'true' && sources.length === 0) continue;
+          if (hasSources === 'false' && sources.length > 0) continue;
+
+          if (explanationMode && explanationMode !== 'all') {
+            if (!msg.explanations || !(msg.explanations as any)[explanationMode as string]) {
+              continue;
+            }
+          }
+
+          if (search) {
+            const qStr = (search as string).toLowerCase();
+            const matchQ = userQuestion.toLowerCase().includes(qStr);
+            const matchA = (msg.content || '').toLowerCase().includes(qStr);
+            if (!matchQ && !matchA) continue;
+          }
+
+          const { eligibleForResearch, exclusionReason } = checkChatEligibility(userQuestion, msg.content);
+
+          candidates.push({
+            chatId: chat._id,
+            messageId,
+            messageIndex: i,
+            anonymizedStudentId: chat.user ? anonymizeStudentId((chat.user as any)._id) : 'anon_std_unknown',
+            language: (chat.user as any)?.preferredLanguage || 'English',
+            courseId: chat.course?._id || chat.course,
+            courseName: (chat.course as any)?.title || 'Course',
+            courseCode: (chat.course as any)?.code || '',
+            question: userQuestion,
+            generatedAnswer: msg.content,
+            timestamp: msg.timestamp || chat.createdAt,
+            trustScore,
+            confidenceScore: msg.confidenceScore || null,
+            sourcesCount: sources.length,
+            sources: sources.map((s: any, idx: number) => ({
+              documentId: s.documentId,
+              documentName: s.documentName || 'Unknown Document',
+              pageNumber: s.pageNumber,
+              chunkText: s.chunkText,
+              score: s.score,
+              rank: idx + 1,
+            })),
+            hallucinationFlags: msg.hallucinationFlags || [],
+            eligibleForResearch,
+            exclusionReason,
+            isImported,
+          });
+        }
+      }
+    }
+
+    const p = Number(page);
+    const l = Number(limit);
+    const paginated = candidates.slice((p - 1) * l, p * l);
+
+    res.json({
+      success: true,
+      totalCount: candidates.length,
+      page: p,
+      totalPages: Math.ceil(candidates.length / l),
+      eligibleCount: candidates.filter(c => c.eligibleForResearch).length,
+      excludedCount: candidates.filter(c => !c.eligibleForResearch).length,
+      data: paginated,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const importAIChatSamples = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { selections, samplingMethod = 'MANUAL_SELECTION', randomSeed = null } = req.body;
+
+    if (!Array.isArray(selections) || selections.length === 0) {
+      res.status(400).json({ success: false, message: 'selections array is required' });
+      return;
+    }
+
+    const importedSamples: any[] = [];
+    const errors: string[] = [];
+
+    for (const item of selections) {
+      const { chatId, messageId } = item;
+      if (!chatId || !messageId) continue;
+
+      const chat = await Chat.findById(chatId).populate('course', 'title code').populate('user', '_id preferredLanguage');
+      if (!chat) {
+        errors.push(`Chat ${chatId} not found`);
+        continue;
+      }
+
+      const existing = await ResearchChatSample.findOne({ sourceChatId: chatId, sourceMessageId: messageId });
+      if (existing) {
+        importedSamples.push(existing);
+        continue;
+      }
+
+      const messages = chat.messages || [];
+      let targetMsgIndex = -1;
+      for (let i = 0; i < messages.length; i++) {
+        const mId = (messages[i] as any)._id ? (messages[i] as any)._id.toString() : `msg_${i}`;
+        if (mId === messageId || `msg_${i}` === messageId) {
+          targetMsgIndex = i;
+          break;
+        }
+      }
+
+      if (targetMsgIndex === -1 || messages[targetMsgIndex].role !== 'assistant') {
+        errors.push(`Assistant message ${messageId} not found in chat ${chatId}`);
+        continue;
+      }
+
+      const assistantMsg = messages[targetMsgIndex];
+      let userQuestion = '';
+      for (let j = targetMsgIndex - 1; j >= 0; j--) {
+        if (messages[j].role === 'user') {
+          userQuestion = messages[j].content;
+          break;
+        }
+      }
+
+      const { eligibleForResearch, exclusionReason } = checkChatEligibility(userQuestion, assistantMsg.content);
+
+      const anonymousId = `blind_chat_${crypto.randomBytes(6).toString('hex')}`;
+      const anonymizedStudentId = chat.user ? anonymizeStudentId((chat.user as any)._id) : 'anon_std_unknown';
+
+      const sources = assistantMsg.sources || [];
+      const retrievedSources = sources.map((s: any, idx: number) => ({
+        documentId: s.documentId,
+        documentName: s.documentName || 'Unknown Document',
+        pageNumber: s.pageNumber,
+        chunkId: null,
+        chunkText: s.chunkText || '',
+        vectorScore: null,
+        bm25Score: null,
+        rrfScore: s.score || null,
+        rank: idx + 1,
+      }));
+
+      const trustScore = assistantMsg.trustScore !== undefined ? assistantMsg.trustScore : 100;
+
+      const sample = new ResearchChatSample({
+        sampleSource: 'REAL_AI_CHAT',
+        sourceChatId: chat._id,
+        sourceMessageId: messageId,
+        anonymizedStudentId,
+        anonymousId,
+        course: chat.course?._id || chat.course,
+        courseName: (chat.course as any)?.title || 'Course',
+        question: userQuestion,
+        generatedAnswer: assistantMsg.content,
+        timestamp: assistantMsg.timestamp || chat.createdAt,
+        llmModel: 'llama-3.3-70b-versatile',
+        language: (chat.user as any)?.preferredLanguage || 'English',
+        explanationMode: 'standard',
+        retrievedSources,
+        originalTrustScore: trustScore,
+        sourceAlignmentScore: trustScore / 100,
+        confidenceScore: assistantMsg.confidenceScore || null,
+        hallucinationFlags: assistantMsg.hallucinationFlags || [],
+        sentenceAnalysis: null,
+        retrievalLatencyMs: null,
+        generationLatencyMs: null,
+        totalLatencyMs: null,
+        promptTokens: null,
+        completionTokens: null,
+        totalTokens: null,
+        eligibleForResearch,
+        exclusionReason,
+        samplingMethod,
+        randomSeed,
+        samplingDate: new Date(),
+        status: 'imported',
+      });
+
+      await sample.save();
+      importedSamples.push(sample);
+    }
+
+    res.status(201).json({
+      success: true,
+      importedCount: importedSamples.length,
+      errors,
+      data: importedSamples,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getImportedAIChatSamples = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { courseId, status, eligibleForResearch, sampleSource } = req.query;
+    const filter: any = {};
+
+    if (sampleSource) filter.sampleSource = sampleSource;
+    if (courseId) filter.course = courseId;
+    if (status) filter.status = status;
+    if (eligibleForResearch !== undefined) filter.eligibleForResearch = eligibleForResearch === 'true';
+
+    const samples = await ResearchChatSample.find(filter)
+      .populate('course', 'title code')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      count: samples.length,
+      data: samples,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 

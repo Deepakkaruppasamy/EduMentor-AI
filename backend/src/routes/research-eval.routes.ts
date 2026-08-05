@@ -14,12 +14,20 @@ import {
   getEvaluation6RetrievalMetrics,
   exportResearchDataCSV,
   exportResearchDataJSON,
+  getAIChatCandidates,
+  importAIChatSamples,
+  getImportedAIChatSamples,
 } from '../controllers/research-eval.controller';
 
 const router = Router();
 
 // Protect all research evaluation routes
 router.use(protect);
+
+// Real AI Chat Sample Management & Selection
+router.get('/chat-candidates', authorize('admin', 'faculty'), getAIChatCandidates);
+router.post('/chat-samples/import', authorize('admin', 'faculty'), importAIChatSamples);
+router.get('/chat-samples', authorize('admin', 'faculty'), getImportedAIChatSamples);
 
 // Benchmark Question Management
 router.get('/benchmark', authorize('admin', 'faculty'), getBenchmarkQuestions);
