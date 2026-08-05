@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 export const ResearchValidationDashboard: React.FC = () => {
   const [mainTab, setMainTab] = useState<'metrics' | 'chat_samples'>('metrics');
-  const [datasetSourceFilter, setDatasetSourceFilter] = useState<'ALL' | 'CONTROLLED_BENCHMARK' | 'REAL_AI_CHAT'>('ALL');
+  const [datasetSourceFilter, setDatasetSourceFilter] = useState<'ALL' | 'CONTROLLED_BENCHMARK' | 'REAL_AI_CHAT'>('REAL_AI_CHAT');
   const [loading, setLoading] = useState(true);
   const [eval1, setEval1] = useState<any>(null);
   const [eval2, setEval2] = useState<any>(null);
@@ -16,7 +16,6 @@ export const ResearchValidationDashboard: React.FC = () => {
   const [benchmarks, setBenchmarks] = useState<any[]>([]);
   const [blindedReviews, setBlindedReviews] = useState<any[]>([]);
   const [selectedReview, setSelectedReview] = useState<any>(null);
-  const [runningExperiment, setRunningExperiment] = useState(false);
 
   // Review form states
   const [correctnessRating, setCorrectnessRating] = useState<number>(5);
@@ -26,7 +25,7 @@ export const ResearchValidationDashboard: React.FC = () => {
   const [containsUnsupported, setContainsUnsupported] = useState<boolean>(false);
   const [reviewComments, setReviewComments] = useState<string>('');
 
-  const loadAllMetrics = async (sourceFilter = datasetSourceFilter) => {
+  const loadAllMetrics = async (sourceFilter = 'REAL_AI_CHAT') => {
     setLoading(true);
     try {
       const [r1, r2, r3, r4, r5, r6, rBench, rReviews] = await Promise.all([
@@ -56,34 +55,13 @@ export const ResearchValidationDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    loadAllMetrics();
+    loadAllMetrics('REAL_AI_CHAT');
   }, []);
 
-  const handleSeedBenchmarks = async () => {
-    try {
-      await aiEvaluationService.seedBenchmarkQuestions();
-      toast.success('Benchmark questions seeded successfully.');
-      loadAllMetrics();
-    } catch (err: any) {
-      toast.error('Failed to seed benchmark questions.');
-    }
-  };
-
-  const handleRunExperimentBatch = async () => {
-    setRunningExperiment(true);
-    try {
-      const res = await aiEvaluationService.runExperimentBatch();
-      toast.success(res.data?.message || 'Ablation experiment batch completed.');
-      loadAllMetrics();
-    } catch (err: any) {
-      toast.error('Failed to execute experiment batch.');
-    } finally {
-      setRunningExperiment(false);
-    }
-  };
-
-  const handleSubmitReview = async () => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!selectedReview) return;
+
     try {
       await aiEvaluationService.submitExpertReview(selectedReview.anonymousId, {
         correctnessRating,
@@ -91,13 +69,14 @@ export const ResearchValidationDashboard: React.FC = () => {
         courseCongruencyRating,
         supportedByCourseMaterial: supportedByCourse,
         containsUnsupportedClaims: containsUnsupported,
-        citationSupportsClaim: true,
         correctnessComments: reviewComments,
         congruencyComments: reviewComments,
       });
-      toast.success('Expert evaluation submitted.');
+
+      toast.success('Expert review submitted successfully!');
       setSelectedReview(null);
-      loadAllMetrics();
+      setReviewComments('');
+      loadAllMetrics('REAL_AI_CHAT');
     } catch (err: any) {
       toast.error('Failed to submit review.');
     }
@@ -154,8 +133,8 @@ export const ResearchValidationDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-white/50 text-sm">
-        <span className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mr-3" />
-        Loading 6-Study Research Evaluation Dashboard...
+        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3" />
+        Loading scientific evaluation metrics from Real AI Chat...
       </div>
     );
   }
@@ -169,10 +148,16 @@ export const ResearchValidationDashboard: React.FC = () => {
             🎓 Scientific Evaluation
           </h2>
           <p className="text-xs text-white/40 mt-1">
-            6 Controlled Research Studies comparing EduMentor AI vs Base Paper (MoodleBot)
+            Real-Time EduMentor AI Chat Student Interactions & Empirical Evaluation Studies
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleExportRealChatCSV}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2"
+          >
+            💬 Export Real Chat CSV
+          </button>
           <button
             onClick={handleExportCSV}
             className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
@@ -180,33 +165,10 @@ export const ResearchValidationDashboard: React.FC = () => {
             📥 Export Full CSV
           </button>
           <button
-            onClick={handleExportRealChatCSV}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all"
-          >
-            💬 Real Chat CSV
-          </button>
-          <button
             onClick={handleExportJSON}
             className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
           >
             📄 Export JSON
-          </button>
-          <button
-            onClick={handleSeedBenchmarks}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-          >
-            🌱 Seed Benchmarks
-          </button>
-          <button
-            onClick={handleRunExperimentBatch}
-            disabled={runningExperiment}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-50 transition-all flex items-center gap-2"
-          >
-            {runningExperiment ? (
-              <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              '⚡ Run 4-Config Ablation Batch'
-            )}
           </button>
         </div>
       </div>
@@ -221,7 +183,7 @@ export const ResearchValidationDashboard: React.FC = () => {
               : 'text-white/60 hover:text-white hover:bg-white/5'
           }`}
         >
-          <span>🧪</span> Controlled Benchmark Studies (6-Eval Framework)
+          <span>📊</span> Real AI Chat Evaluation Metrics
         </button>
 
         <button
@@ -232,7 +194,7 @@ export const ResearchValidationDashboard: React.FC = () => {
               : 'text-white/60 hover:text-white hover:bg-white/5'
           }`}
         >
-          <span>💬</span> Real AI Chat Importer & Samples
+          <span>💬</span> Real AI Chat Importer & Candidate Samples
         </button>
       </div>
 
@@ -240,53 +202,38 @@ export const ResearchValidationDashboard: React.FC = () => {
         <AIChatSamplesManager />
       ) : (
         <>
-          {/* Dataset / Source Filter Bar (Phase 12 Requirement) */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/10 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-white/60 font-semibold">Filter Research Dataset Evidence:</span>
-              <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
-                <button
-                  onClick={() => { setDatasetSourceFilter('ALL'); loadAllMetrics('ALL'); }}
-                  className={`px-3 py-1 rounded font-semibold transition-all ${
-                    datasetSourceFilter === 'ALL'
-                      ? 'bg-primary-500 text-white'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  All Datasets
-                </button>
-
-                <button
-                  onClick={() => { setDatasetSourceFilter('CONTROLLED_BENCHMARK'); loadAllMetrics('CONTROLLED_BENCHMARK'); }}
-                  className={`px-3 py-1 rounded font-semibold transition-all ${
-                    datasetSourceFilter === 'CONTROLLED_BENCHMARK'
-                      ? 'bg-blue-500 text-white'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  Controlled Benchmark
-                </button>
-
-                <button
-                  onClick={() => { setDatasetSourceFilter('REAL_AI_CHAT'); loadAllMetrics('REAL_AI_CHAT'); }}
-                  className={`px-3 py-1 rounded font-semibold transition-all ${
-                    datasetSourceFilter === 'REAL_AI_CHAT'
-                      ? 'bg-purple-500 text-white'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  Real AI Chat
-                </button>
-              </div>
+          {/* Dataset Indicator Banner */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs">
+            <div className="flex items-center gap-2 text-purple-300 font-semibold">
+              <span>💬</span> Primary Dataset Active: Real AI Chat Tutor Live Student Conversations (Production Hybrid RAG)
             </div>
-
-            <div className="text-white/40 italic">
-              Dataset separation enforced: Historical AI Chat responses evaluate production HYBRID_RRF; ablation runs remain in Controlled Benchmark.
+            <div className="flex items-center gap-2 text-white/60">
+              <span>Filter:</span>
+              <button
+                onClick={() => { setDatasetSourceFilter('REAL_AI_CHAT'); loadAllMetrics('REAL_AI_CHAT'); }}
+                className={`px-3 py-1 rounded font-bold transition-all ${
+                  datasetSourceFilter === 'REAL_AI_CHAT'
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-white/5 text-white/60 hover:text-white'
+                }`}
+              >
+                Real AI Chat Only
+              </button>
+              <button
+                onClick={() => { setDatasetSourceFilter('ALL'); loadAllMetrics('ALL'); }}
+                className={`px-3 py-1 rounded font-semibold transition-all ${
+                  datasetSourceFilter === 'ALL'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-white/5 text-white/60 hover:text-white'
+                }`}
+              >
+                Combined Datasets
+              </button>
             </div>
           </div>
 
-          {/* 6-STUDY CARDS GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* 6-STUDY CARDS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* EVALUATION 1: TAM */}
         <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
           <div className="flex items-center justify-between">
