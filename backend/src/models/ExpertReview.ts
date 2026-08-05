@@ -26,6 +26,10 @@ export interface IManualCorrectnessReview {
   factuallyCorrect?: boolean;       // Binary for confusion matrix
   containsMajorError?: boolean;
   errorCategories?: string[];       // e.g. ["factual_error", "omission", "hallucination"]
+  relevanceRating?: 1 | 2 | 3 | 4 | 5;
+  completenessRating?: 1 | 2 | 3 | 4 | 5;
+  clarityRating?: 1 | 2 | 3 | 4 | 5;
+  usefulnessRating?: 1 | 2 | 3 | 4 | 5;
   comments?: string;
 }
 
@@ -176,6 +180,10 @@ const ManualCorrectnessReviewSchema = new Schema<IManualCorrectnessReview>(
     factuallyCorrect: { type: Boolean },
     containsMajorError: { type: Boolean },
     errorCategories: [{ type: String }],
+    relevanceRating: { type: Number, enum: [1, 2, 3, 4, 5] },
+    completenessRating: { type: Number, enum: [1, 2, 3, 4, 5] },
+    clarityRating: { type: Number, enum: [1, 2, 3, 4, 5] },
+    usefulnessRating: { type: Number, enum: [1, 2, 3, 4, 5] },
     comments: { type: String, trim: true },
   },
   { _id: false }

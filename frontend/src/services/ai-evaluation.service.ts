@@ -35,13 +35,14 @@ export const aiEvaluationService = {
   runExperimentBatch: (questionIds?: string[]) => api.post('/research-eval/experiment/run', { questionIds }),
   getBlindedReviews: () => api.get('/research-eval/blinded-reviews'),
   submitExpertReview: (anonymousId: string, data: any) => api.post(`/research-eval/blinded-reviews/${anonymousId}`, data),
-  getEval2Correctness: () => api.get('/research-eval/eval2-correctness'),
-  getEval3Grounding: () => api.get('/research-eval/eval3-grounding'),
-  getEval4Congruency: () => api.get('/research-eval/eval4-congruency'),
+  getEval2Correctness: (params?: any) => api.get('/research-eval/eval2-correctness', { params }),
+  getEval3Grounding: (params?: any) => api.get('/research-eval/eval3-grounding', { params }),
+  getEval4Congruency: (params?: any) => api.get('/research-eval/eval4-congruency', { params }),
   getEval5CostPerformance: () => api.get('/research-eval/eval5-cost-performance'),
   getEval6Retrieval: () => api.get('/research-eval/eval6-retrieval'),
   exportCSV: () => api.get('/research-eval/export/csv', { responseType: 'blob' }),
   exportJSON: () => api.get('/research-eval/export/json'),
+  exportRealAIChatSamplesCSV: () => api.get('/research-eval/export/real-chat-csv', { responseType: 'blob' }),
 
   // Real AI Chat Sample Import & Management
   getAIChatCandidates: (params?: any) => api.get('/research-eval/chat-candidates', { params }),

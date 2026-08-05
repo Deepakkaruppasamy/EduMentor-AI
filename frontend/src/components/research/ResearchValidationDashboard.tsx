@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 
 export const ResearchValidationDashboard: React.FC = () => {
   const [mainTab, setMainTab] = useState<'metrics' | 'chat_samples'>('metrics');
+  const [datasetSourceFilter, setDatasetSourceFilter] = useState<'ALL' | 'CONTROLLED_BENCHMARK' | 'REAL_AI_CHAT'>('ALL');
   const [loading, setLoading] = useState(true);
   const [eval1, setEval1] = useState<any>(null);
   const [eval2, setEval2] = useState<any>(null);
@@ -25,14 +26,14 @@ export const ResearchValidationDashboard: React.FC = () => {
   const [containsUnsupported, setContainsUnsupported] = useState<boolean>(false);
   const [reviewComments, setReviewComments] = useState<string>('');
 
-  const loadAllMetrics = async () => {
+  const loadAllMetrics = async (sourceFilter = datasetSourceFilter) => {
     setLoading(true);
     try {
       const [r1, r2, r3, r4, r5, r6, rBench, rReviews] = await Promise.all([
         aiEvaluationService.getTAM(),
-        aiEvaluationService.getEval2Correctness(),
-        aiEvaluationService.getEval3Grounding(),
-        aiEvaluationService.getEval4Congruency(),
+        aiEvaluationService.getEval2Correctness({ sampleSource: sourceFilter }),
+        aiEvaluationService.getEval3Grounding({ sampleSource: sourceFilter }),
+        aiEvaluationService.getEval4Congruency({ sampleSource: sourceFilter }),
         aiEvaluationService.getEval5CostPerformance(),
         aiEvaluationService.getEval6Retrieval(),
         aiEvaluationService.getBenchmarkQuestions(),
@@ -118,6 +119,22 @@ export const ResearchValidationDashboard: React.FC = () => {
     }
   };
 
+  const handleExportRealChatCSV = async () => {
+    try {
+      const response = await aiEvaluationService.exportRealAIChatSamplesCSV();
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'real_ai_chat_samples.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Real AI Chat samples exported as real_ai_chat_samples.csv');
+    } catch (err: any) {
+      toast.error('Failed to export Real AI Chat CSV data.');
+    }
+  };
+
   const handleExportJSON = async () => {
     try {
       const response = await aiEvaluationService.exportJSON();
@@ -160,7 +177,13 @@ export const ResearchValidationDashboard: React.FC = () => {
             onClick={handleExportCSV}
             className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
           >
-            📥 Export CSV
+            📥 Export Full CSV
+          </button>
+          <button
+            onClick={handleExportRealChatCSV}
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all"
+          >
+            💬 Real Chat CSV
           </button>
           <button
             onClick={handleExportJSON}
@@ -217,8 +240,53 @@ export const ResearchValidationDashboard: React.FC = () => {
         <AIChatSamplesManager />
       ) : (
         <>
+          {/* Dataset / Source Filter Bar (Phase 12 Requirement) */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/10 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-white/60 font-semibold">Filter Research Dataset Evidence:</span>
+              <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
+                <button
+                  onClick={() => { setDatasetSourceFilter('ALL'); loadAllMetrics('ALL'); }}
+                  className={`px-3 py-1 rounded font-semibold transition-all ${
+                    datasetSourceFilter === 'ALL'
+                      ? 'bg-primary-500 text-white'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  All Datasets
+                </button>
+
+                <button
+                  onClick={() => { setDatasetSourceFilter('CONTROLLED_BENCHMARK'); loadAllMetrics('CONTROLLED_BENCHMARK'); }}
+                  className={`px-3 py-1 rounded font-semibold transition-all ${
+                    datasetSourceFilter === 'CONTROLLED_BENCHMARK'
+                      ? 'bg-blue-500 text-white'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  Controlled Benchmark
+                </button>
+
+                <button
+                  onClick={() => { setDatasetSourceFilter('REAL_AI_CHAT'); loadAllMetrics('REAL_AI_CHAT'); }}
+                  className={`px-3 py-1 rounded font-semibold transition-all ${
+                    datasetSourceFilter === 'REAL_AI_CHAT'
+                      ? 'bg-purple-500 text-white'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  Real AI Chat
+                </button>
+              </div>
+            </div>
+
+            <div className="text-white/40 italic">
+              Dataset separation enforced: Historical AI Chat responses evaluate production HYBRID_RRF; ablation runs remain in Controlled Benchmark.
+            </div>
+          </div>
+
           {/* 6-STUDY CARDS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* EVALUATION 1: TAM */}
         <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
           <div className="flex items-center justify-between">
@@ -476,12 +544,21 @@ export const ResearchValidationDashboard: React.FC = () => {
                     : 'bg-white/5 border-white/10 hover:border-white/20'
                 }`}
               >
-                <div className="flex justify-between text-xs text-white/50 mb-1">
-                  <span>{rev.anonymousId}</span>
-                  <span className="text-primary-400 font-bold">{rev.benchmarkQuestion?.courseName}</span>
+                <div className="flex justify-between items-center text-xs text-white/50 mb-1.5">
+                  <span className="font-mono text-emerald-400 font-bold">{rev.anonymousId}</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    rev.sampleSource === 'REAL_AI_CHAT'
+                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                      : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                  }`}>
+                    {rev.sampleSource === 'REAL_AI_CHAT' ? 'Real AI Chat' : 'Controlled Benchmark'}
+                  </span>
                 </div>
                 <div className="text-xs font-semibold text-white truncate">
-                  {rev.benchmarkQuestion?.question}
+                  {rev.question || rev.benchmarkQuestion?.question}
+                </div>
+                <div className="text-[11px] text-white/40 mt-1">
+                  Course: {rev.courseName || rev.benchmarkQuestion?.courseName}
                 </div>
               </div>
             ))}
@@ -489,19 +566,45 @@ export const ResearchValidationDashboard: React.FC = () => {
 
           {selectedReview && (
             <div className="p-5 rounded-xl bg-white/5 border border-white/10 space-y-4 mt-4">
-              <h4 className="text-xs font-bold text-primary-400 uppercase">
-                Reviewing Answer for: "{selectedReview.benchmarkQuestion?.question}"
-              </h4>
-
-              <div className="p-3 rounded bg-black/40 text-xs text-white/80 space-y-2">
-                <div className="font-bold text-white/50">Generated Answer:</div>
-                <div>{selectedReview.generatedAnswer}</div>
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <h4 className="text-sm font-bold text-primary-400">
+                  Reviewing: "{selectedReview.question || selectedReview.benchmarkQuestion?.question}"
+                </h4>
+                <span className="text-xs text-white/40 font-mono">
+                  ID: {selectedReview.anonymousId}
+                </span>
               </div>
 
+              {/* Generated Answer */}
+              <div className="p-3.5 rounded-lg bg-black/40 border border-white/5 text-xs text-white/90 space-y-1.5">
+                <div className="font-bold text-white/50 text-[11px] uppercase tracking-wider">EduMentor AI Generated Answer:</div>
+                <div className="leading-relaxed">{selectedReview.generatedAnswer}</div>
+              </div>
+
+              {/* Retrieved Sources / Course Evidence (Phase 6 Requirement) */}
+              {selectedReview.retrievedEvidence && selectedReview.retrievedEvidence.length > 0 && (
+                <div className="p-3.5 rounded-lg bg-white/[0.02] border border-white/10 space-y-2 text-xs">
+                  <div className="font-bold text-emerald-400 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📚</span> Retrieved Course Evidence ({selectedReview.retrievedEvidence.length} Chunks):
+                  </div>
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    {selectedReview.retrievedEvidence.map((ev: any, idx: number) => (
+                      <div key={idx} className="p-2.5 rounded bg-black/30 border border-white/5 text-white/80 space-y-1">
+                        <div className="font-semibold text-white/60 text-[11px]">
+                          Source {idx + 1}: {ev.documentName} {ev.pageNumber ? `(Page ${ev.pageNumber})` : ''}
+                        </div>
+                        <div className="italic text-white/70">{ev.chunkText}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Expert Ratings */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-white/70 block mb-1">
-                    Study 2: Factual Correctness (1 = Wrong, 5 = Perfect)
+                    Study 2: Factual Correctness (1 = Completely Incorrect, 5 = Completely Correct)
                   </label>
                   <input
                     type="range"
@@ -530,31 +633,55 @@ export const ResearchValidationDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex gap-6 text-xs text-white/80">
+              {/* Binary Ground Truth Flags */}
+              <div className="flex flex-wrap gap-6 text-xs text-white/80 border-t border-b border-white/5 py-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={factuallyCorrect}
                     onChange={(e) => setFactuallyCorrect(e.target.checked)}
+                    className="rounded border-white/20 bg-white/10 text-emerald-500 focus:ring-0"
                   />
                   Factually Correct
                 </label>
+
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={containsUnsupported}
                     onChange={(e) => setContainsUnsupported(e.target.checked)}
+                    className="rounded border-white/20 bg-white/10 text-amber-500 focus:ring-0"
                   />
                   Contains Unsupported Claims (Study 3 Ground Truth)
                 </label>
               </div>
 
-              <button
-                onClick={handleSubmitReview}
-                className="px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-500 transition-all"
-              >
-                Submit Evaluation
-              </button>
+              {/* Comments */}
+              <div>
+                <label className="text-xs text-white/70 block mb-1">Expert Notes / Comments:</label>
+                <textarea
+                  value={reviewComments}
+                  onChange={(e) => setReviewComments(e.target.value)}
+                  placeholder="Optional expert notes on factual accuracy or course alignment..."
+                  rows={2}
+                  className="w-full px-3 py-2 text-xs bg-black/30 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-primary-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setSelectedReview(null)}
+                  className="px-3.5 py-2 rounded-lg text-xs text-white/60 hover:text-white transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitReview}
+                  className="px-5 py-2 rounded-lg text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 transition-all shadow-lg shadow-emerald-400/20"
+                >
+                  Submit Expert Ground Truth Evaluation
+                </button>
+              </div>
             </div>
           )}
         </div>

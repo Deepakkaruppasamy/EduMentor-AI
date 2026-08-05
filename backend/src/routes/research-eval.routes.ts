@@ -14,6 +14,7 @@ import {
   getEvaluation6RetrievalMetrics,
   exportResearchDataCSV,
   exportResearchDataJSON,
+  exportRealAIChatSamplesCSV,
   getAIChatCandidates,
   importAIChatSamples,
   getImportedAIChatSamples,
@@ -52,6 +53,7 @@ router.get('/eval6-retrieval', authorize('admin', 'faculty'), getEvaluation6Retr
 // Data Export Endpoints (CSV & JSON)
 router.get('/export/csv', authorize('admin', 'faculty'), exportResearchDataCSV);
 router.get('/export/json', authorize('admin', 'faculty'), exportResearchDataJSON);
+router.get('/export/real-chat-csv', authorize('admin', 'faculty'), exportRealAIChatSamplesCSV);
 
 export default router;
 
