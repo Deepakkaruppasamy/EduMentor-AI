@@ -84,3 +84,70 @@ export async function hybridRetrieve(
 
   return { chunks, context, retrievalMethod };
 }
+
+/**
+ * Vector-only retrieval for ablation studies
+ */
+export async function vectorOnlyRetrieve(
+  query: string,
+  collectionName: string,
+  topK = config.TOP_K_RESULTS
+): Promise<HybridRAGResult> {
+  const vectorResults = await vectorSearch(collectionName, query, topK);
+
+  const chunks: RetrievedChunk[] = vectorResults.map((v, i) => ({
+    id: v.id,
+    text: v.document,
+    documentId: v.metadata.documentId || '',
+    documentName: v.metadata.documentName || 'Unknown Document',
+    pageNumber: v.metadata.pageNumber,
+    vectorScore: v.score,
+    bm25Score: 0,
+    finalScore: v.score,
+    rank: i + 1,
+    metadata: v.metadata,
+  }));
+
+  const context = chunks
+    .map(
+      (chunk, i) =>
+        `[Source ${i + 1}: ${chunk.documentName}${chunk.pageNumber ? `, p.${chunk.pageNumber}` : ''}]\n${chunk.text}`
+    )
+    .join('\n\n---\n\n');
+
+  return { chunks, context, retrievalMethod: 'Vector Only' };
+}
+
+/**
+ * BM25-only retrieval for ablation studies
+ */
+export async function bm25OnlyRetrieve(
+  query: string,
+  collectionName: string,
+  topK = config.TOP_K_RESULTS
+): Promise<HybridRAGResult> {
+  const bm25Results = getBM25Index(collectionName).search(query, topK);
+
+  const chunks: RetrievedChunk[] = bm25Results.map((b, i) => ({
+    id: b.id,
+    text: b.text,
+    documentId: b.metadata.documentId || '',
+    documentName: b.metadata.documentName || 'Unknown Document',
+    pageNumber: b.metadata.pageNumber,
+    vectorScore: 0,
+    bm25Score: b.score,
+    finalScore: b.score,
+    rank: i + 1,
+    metadata: b.metadata,
+  }));
+
+  const context = chunks
+    .map(
+      (chunk, i) =>
+        `[Source ${i + 1}: ${chunk.documentName}${chunk.pageNumber ? `, p.${chunk.pageNumber}` : ''}]\n${chunk.text}`
+    )
+    .join('\n\n---\n\n');
+
+  return { chunks, context, retrievalMethod: 'BM25 Only' };
+}
+

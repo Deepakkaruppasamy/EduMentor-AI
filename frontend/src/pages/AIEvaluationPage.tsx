@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -10,6 +10,8 @@ import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { Loader } from '../components/common/Loader';
+import { ResearchValidationDashboard } from '../components/research/ResearchValidationDashboard';
+
 
 // ── Constants ────────────────────────────────────────────────
 const COLORS = ['#4f5dc8', '#7c6fc2', '#34a87a', '#c4893a', '#c0524a', '#2d9a8a', '#a78bcd'];
@@ -22,29 +24,31 @@ const TOOLTIP_STYLE = {
 };
 
 type Section =
-  | 'overview' | 'chatbot' | 'rag' | 'explain' | 'assignments'
+  | 'overview' | 'research-validation' | 'chatbot' | 'rag' | 'explain' | 'assignments'
   | 'notes' | 'study-planner' | 'research' | 'support-bot'
   | 'communication' | 'faculty' | 'students' | 'system' | 'security'
   | 'tam' | 'reports';
 
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview',       label: 'Overview',            icon: '🏠' },
-  { id: 'chatbot',        label: 'AI Chatbot',          icon: '🤖' },
-  { id: 'rag',            label: 'Hybrid RAG',          icon: '🔍' },
-  { id: 'explain',        label: 'Explain Mode',        icon: '💡' },
-  { id: 'assignments',    label: 'Assignments',         icon: '📝' },
-  { id: 'notes',          label: 'Notes Generator',     icon: '📒' },
-  { id: 'study-planner',  label: 'Study Planner',       icon: '📅' },
-  { id: 'research',       label: 'Research AI',         icon: '🔬' },
-  { id: 'support-bot',    label: 'Support Bot',         icon: '🛠️' },
-  { id: 'communication',  label: 'Communication',       icon: '💬' },
-  { id: 'faculty',        label: 'Faculty Analytics',   icon: '👨‍🏫' },
-  { id: 'students',       label: 'Student Analytics',   icon: '🎓' },
-  { id: 'system',         label: 'System Performance',  icon: '⚙️' },
-  { id: 'security',       label: 'Security',            icon: '🛡️' },
-  { id: 'tam',            label: 'TAM Evaluation',      icon: '📊' },
-  { id: 'reports',        label: 'Export Reports',      icon: '📤' },
+  { id: 'overview',            label: 'Overview',                icon: '🏠' },
+  { id: 'research-validation', label: '6-Study Research Panel',  icon: '🎓' },
+  { id: 'chatbot',             label: 'AI Chatbot',              icon: '🤖' },
+  { id: 'rag',                 label: 'Hybrid RAG',              icon: '🔍' },
+  { id: 'explain',             label: 'Explain Mode',            icon: '💡' },
+  { id: 'assignments',         label: 'Assignments',             icon: '📝' },
+  { id: 'notes',               label: 'Notes Generator',         icon: '📒' },
+  { id: 'study-planner',       label: 'Study Planner',           icon: '📅' },
+  { id: 'research',            label: 'Research AI',             icon: '🔬' },
+  { id: 'support-bot',         label: 'Support Bot',             icon: '🛠️' },
+  { id: 'communication',       label: 'Communication',           icon: '💬' },
+  { id: 'faculty',             label: 'Faculty Analytics',       icon: '👨‍🏫' },
+  { id: 'students',            label: 'Student Analytics',       icon: '🎓' },
+  { id: 'system',              label: 'System Performance',      icon: '⚙️' },
+  { id: 'security',            label: 'Security',                icon: '🛡️' },
+  { id: 'tam',                 label: 'TAM Evaluation',          icon: '📊' },
+  { id: 'reports',             label: 'Export Reports',          icon: '📤' },
 ];
+
 
 // ── Sub-components ───────────────────────────────────────────
 const MetricCard: React.FC<{
@@ -931,6 +935,9 @@ export const AIEvaluationPage: React.FC = () => {
         research: sectionData.research,
         support: sectionData['support-bot'],
       }} />;
+    }
+    if (activeSection === 'research-validation') {
+      return <ResearchValidationDashboard />;
     }
     if (activeSection === 'reports') {
       return <ReportsPanel allData={sectionData} />;

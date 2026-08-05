@@ -42,6 +42,7 @@ import preferenceRoutes from './routes/preference.routes';
 import bookmarkRoutes from './routes/bookmark.routes';
 import recentlyViewedRoutes from './routes/recently-viewed.routes';
 import contextualActionsRoutes from './modules/contextual-actions/routes/contextualActions.routes';
+import researchEvalRoutes from './routes/research-eval.routes';
 
 import { checkMaintenanceMW } from './controllers/maintenance.controller';
 import { initMessagingSocketServer } from './services/messaging-socket.service';
@@ -123,6 +124,7 @@ app.use('/api/preferences', preferenceRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/recently-viewed', recentlyViewedRoutes);
 app.use('/api/contextual-actions', contextualActionsRoutes);
+app.use('/api/research-eval', researchEvalRoutes);
 
 
 // Health check

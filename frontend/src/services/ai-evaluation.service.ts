@@ -27,4 +27,18 @@ export const aiEvaluationService = {
     overallSatisfaction: number;
     comments?: string;
   }) => api.post(`${BASE}/tam/submit`, data),
+
+  // ── Research Evaluation (6-Study Infrastructure) ─────────────────
+  getBenchmarkQuestions: () => api.get('/research-eval/benchmark'),
+  createBenchmarkQuestion: (data: any) => api.post('/research-eval/benchmark', data),
+  seedBenchmarkQuestions: () => api.post('/research-eval/benchmark/seed'),
+  runExperimentBatch: (questionIds?: string[]) => api.post('/research-eval/experiment/run', { questionIds }),
+  getBlindedReviews: () => api.get('/research-eval/blinded-reviews'),
+  submitExpertReview: (anonymousId: string, data: any) => api.post(`/research-eval/blinded-reviews/${anonymousId}`, data),
+  getEval2Correctness: () => api.get('/research-eval/eval2-correctness'),
+  getEval3Grounding: () => api.get('/research-eval/eval3-grounding'),
+  getEval4Congruency: () => api.get('/research-eval/eval4-congruency'),
+  getEval5CostPerformance: () => api.get('/research-eval/eval5-cost-performance'),
+  getEval6Retrieval: () => api.get('/research-eval/eval6-retrieval'),
 };
+

@@ -108,15 +108,24 @@ const ADMIN_LINKS = [
   { to: '/maintenance', icon: '🛠️', label: 'Maintenance Manager' },
 ];
 
+// Role badge config
+const ROLE_BADGE: Record<string, { label: string; bg: string; color: string; dot: string }> = {
+  student:  { label: 'Student',  bg: 'rgba(79, 93, 200, 0.18)',  color: '#8b94e0', dot: '#6366f1' },
+  faculty:  { label: 'Faculty',  bg: 'rgba(52, 168, 122, 0.18)', color: '#5fcfa0', dot: '#34a87a' },
+  admin:    { label: 'Admin',    bg: 'rgba(196, 137, 58, 0.18)', color: '#d4a45a', dot: '#c4893a' },
+};
+
 export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }> = ({ onClose, collapsed = false, onToggleCollapse }) => {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { notifications } = useNotificationStore();
   const { theme, toggleTheme } = useThemeStore();
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
+  const roleBadge = ROLE_BADGE[user?.role ?? 'student'] ?? ROLE_BADGE.student;
 
   const links = user?.role === 'admin' 
     ? ADMIN_LINKS 
@@ -128,6 +137,12 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
     logout();
     toast.success('Logged out successfully');
     navigate('/login');
+  };
+
+  const handleProfileAction = (path: string) => {
+    setProfileMenuOpen(false);
+    if (onClose) onClose();
+    navigate(path);
   };
 
   return (
@@ -164,62 +179,140 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
               className="mx-4 mb-4 rounded-xl p-3 relative overflow-hidden"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
-              <div className="flex items-center gap-3">
-                {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
-                  <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
-                ) : (
-                  <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
-                    <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-semibold text-white leading-snug">{user?.name}</div>
-                  <div className="truncate text-[10px] capitalize text-white/40 font-medium mt-0.5">{user?.role}</div>
+              {/* Profile card header — clickable to open quick actions */}
+              <button
+                onClick={() => setProfileMenuOpen(prev => !prev)}
+                className="w-full flex items-center gap-3 text-left transition-all rounded-lg p-1 -m-1 hover:bg-white/5 active:scale-[0.99] focus:outline-none"
+              >
+                {/* Avatar with online status dot */}
+                <div className="relative flex-shrink-0">
+                  {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
+                    <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
+                  ) : (
+                    <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
+                      <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
+                    </div>
+                  )}
+                  {/* 🟢 Online status dot */}
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d0e14] animate-pulse"
+                    style={{ background: '#34a87a' }}
+                    title="Online"
+                  />
                 </div>
 
-                {/* Theme Toggle + Notification Bell */}
-                <div className="flex items-center gap-1.5">
-                  {/* Theme toggle */}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-xs font-semibold text-white leading-snug">{user?.name}</div>
+                  {/* Role badge pill */}
+                  <span
+                    className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-px rounded-full text-[9px] font-bold uppercase tracking-wide"
+                    style={{ background: roleBadge.bg, color: roleBadge.color }}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full inline-block" style={{ background: roleBadge.dot }} />
+                    {roleBadge.label}
+                  </span>
+                </div>
+
+                {/* Expand chevron */}
+                <motion.span
+                  animate={{ rotate: profileMenuOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-[10px] flex-shrink-0"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  ▼
+                </motion.span>
+              </button>
+
+              {/* Notification Bell row */}
+              <div className="flex items-center gap-1.5 mt-2">
+                {/* Theme toggle */}
+                <button
+                  onClick={toggleTheme}
+                  className="h-8 w-8 rounded-xl border flex items-center justify-center transition-all hover:bg-white/5 active:scale-95"
+                  style={{
+                    background: 'var(--bg-input)',
+                    borderColor: 'var(--border-subtle)',
+                    color: 'var(--text-muted)',
+                  }}
+                  title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  <span className="text-sm leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
+                </button>
+
+                {/* Notification Bell with Badge */}
+                <div className="relative">
                   <button
-                    onClick={toggleTheme}
-                    className="h-8 w-8 rounded-xl border flex items-center justify-center transition-all hover:bg-white/5 active:scale-95"
+                    onClick={() => setNotifOpen(!notifOpen)}
+                    className="h-8 w-8 rounded-xl border flex items-center justify-center relative focus:outline-none transition-all hover:bg-white/5 active:scale-95"
                     style={{
                       background: 'var(--bg-input)',
                       borderColor: 'var(--border-subtle)',
                       color: 'var(--text-muted)',
                     }}
-                    title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                    title="Notifications"
                   >
-                    <span className="text-sm leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
+                    <span className="text-sm leading-none">🔔</span>
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
+                        {unreadCount}
+                      </span>
+                    )}
                   </button>
-
-                  {/* Notification Bell with Badge */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setNotifOpen(!notifOpen)}
-                      className="h-8 w-8 rounded-xl border flex items-center justify-center relative focus:outline-none transition-all hover:bg-white/5 active:scale-95"
-                      style={{
-                        background: 'var(--bg-input)',
-                        borderColor: 'var(--border-subtle)',
-                        color: 'var(--text-muted)',
-                      }}
-                      title="Notifications"
-                    >
-                      <span className="text-sm leading-none">🔔</span>
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-500 border-2 border-[#0a0b0f] text-[8px] font-black text-white flex items-center justify-center animate-pulse">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </button>
-                    <AnimatePresence>
-                      {notifOpen && (
-                        <NotificationDrawer onClose={() => setNotifOpen(false)} />
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  <AnimatePresence>
+                    {notifOpen && (
+                      <NotificationDrawer onClose={() => setNotifOpen(false)} />
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
+
+              {/* ── Quick Profile Actions Dropdown ── */}
+              <AnimatePresence initial={false}>
+                {profileMenuOpen && (
+                  <motion.div
+                    key="profile-menu"
+                    initial={{ opacity: 0, height: 0, y: -6 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -6 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden mt-2"
+                  >
+                    <div
+                      className="rounded-xl overflow-hidden"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    >
+                      {/* Quick actions list */}
+                      {[
+                        { icon: '👤', label: 'My Profile',    action: () => handleProfileAction('/profile') },
+                        { icon: '🎭', label: 'Avatar Studio',  action: () => handleProfileAction('/avatar-settings') },
+                        { icon: '⚙️', label: 'Preferences',   action: () => handleProfileAction('/preferences') },
+                        { icon: '🔒', label: 'Privacy & Security', action: () => handleProfileAction('/privacy-security') },
+                        {
+                          icon: theme === 'dark' ? '☀️' : '🌙',
+                          label: theme === 'dark' ? 'Light Mode' : 'Dark Mode',
+                          action: () => { toggleTheme(); setProfileMenuOpen(false); },
+                        },
+                        { icon: '🚪', label: 'Sign Out', action: handleLogout, danger: true },
+                      ].map((item, i) => (
+                        <button
+                          key={i}
+                          onClick={item.action}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs font-medium transition-all hover:bg-white/5 active:scale-[0.99]"
+                          style={{
+                            color: (item as any).danger ? 'rgba(192,82,74,0.85)' : 'var(--text-secondary)',
+                            borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                          }}
+                        >
+                          <span className="text-sm leading-none w-4 text-center">{item.icon}</span>
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
                 <span className="text-[10px] text-white/40 font-bold uppercase">Language</span>
                 <LanguageSelector />
@@ -234,13 +327,28 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
               transition={{ duration: 0.2 }}
               className="flex justify-center mb-4"
             >
-              {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
-                <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
-              ) : (
-                <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
-                  <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
-                </div>
-              )}
+              {/* Collapsed avatar with online dot */}
+              <div className="relative">
+                {user?.useCustomPhoto && (user.profileImage || user.avatar) ? (
+                  <img src={user.profileImage || user.avatar} alt={user.name} className="h-9 w-9 rounded-xl object-cover border border-white/10" />
+                ) : (
+                  <div className="relative h-9 w-9 flex items-center justify-center rounded-xl overflow-visible">
+                    <AvatarFrame size={36} className="rounded-xl overflow-hidden" />
+                  </div>
+                )}
+                {/* 🟢 Online status dot — collapsed view */}
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d0e14] animate-pulse"
+                  style={{ background: '#34a87a' }}
+                  title="Online"
+                />
+                {/* Role color indicator strip */}
+                <span
+                  className="absolute -top-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d0e14]"
+                  style={{ background: roleBadge.dot }}
+                  title={roleBadge.label}
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
