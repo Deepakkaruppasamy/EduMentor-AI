@@ -170,7 +170,8 @@ export const createBenchmarkQuestion = async (req: AuthRequest, res: Response): 
       groundTruthSources: groundTruthSources || [],
       notes: notes || '',
       createdBy: req.user!._id,
-    });
+    } as any);
+
 
     res.status(201).json({ success: true, data: bq });
   } catch (err: any) {
@@ -246,7 +247,8 @@ export const seedSampleBenchmarkQuestions = async (req: AuthRequest, res: Respon
     ];
 
 
-    const seeded = await ResearchBenchmarkQuestion.insertMany(samples);
+    const seeded = await ResearchBenchmarkQuestion.insertMany(samples as any);
+
     res.status(201).json({ success: true, count: seeded.length, data: seeded });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
@@ -354,7 +356,7 @@ export const runExperimentBatch = async (req: AuthRequest, res: Response): Promi
 
         // Save or update ExpertReview entry
         const review = await ExpertReview.findOneAndUpdate(
-          { benchmarkQuestion: bq._id, configuration: configName },
+          { benchmarkQuestion: bq._id, configuration: configName } as any,
           {
             $set: {
               anonymousId,
@@ -383,9 +385,10 @@ export const runExperimentBatch = async (req: AuthRequest, res: Response): Promi
               status: 'generated',
               generatedAt: new Date(),
             },
-          },
+          } as any,
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+
 
 
         createdReviews.push(review);
