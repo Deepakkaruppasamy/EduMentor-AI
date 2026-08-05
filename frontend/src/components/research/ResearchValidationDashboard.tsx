@@ -118,7 +118,7 @@ export const ResearchValidationDashboard: React.FC = () => {
 
   const handleSeedBenchmarks = async () => {
     try {
-      await aiEvaluationService.seedBenchmarks();
+      await aiEvaluationService.seedBenchmarkQuestions();
       toast.success('Sample benchmark questions seeded.');
       loadAllMetrics(datasetSourceFilter);
     } catch (err: any) {
