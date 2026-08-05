@@ -8,12 +8,19 @@ export interface IRecentlyViewed extends Document {
     | 'chat'
     | 'note'
     | 'research'
+    | 'summary'
     | 'assignment'
     | 'quiz'
     | 'announcement'
     | 'calendar'
     | 'faculty'
-    | 'ticket';
+    | 'ticket'
+    | 'flashcard'
+    | 'planner'
+    | 'evaluation'
+    | 'document'
+    | 'analytics'
+    | 'profile';
   itemId: string;
   title: string;
   url: string;
@@ -32,15 +39,23 @@ const RecentlyViewedSchema = new Schema<IRecentlyViewed>(
         'chat',
         'note',
         'research',
+        'summary',
         'assignment',
         'quiz',
         'announcement',
         'calendar',
         'faculty',
         'ticket',
+        'flashcard',
+        'planner',
+        'evaluation',
+        'document',
+        'analytics',
+        'profile',
       ],
       required: true,
     },
+
     itemId: { type: String, required: true },
     title: { type: String, required: true, trim: true },
     url: { type: String, required: true },
