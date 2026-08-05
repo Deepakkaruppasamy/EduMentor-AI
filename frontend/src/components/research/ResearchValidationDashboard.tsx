@@ -114,6 +114,31 @@ export const ResearchValidationDashboard: React.FC = () => {
     }
   };
 
+  const [runningExperiment, setRunningExperiment] = useState(false);
+
+  const handleSeedBenchmarks = async () => {
+    try {
+      await aiEvaluationService.seedBenchmarks();
+      toast.success('Sample benchmark questions seeded.');
+      loadAllMetrics(datasetSourceFilter);
+    } catch (err: any) {
+      toast.error('Failed to seed benchmark questions.');
+    }
+  };
+
+  const handleRunExperimentBatch = async () => {
+    setRunningExperiment(true);
+    try {
+      const res = await aiEvaluationService.runExperimentBatch();
+      toast.success(`Ablation experiment completed! Total reviews: ${res.data?.data?.totalReviews || 0}`);
+      loadAllMetrics(datasetSourceFilter);
+    } catch (err: any) {
+      toast.error('Failed to run experiment batch.');
+    } finally {
+      setRunningExperiment(false);
+    }
+  };
+
   const handleExportJSON = async () => {
     try {
       const response = await aiEvaluationService.exportJSON();
@@ -154,9 +179,9 @@ export const ResearchValidationDashboard: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportRealChatCSV}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-500 shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all"
           >
-            💬 Export Real Chat CSV
+            💬 Real Chat CSV
           </button>
           <button
             onClick={handleExportCSV}
@@ -169,6 +194,23 @@ export const ResearchValidationDashboard: React.FC = () => {
             className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
           >
             📄 Export JSON
+          </button>
+          <button
+            onClick={handleSeedBenchmarks}
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+          >
+            🌱 Seed Benchmarks
+          </button>
+          <button
+            onClick={handleRunExperimentBatch}
+            disabled={runningExperiment}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-50 transition-all flex items-center gap-2"
+          >
+            {runningExperiment ? (
+              <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              '⚡ Run 4-Config Ablation Batch'
+            )}
           </button>
         </div>
       </div>
