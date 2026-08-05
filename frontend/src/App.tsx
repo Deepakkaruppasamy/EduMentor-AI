@@ -35,6 +35,7 @@ import { ResearchAssistantPage } from './pages/ResearchAssistantPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { FeedbackPage } from './pages/FeedbackPage';
 import { AIEvaluationPage } from './pages/AIEvaluationPage';
+import { ResearchValidationDashboard } from './components/research/ResearchValidationDashboard';
 import { TAMSurveyPage } from './pages/TAMSurveyPage';
 import { PlagiarismCheckerPage } from './pages/PlagiarismCheckerPage';
 import { ActivityTimelinePage } from './pages/ActivityTimelinePage';
@@ -239,8 +240,18 @@ const App: React.FC = () => {
               </ProtectedRoute>
             } />
             <Route path="/ai-evaluation" element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute roles={['faculty', 'admin']}>
                 <AppPage><AIEvaluationPage /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/scientific-evaluation" element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AppPage><ResearchValidationDashboard /></AppPage>
+              </ProtectedRoute>
+            } />
+            <Route path="/ai-evaluation/research" element={
+              <ProtectedRoute roles={['faculty', 'admin']}>
+                <AppPage><ResearchValidationDashboard /></AppPage>
               </ProtectedRoute>
             } />
             <Route path="/rate-platform" element={

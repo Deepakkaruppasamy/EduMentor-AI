@@ -99,6 +99,7 @@ const ADMIN_LINKS = [
   { to: '/avatar-settings', icon: '🎭', label: 'Avatar Studio' },
   { to: '/feedback', icon: '💬', label: 'Feedback Center' },
   { to: '/ai-evaluation', icon: '🧪', label: 'AI Evaluation' },
+  { to: '/scientific-evaluation', icon: '🎓', label: 'Scientific Evaluation' },
   { to: '/activity', icon: '📅', label: 'Activity Timeline' },
   { to: '/sessions', icon: '🛡️', label: 'Active Sessions' },
   { to: '/privacy-security', icon: '🔒', label: 'Privacy & Security' },

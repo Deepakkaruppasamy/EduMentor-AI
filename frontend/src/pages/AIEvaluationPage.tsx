@@ -6,6 +6,7 @@ import {
   Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
 import { aiEvaluationService } from '../services/ai-evaluation.service';
+import { ResearchValidationDashboard } from '../components/research/ResearchValidationDashboard';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
@@ -22,13 +23,14 @@ const TOOLTIP_STYLE = {
 };
 
 type Section =
-  | 'overview' | 'chatbot' | 'rag' | 'explain' | 'assignments'
+  | 'overview' | 'scientific-eval' | 'chatbot' | 'rag' | 'explain' | 'assignments'
   | 'notes' | 'study-planner' | 'research' | 'support-bot'
   | 'communication' | 'faculty' | 'students' | 'system' | 'security'
   | 'tam' | 'reports';
 
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
   { id: 'overview',            label: 'Overview',                icon: '🏠' },
+  { id: 'scientific-eval',     label: 'Scientific Evaluation',   icon: '🎓' },
   { id: 'chatbot',             label: 'AI Chatbot',              icon: '🤖' },
   { id: 'rag',                 label: 'Hybrid RAG',              icon: '🔍' },
   { id: 'explain',             label: 'Explain Mode',            icon: '💡' },
@@ -934,6 +936,9 @@ export const AIEvaluationPage: React.FC = () => {
         support: sectionData['support-bot'],
       }} />;
     }
+    if (activeSection === 'scientific-eval') {
+      return <ResearchValidationDashboard />;
+    }
     if (activeSection === 'reports') {
 
       return <ReportsPanel allData={sectionData} />;
@@ -943,6 +948,7 @@ export const AIEvaluationPage: React.FC = () => {
     if (!d) return <div className="text-center py-16 text-white/30 text-sm">No data loaded yet</div>;
 
     switch (activeSection) {
+      case 'scientific-eval': return <ResearchValidationDashboard />;
       case 'chatbot':       return <ChatbotPanel data={d} />;
       case 'rag':           return <RAGPanel data={d} />;
       case 'explain':       return <ExplainPanel data={d} />;
