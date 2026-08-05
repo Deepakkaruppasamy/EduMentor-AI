@@ -623,7 +623,7 @@ export const ResearchValidationDashboard: React.FC = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={handleSubmitReview}
+                  onClick={handleReviewSubmit}
                   className="px-5 py-2 rounded-lg text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 transition-all shadow-lg shadow-emerald-400/20"
                 >
                   Submit Expert Ground Truth Evaluation
