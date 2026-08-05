@@ -24,10 +24,11 @@ router.use(protect);
 // Benchmark Question Management
 router.get('/benchmark', authorize('admin', 'faculty'), getBenchmarkQuestions);
 router.post('/benchmark', authorize('admin', 'faculty'), createBenchmarkQuestion);
-router.post('/benchmark/seed', authorize('admin'), seedSampleBenchmarkQuestions);
+router.post('/benchmark/seed', authorize('admin', 'faculty'), seedSampleBenchmarkQuestions);
 
 // Ablation Experiment Execution Runner
-router.post('/experiment/run', authorize('admin'), runExperimentBatch);
+router.post('/experiment/run', authorize('admin', 'faculty'), runExperimentBatch);
+
 
 // Blinded Expert Review Endpoints (Faculty & Admin can review)
 router.get('/blinded-reviews', authorize('admin', 'faculty'), getBlindedReviews);
