@@ -45,17 +45,6 @@ export interface ICourseCongruencyReview {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Retrieval Ground Truth Match — Evaluation 6
-// Expert judges whether each retrieved chunk matches the ground truth.
-// ─────────────────────────────────────────────────────────────────────────────
-export interface IRetrievalGroundTruthMatch {
-  chunkId: string;
-  documentName: string;
-  rank: number;
-  isRelevant: boolean;  // Expert confirms if this chunk is relevant to the question
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Computed IR Metrics — Evaluation 6
 // Computed automatically from retrieved results vs ground truth sources.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -132,10 +121,10 @@ export interface IExpertReview extends Document {
   configuration: RetrievalConfiguration;
 
   // Generated answer for this question under this configuration
-  generatedAnswer?: string;
+  generatedAnswer: string;
 
   // Retrieved evidence (empty for LLM_ONLY)
-  retrievedEvidence?: IRetrievedEvidenceRecord[];
+  retrievedEvidence: IRetrievedEvidenceRecord[];
 
   // Computed IR metrics (populated automatically, Evaluation 6)
   irMetrics?: IIRMetrics;
@@ -148,13 +137,13 @@ export interface IExpertReview extends Document {
 
   // Expert manual correctness reviews (Evaluation 2)
   // Array supports multiple independent experts
-  correctnessReviews?: IManualCorrectnessReview[];
+  correctnessReviews: IManualCorrectnessReview[];
 
   // Expert course-congruency reviews (Evaluation 4)
-  congruencyReviews?: ICourseCongruencyReview[];
+  congruencyReviews: ICourseCongruencyReview[];
 
   // Status tracking
-  status?: 'pending_generation' | 'generated' | 'under_review' | 'completed';
+  status: 'pending_generation' | 'generated' | 'under_review' | 'completed';
   generatedAt?: Date;
   completedAt?: Date;
 
@@ -162,20 +151,19 @@ export interface IExpertReview extends Document {
   updatedAt: Date;
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-schemas
 // ─────────────────────────────────────────────────────────────────────────────
 const RetrievedEvidenceSchema = new Schema<IRetrievedEvidenceRecord>(
   {
-    chunkId: { type: String },
-    documentName: { type: String },
+    chunkId: { type: String, default: '' },
+    documentName: { type: String, default: '' },
     pageNumber: { type: Number },
-    chunkText: { type: String },
+    chunkText: { type: String, default: '' },
     vectorScore: { type: Number, default: 0 },
     bm25Score: { type: Number, default: 0 },
     finalScore: { type: Number, default: 0 },
-    rank: { type: Number },
+    rank: { type: Number, default: 0 },
   },
   { _id: false }
 );
@@ -227,15 +215,15 @@ const IRMetricsSchema = new Schema<IIRMetrics>(
 
 const HallucinationDetectionSchema = new Schema<IHallucinationDetectionRecord>(
   {
-    trustScore: { type: Number },
-    status: { type: String, enum: ['verified', 'partially_verified', 'hallucinated'] },
+    trustScore: { type: Number, default: 100 },
+    status: { type: String, enum: ['verified', 'partially_verified', 'hallucinated'], default: 'verified' },
     hallucinatedSentences: [{ type: String }],
     supportedSentences: [{ type: String }],
-    threshold: { type: Number },
-    tp: { type: Number },
-    fp: { type: Number },
-    tn: { type: Number },
-    fn: { type: Number },
+    threshold: { type: Number, default: 0.4 },
+    tp: { type: Number, default: 0 },
+    fp: { type: Number, default: 0 },
+    tn: { type: Number, default: 0 },
+    fn: { type: Number, default: 0 },
   },
   { _id: false }
 );
@@ -250,10 +238,10 @@ const PerformanceMetricsSchema = new Schema<IPerformanceMetrics>(
     totalTokens: { type: Number, default: 0 },
     embeddingCallCount: { type: Number, default: 0 },
     llmCallCount: { type: Number, default: 0 },
-    estimatedCostUSD: { type: Number },
-    costProvider: { type: String },
-    costModel: { type: String },
-    costPricingVersion: { type: String },
+    estimatedCostUSD: { type: Number, default: 0 },
+    costProvider: { type: String, default: '' },
+    costModel: { type: String, default: '' },
+    costPricingVersion: { type: String, default: '' },
   },
   { _id: false }
 );
@@ -272,7 +260,6 @@ const ExpertReviewSchema = new Schema<IExpertReview>(
       type: String,
       required: true,
       unique: true,
-      // e.g. "RVW-0042-A" — random enough to blind but stable for lookup
     },
     configuration: {
       type: String,
@@ -297,7 +284,6 @@ const ExpertReviewSchema = new Schema<IExpertReview>(
   { timestamps: true }
 );
 
-// Compound index: one record per (question × configuration)
 ExpertReviewSchema.index({ benchmarkQuestion: 1, configuration: 1 }, { unique: true });
 ExpertReviewSchema.index({ status: 1 });
 ExpertReviewSchema.index({ anonymousId: 1 }, { unique: true });

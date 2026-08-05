@@ -465,13 +465,17 @@ export const submitExpertReview = async (req: AuthRequest, res: Response): Promi
     };
 
     // Remove existing evaluation by this expert if resubmitting
-    review.correctnessReviews = review.correctnessReviews.filter((r) => r.expertId.toString() !== expertId.toString());
-    review.congruencyReviews = review.congruencyReviews.filter((r) => r.expertId.toString() !== expertId.toString());
+    const existingCorrectness = review.correctnessReviews || [];
+    const existingCongruency = review.congruencyReviews || [];
+
+    review.correctnessReviews = existingCorrectness.filter((r) => r.expertId.toString() !== expertId.toString()) as any;
+    review.congruencyReviews = existingCongruency.filter((r) => r.expertId.toString() !== expertId.toString()) as any;
 
     review.correctnessReviews.push(correctnessEntry);
     review.congruencyReviews.push(congruencyEntry);
     review.status = 'completed';
     review.completedAt = new Date();
+
 
     // Populate Confusion Matrix TP/FP/TN/FN for Evaluation 3
     if (review.hallucinationDetection && containsUnsupportedClaims !== undefined) {
@@ -526,7 +530,8 @@ export const getEvaluation2Correctness = async (_req: AuthRequest, res: Response
     const grandScores: number[] = [];
 
     for (const r of reviews) {
-      for (const cr of r.correctnessReviews) {
+      const crList = r.correctnessReviews || [];
+      for (const cr of crList) {
         if (cr.correctnessRating) {
           const cfg = r.configuration;
           if (!configStats[cfg]) configStats[cfg] = { total: 0, correct: 0, scores: [] };
@@ -543,6 +548,7 @@ export const getEvaluation2Correctness = async (_req: AuthRequest, res: Response
         }
       }
     }
+
 
     const byConfigFormatted = Object.entries(configStats).reduce((acc: any, [cfg, stat]) => {
       const mean = stat.scores.length ? stat.scores.reduce((a, b) => a + b, 0) / stat.scores.length : 0;
@@ -599,7 +605,8 @@ export const getEvaluation3GroundingValidation = async (_req: AuthRequest, res: 
     let tp = 0, fp = 0, tn = 0, fn = 0;
 
     for (const r of reviews) {
-      const expertUnsupp = r.congruencyReviews.some((cr) => cr.containsUnsupportedClaims === true);
+      const cgList = r.congruencyReviews || [];
+      const expertUnsupp = cgList.some((cr) => cr.containsUnsupportedClaims === true);
       const autoUnsupp = (r.hallucinationDetection?.trustScore || 100) < 45;
 
       if (autoUnsupp && expertUnsupp) tp++;
@@ -621,7 +628,8 @@ export const getEvaluation3GroundingValidation = async (_req: AuthRequest, res: 
     const thresholdSweep = thresholds.map((thresh) => {
       let swTP = 0, swFP = 0, swTN = 0, swFN = 0;
       for (const r of reviews) {
-        const expertUnsupp = r.congruencyReviews.some((cr) => cr.containsUnsupportedClaims === true);
+        const cgList = r.congruencyReviews || [];
+        const expertUnsupp = cgList.some((cr) => cr.containsUnsupportedClaims === true);
         const score = (r.hallucinationDetection?.trustScore || 100) / 100;
         const autoUnsupp = score < thresh;
 
@@ -630,6 +638,7 @@ export const getEvaluation3GroundingValidation = async (_req: AuthRequest, res: 
         else if (!autoUnsupp && !expertUnsupp) swTN++;
         else if (!autoUnsupp && expertUnsupp) swFN++;
       }
+
       const swTot = swTP + swFP + swTN + swFN;
       const swAcc = swTot ? (swTP + swTN) / swTot : 0;
       const swPrec = (swTP + swFP) > 0 ? swTP / (swTP + swFP) : 0;
@@ -706,7 +715,8 @@ export const getEvaluation4Congruency = async (_req: AuthRequest, res: Response)
     const grandScores: number[] = [];
 
     for (const r of reviews) {
-      for (const cr of r.congruencyReviews) {
+      const cgList = r.congruencyReviews || [];
+      for (const cr of cgList) {
         if (cr.courseCongruencyRating) {
           const cfg = r.configuration;
           if (!configStats[cfg]) configStats[cfg] = { total: 0, supported: 0, citationSupported: 0, scores: [] };
@@ -727,6 +737,7 @@ export const getEvaluation4Congruency = async (_req: AuthRequest, res: Response)
         }
       }
     }
+
 
     const byConfigFormatted = Object.entries(configStats).reduce((acc: any, [cfg, stat]) => {
       const mean = stat.scores.length ? stat.scores.reduce((a, b) => a + b, 0) / stat.scores.length : 0;

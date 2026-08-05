@@ -5,23 +5,23 @@ export type RetrievalConfigName = 'HYBRID_RRF' | 'VECTOR_ONLY' | 'BM25_ONLY' | '
 export interface IResearchExperimentRun extends Document {
   experimentId: string;           // e.g. "EXP-2025-001"
   name: string;
-  description?: string;
+  description: string;
   course: mongoose.Types.ObjectId;
-  datasetVersion?: string;
-  datasetSplit?: 'development' | 'validation' | 'final_test';
-  configurations?: string[];
-  model?: string;                  // e.g. "llama-3.3-70b-versatile"
-  embeddingModel?: string;         // e.g. "all-MiniLM-L6-v2"
-  temperature?: number;
-  maxTokens?: number;
-  topK?: number;
-  chunkSize?: number;
-  chunkOverlap?: number;
-  sourceAlignmentThreshold?: number;
-  randomSeed?: number;
-  gitCommitHash?: string;
-  status?: 'draft' | 'running' | 'completed' | 'failed';
-  isImmutable?: boolean;           // True once completed to prevent accidental overwrites
+  datasetVersion: string;
+  datasetSplit: 'development' | 'validation' | 'final_test';
+  configurations: string[];
+  model: string;                  // e.g. "llama-3.3-70b-versatile"
+  embeddingModel: string;         // e.g. "all-MiniLM-L6-v2"
+  temperature: number;
+  maxTokens: number;
+  topK: number;
+  chunkSize: number;
+  chunkOverlap: number;
+  sourceAlignmentThreshold: number;
+  randomSeed: number;
+  gitCommitHash: string;
+  status: 'draft' | 'running' | 'completed' | 'failed';
+  isImmutable: boolean;           // True once completed to prevent accidental overwrites
   createdBy: mongoose.Types.ObjectId;
   startedAt?: Date;
   completedAt?: Date;
@@ -33,7 +33,7 @@ const ResearchExperimentRunSchema = new Schema<IResearchExperimentRun>(
   {
     experimentId: { type: String, required: true, unique: true },
     name: { type: String, required: true, trim: true },
-    description: { type: String, trim: true },
+    description: { type: String, default: '' },
     course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
     datasetVersion: { type: String, default: '1.0.0' },
     datasetSplit: {
@@ -54,7 +54,7 @@ const ResearchExperimentRunSchema = new Schema<IResearchExperimentRun>(
     chunkOverlap: { type: Number, default: 50 },
     sourceAlignmentThreshold: { type: Number, default: 0.4 },
     randomSeed: { type: Number, default: 42 },
-    gitCommitHash: { type: String, default: '4a2281a' },
+    gitCommitHash: { type: String, default: '02cb717' },
     status: {
       type: String,
       enum: ['draft', 'running', 'completed', 'failed'],
