@@ -69,21 +69,22 @@ function calculateIRMetrics(
   };
 
   const relevanceEvaluations = retrievedChunks.map(getChunkRelevance);
-  const relevanceFlags = relevanceEvaluations.map((e) => (e.isRelevant ? 1 : 0));
-  const relevanceGrades = relevanceEvaluations.map((e) => e.grade);
+  const relevanceFlags: number[] = relevanceEvaluations.map((e) => (e.isRelevant ? 1 : 0));
+  const relevanceGrades: number[] = relevanceEvaluations.map((e) => e.grade);
   const totalGroundTruth = groundTruthSources.length;
 
   const precisionAtK = (k: number) => {
     const sub = relevanceFlags.slice(0, k);
-    const hits = sub.reduce((a, b) => a + b, 0);
+    const hits = sub.reduce<number>((a, b) => a + b, 0);
     return Math.min(1, hits / k);
   };
 
   const recallAtK = (k: number) => {
     const sub = relevanceFlags.slice(0, k);
-    const hits = sub.reduce((a, b) => a + b, 0);
+    const hits = sub.reduce<number>((a, b) => a + b, 0);
     return Math.min(1, hits / totalGroundTruth);
   };
+
 
   const hitRateAtK = (k: number) => {
     const sub = relevanceFlags.slice(0, k);
