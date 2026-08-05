@@ -356,34 +356,37 @@ export const runExperimentBatch = async (req: AuthRequest, res: Response): Promi
         const review = await ExpertReview.findOneAndUpdate(
           { benchmarkQuestion: bq._id, configuration: configName },
           {
-            anonymousId,
-            benchmarkQuestion: bq._id,
-            configuration: configName,
-            generatedAnswer: llmResponse.content,
-            retrievedEvidence: ragResult.chunks.map((c) => ({
-              chunkId: c.id,
-              documentName: c.documentName,
-              pageNumber: c.pageNumber,
-              chunkText: c.text,
-              vectorScore: c.vectorScore,
-              bm25Score: c.bm25Score,
-              finalScore: c.finalScore,
-              rank: c.rank,
-            })),
-            irMetrics,
-            hallucinationDetection: {
-              trustScore: hallResult.trustScore,
-              status: hallResult.status,
-              hallucinatedSentences: hallResult.hallucinatedSentences,
-              supportedSentences: hallResult.supportedSentences,
-              threshold: 0.4,
+            $set: {
+              anonymousId,
+              benchmarkQuestion: bq._id,
+              configuration: configName,
+              generatedAnswer: llmResponse.content,
+              retrievedEvidence: ragResult.chunks.map((c) => ({
+                chunkId: c.id,
+                documentName: c.documentName,
+                pageNumber: c.pageNumber,
+                chunkText: c.text,
+                vectorScore: c.vectorScore,
+                bm25Score: c.bm25Score,
+                finalScore: c.finalScore,
+                rank: c.rank,
+              })),
+              irMetrics,
+              hallucinationDetection: {
+                trustScore: hallResult.trustScore,
+                status: hallResult.status,
+                hallucinatedSentences: hallResult.hallucinatedSentences,
+                supportedSentences: hallResult.supportedSentences,
+                threshold: 0.4,
+              },
+              performance,
+              status: 'generated',
+              generatedAt: new Date(),
             },
-            performance,
-            status: 'generated',
-            generatedAt: new Date(),
           },
-          { upsert: true, new: true }
+          { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+
 
         createdReviews.push(review);
       }
