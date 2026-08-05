@@ -948,7 +948,6 @@ export const AIEvaluationPage: React.FC = () => {
     if (!d) return <div className="text-center py-16 text-white/30 text-sm">No data loaded yet</div>;
 
     switch (activeSection) {
-      case 'scientific-eval': return <ResearchValidationDashboard />;
       case 'chatbot':       return <ChatbotPanel data={d} />;
       case 'rag':           return <RAGPanel data={d} />;
       case 'explain':       return <ExplainPanel data={d} />;
