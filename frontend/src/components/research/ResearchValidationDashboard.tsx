@@ -166,7 +166,7 @@ export const ResearchValidationDashboard: React.FC = () => {
       <div className="flex items-center justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/10">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            🎓 IEEE Transactions on Education 2025 Evaluation Framework
+            🎓 Scientific Evaluation
           </h2>
           <p className="text-xs text-white/40 mt-1">
             6 Controlled Research Studies comparing EduMentor AI vs Base Paper (MoodleBot)
