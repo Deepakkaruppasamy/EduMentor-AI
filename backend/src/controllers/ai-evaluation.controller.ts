@@ -324,31 +324,11 @@ export const getAssignmentMetrics = async (_req: AuthRequest, res: Response): Pr
 };
 
 // ─────────────────────────────────────────────────────────────
-// 5. NOTES GENERATOR METRICS
-// ─────────────────────────────────────────────────────────────
-export const getNotesMetrics = async (_req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const [total, byType, uniqueUsers, recentTrend] = await Promise.all([
-      GeneratedNote.countDocuments(),
-      GeneratedNote.aggregate([{ $group: { _id: '$noteType', count: { $sum: 1 } } }, { $sort: { count: -1 } }]),
-      GeneratedNote.distinct('user'),
-      GeneratedNote.aggregate([
-        { $match: { createdAt: { $gte: last30Days() } } },
-        {
-          $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { _id: 1 } },
-      ]),
-    ]);
-
-// ─────────────────────────────────────────────────────────────
 // 5. AI NOTES METRICS
 // ─────────────────────────────────────────────────────────────
 export const getNotesMetrics = async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
+
     const [total, uniqueUsers, byType, recentTrend, notesWithSources] = await Promise.all([
       GeneratedNote.countDocuments(),
       GeneratedNote.distinct('user'),
