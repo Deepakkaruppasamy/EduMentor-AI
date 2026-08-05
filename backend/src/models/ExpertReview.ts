@@ -132,10 +132,10 @@ export interface IExpertReview extends Document {
   configuration: RetrievalConfiguration;
 
   // Generated answer for this question under this configuration
-  generatedAnswer: string;
+  generatedAnswer?: string;
 
   // Retrieved evidence (empty for LLM_ONLY)
-  retrievedEvidence: IRetrievedEvidenceRecord[];
+  retrievedEvidence?: IRetrievedEvidenceRecord[];
 
   // Computed IR metrics (populated automatically, Evaluation 6)
   irMetrics?: IIRMetrics;
@@ -148,19 +148,20 @@ export interface IExpertReview extends Document {
 
   // Expert manual correctness reviews (Evaluation 2)
   // Array supports multiple independent experts
-  correctnessReviews: IManualCorrectnessReview[];
+  correctnessReviews?: IManualCorrectnessReview[];
 
   // Expert course-congruency reviews (Evaluation 4)
-  congruencyReviews: ICourseCongruencyReview[];
+  congruencyReviews?: ICourseCongruencyReview[];
 
   // Status tracking
-  status: 'pending_generation' | 'generated' | 'under_review' | 'completed';
+  status?: 'pending_generation' | 'generated' | 'under_review' | 'completed';
   generatedAt?: Date;
   completedAt?: Date;
 
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-schemas

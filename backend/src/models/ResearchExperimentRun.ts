@@ -7,24 +7,26 @@ export interface IResearchExperimentRun extends Document {
   name: string;
   description?: string;
   course: mongoose.Types.ObjectId;
-  datasetVersion: string;
-  datasetSplit: 'development' | 'validation' | 'final_test';
-  configurations: RetrievalConfigName[];
-  model: string;                  // e.g. "llama-3.3-70b-versatile"
-  embeddingModel: string;         // e.g. "all-MiniLM-L6-v2"
-  temperature: number;
-  maxTokens: number;
-  topK: number;
-  chunkSize: number;
-  chunkOverlap: number;
-  sourceAlignmentThreshold: number;
+  datasetVersion?: string;
+  datasetSplit?: 'development' | 'validation' | 'final_test';
+  configurations?: string[];
+  model?: string;                  // e.g. "llama-3.3-70b-versatile"
+  embeddingModel?: string;         // e.g. "all-MiniLM-L6-v2"
+  temperature?: number;
+  maxTokens?: number;
+  topK?: number;
+  chunkSize?: number;
+  chunkOverlap?: number;
+  sourceAlignmentThreshold?: number;
   randomSeed?: number;
   gitCommitHash?: string;
-  status: 'draft' | 'running' | 'completed' | 'failed';
-  isImmutable: boolean;           // True once completed to prevent accidental overwrites
+  status?: 'draft' | 'running' | 'completed' | 'failed';
+  isImmutable?: boolean;           // True once completed to prevent accidental overwrites
   createdBy: mongoose.Types.ObjectId;
   startedAt?: Date;
   completedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ResearchExperimentRunSchema = new Schema<IResearchExperimentRun>(
@@ -52,7 +54,7 @@ const ResearchExperimentRunSchema = new Schema<IResearchExperimentRun>(
     chunkOverlap: { type: Number, default: 50 },
     sourceAlignmentThreshold: { type: Number, default: 0.4 },
     randomSeed: { type: Number, default: 42 },
-    gitCommitHash: { type: String, default: '1b2bab6' },
+    gitCommitHash: { type: String, default: '4a2281a' },
     status: {
       type: String,
       enum: ['draft', 'running', 'completed', 'failed'],

@@ -11,7 +11,7 @@ export interface IGroundTruthSource {
   pageNumber?: number;
   chunkId?: string;         // ChromaDB chunk ID if known
   supportingText: string;   // Excerpt that directly answers the question
-  relevanceGrade: 1 | 2 | 3; // 1=marginally relevant, 2=relevant, 3=highly relevant
+  relevanceGrade?: 1 | 2 | 3; // 1=marginally relevant, 2=relevant, 3=highly relevant
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -26,18 +26,17 @@ export interface IResearchBenchmarkQuestion extends Document {
   topic: string;
   difficulty: 'easy' | 'medium' | 'hard';
   questionType: 'factual' | 'conceptual' | 'applied' | 'evaluative';
-  groundTruthSources: IGroundTruthSource[];
-  datasetSplit: 'development' | 'validation' | 'final_test';
-  validationStatus: 'draft' | 'verified' | 'rejected';
+  groundTruthSources?: IGroundTruthSource[];
+  datasetSplit?: 'development' | 'validation' | 'final_test';
+  validationStatus?: 'draft' | 'verified' | 'rejected';
   verifiedBy?: mongoose.Types.ObjectId;
-  datasetVersion: string;
-  isActive: boolean;
+  datasetVersion?: string;
+  isActive?: boolean;
   createdBy: mongoose.Types.ObjectId;
   notes?: string;               // Expert's private notes about this question
   createdAt: Date;
   updatedAt: Date;
 }
-
 
 const GroundTruthSourceSchema = new Schema<IGroundTruthSource>(
   {
@@ -93,7 +92,6 @@ const ResearchBenchmarkQuestionSchema = new Schema<IResearchBenchmarkQuestion>(
 
 ResearchBenchmarkQuestionSchema.index({ datasetSplit: 1 });
 ResearchBenchmarkQuestionSchema.index({ course: 1, isActive: 1 });
-
 ResearchBenchmarkQuestionSchema.index({ topic: 1 });
 ResearchBenchmarkQuestionSchema.index({ difficulty: 1, questionType: 1 });
 
