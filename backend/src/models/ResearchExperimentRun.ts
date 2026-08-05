@@ -1,5 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export type RetrievalConfigName = 'HYBRID_RRF' | 'VECTOR_ONLY' | 'BM25_ONLY' | 'LLM_ONLY';
+
 export interface IResearchExperimentRun extends Document {
   experimentId: string;           // e.g. "EXP-2025-001"
   name: string;
@@ -7,7 +9,7 @@ export interface IResearchExperimentRun extends Document {
   course: mongoose.Types.ObjectId;
   datasetVersion: string;
   datasetSplit: 'development' | 'validation' | 'final_test';
-  configurations: ('HYBRID_RRF' | 'VECTOR_ONLY' | 'BM25_ONLY' | 'LLM_ONLY')[];
+  configurations: RetrievalConfigName[];
   model: string;                  // e.g. "llama-3.3-70b-versatile"
   embeddingModel: string;         // e.g. "all-MiniLM-L6-v2"
   temperature: number;
@@ -23,8 +25,6 @@ export interface IResearchExperimentRun extends Document {
   createdBy: mongoose.Types.ObjectId;
   startedAt?: Date;
   completedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const ResearchExperimentRunSchema = new Schema<IResearchExperimentRun>(
@@ -52,7 +52,7 @@ const ResearchExperimentRunSchema = new Schema<IResearchExperimentRun>(
     chunkOverlap: { type: Number, default: 50 },
     sourceAlignmentThreshold: { type: Number, default: 0.4 },
     randomSeed: { type: Number, default: 42 },
-    gitCommitHash: { type: String, default: 'e943014' },
+    gitCommitHash: { type: String, default: '1b2bab6' },
     status: {
       type: String,
       enum: ['draft', 'running', 'completed', 'failed'],

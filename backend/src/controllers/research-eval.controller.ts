@@ -201,10 +201,13 @@ export const seedSampleBenchmarkQuestions = async (req: AuthRequest, res: Respon
         course: defaultCourse._id,
         courseName: defaultCourse.title,
         topic: 'Normalization',
-        difficulty: 'medium',
-        questionType: 'conceptual',
+        difficulty: 'medium' as const,
+        questionType: 'conceptual' as const,
+        datasetSplit: 'development' as const,
+        validationStatus: 'verified' as const,
+        datasetVersion: '1.0.0',
         groundTruthSources: [
-          { documentName: 'Database_Fundamentals.pdf', pageNumber: 42, supportingText: '3NF prevents transitive dependencies where X -> Y and Y -> Z.', relevanceGrade: 3 }
+          { documentName: 'Database_Fundamentals.pdf', pageNumber: 42, supportingText: '3NF prevents transitive dependencies where X -> Y and Y -> Z.', relevanceGrade: 3 as const }
         ],
         createdBy: req.user!._id,
       },
@@ -214,10 +217,13 @@ export const seedSampleBenchmarkQuestions = async (req: AuthRequest, res: Respon
         course: defaultCourse._id,
         courseName: defaultCourse.title,
         topic: 'Transactions',
-        difficulty: 'easy',
-        questionType: 'factual',
+        difficulty: 'easy' as const,
+        questionType: 'factual' as const,
+        datasetSplit: 'development' as const,
+        validationStatus: 'verified' as const,
+        datasetVersion: '1.0.0',
         groundTruthSources: [
-          { documentName: 'Transactions_Overview.pdf', pageNumber: 15, supportingText: 'ACID guarantees database transaction reliability.', relevanceGrade: 3 }
+          { documentName: 'Transactions_Overview.pdf', pageNumber: 15, supportingText: 'ACID guarantees database transaction reliability.', relevanceGrade: 3 as const }
         ],
         createdBy: req.user!._id,
       },
@@ -227,14 +233,18 @@ export const seedSampleBenchmarkQuestions = async (req: AuthRequest, res: Respon
         course: defaultCourse._id,
         courseName: defaultCourse.title,
         topic: 'Indexing',
-        difficulty: 'hard',
-        questionType: 'evaluative',
+        difficulty: 'hard' as const,
+        questionType: 'evaluative' as const,
+        datasetSplit: 'development' as const,
+        validationStatus: 'verified' as const,
+        datasetVersion: '1.0.0',
         groundTruthSources: [
-          { documentName: 'Indexing_Structures.pdf', pageNumber: 88, supportingText: 'B-Tree stores keys in order allowing scan operators.', relevanceGrade: 3 }
+          { documentName: 'Indexing_Structures.pdf', pageNumber: 88, supportingText: 'B-Tree stores keys in order allowing scan operators.', relevanceGrade: 3 as const }
         ],
         createdBy: req.user!._id,
       }
     ];
+
 
     const seeded = await ResearchBenchmarkQuestion.insertMany(samples);
     res.status(201).json({ success: true, count: seeded.length, data: seeded });
@@ -270,7 +280,11 @@ export const runExperimentBatch = async (req: AuthRequest, res: Response): Promi
 
         // 1. Instrumented Retrieval Phase (Eval 5 + Eval 6)
         const t0 = Date.now();
-        let ragResult = { chunks: [] as RetrievedChunk[], context: '', retrievalMethod: configName };
+        let ragResult: { chunks: RetrievedChunk[]; context: string; retrievalMethod: string } = {
+          chunks: [],
+          context: '',
+          retrievalMethod: configName,
+        };
 
         if (configName === 'HYBRID_RRF') {
           ragResult = await hybridRetrieve(bq.question, collectionName);
@@ -280,6 +294,7 @@ export const runExperimentBatch = async (req: AuthRequest, res: Response): Promi
           ragResult = await bm25OnlyRetrieve(bq.question, collectionName);
         }
         const retrievalLatencyMs = Date.now() - t0;
+
 
         // 2. Instrumented Generation Phase (Eval 5)
         const t1 = Date.now();

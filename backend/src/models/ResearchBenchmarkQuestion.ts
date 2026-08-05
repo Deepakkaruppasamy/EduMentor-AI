@@ -27,12 +27,17 @@ export interface IResearchBenchmarkQuestion extends Document {
   difficulty: 'easy' | 'medium' | 'hard';
   questionType: 'factual' | 'conceptual' | 'applied' | 'evaluative';
   groundTruthSources: IGroundTruthSource[];
+  datasetSplit: 'development' | 'validation' | 'final_test';
+  validationStatus: 'draft' | 'verified' | 'rejected';
+  verifiedBy?: mongoose.Types.ObjectId;
+  datasetVersion: string;
   isActive: boolean;
   createdBy: mongoose.Types.ObjectId;
   notes?: string;               // Expert's private notes about this question
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 const GroundTruthSourceSchema = new Schema<IGroundTruthSource>(
   {
