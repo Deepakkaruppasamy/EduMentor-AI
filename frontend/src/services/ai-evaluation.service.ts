@@ -32,7 +32,9 @@ export const aiEvaluationService = {
   getBenchmarkQuestions: () => api.get('/research-eval/benchmark'),
   createBenchmarkQuestion: (data: any) => api.post('/research-eval/benchmark', data),
   seedBenchmarkQuestions: () => api.post('/research-eval/benchmark/seed'),
-  runExperimentBatch: (questionIds?: string[]) => api.post('/research-eval/experiment/run', { questionIds }),
+  // Long-running: 4 configs × N questions × (ChromaDB + Groq LLM + hallucination check)
+  // Override timeout to 10 minutes to avoid premature client-side abort
+  runExperimentBatch: (questionIds?: string[]) => api.post('/research-eval/experiment/run', { questionIds }, { timeout: 600_000 }),
   getBlindedReviews: () => api.get('/research-eval/blinded-reviews'),
   submitExpertReview: (anonymousId: string, data: any) => api.post(`/research-eval/blinded-reviews/${anonymousId}`, data),
   getEval2Correctness: (params?: any) => api.get('/research-eval/eval2-correctness', { params }),

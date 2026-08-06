@@ -130,10 +130,13 @@ export const ResearchValidationDashboard: React.FC = () => {
     setRunningExperiment(true);
     try {
       const res = await aiEvaluationService.runExperimentBatch();
-      toast.success(`Ablation experiment completed! Total reviews: ${res.data?.data?.totalReviews || 0}`);
+      const count = res.data?.count || 0;
+      const serverMsg = res.data?.message || '';
+      toast.success(serverMsg || `Ablation experiment completed! ${count} reviews prepared.`);
       loadAllMetrics(datasetSourceFilter);
     } catch (err: any) {
-      toast.error('Failed to run experiment batch.');
+      const msg = err?.response?.data?.message || err?.message || 'Failed to run experiment batch.';
+      toast.error(`Experiment error: ${msg}`);
     } finally {
       setRunningExperiment(false);
     }
@@ -713,59 +716,79 @@ export const ResearchValidationDashboard: React.FC = () => {
       )}
 
       {/* BASE PAPER COMPARISON PANEL */}
-      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
-        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-          <span>📋</span> Base Paper Comparison Panel (MoodleBot vs EduMentor AI)
-        </h3>
+      {(() => {
+        // Resolve active-filter metrics for the comparison panel
+        const e2 = datasetSourceFilter === 'REAL_AI_CHAT'
+          ? (eval2?.realAIChatMetrics || eval2)
+          : (eval2?.controlledBenchmarkMetrics || eval2);
+        const e4 = datasetSourceFilter === 'REAL_AI_CHAT'
+          ? (eval4?.realAIChatMetrics || eval4)
+          : (eval4?.controlledBenchmarkMetrics || eval4);
+        const e3metrics = eval3?.metrics || {};
+        const e5hybrid = eval5?.byConfiguration?.HYBRID_RRF || {};
+        const e6hybrid = eval6?.byConfiguration?.HYBRID_RRF || {};
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-white/70">
-            <thead>
-              <tr className="border-b border-white/10 text-white/40">
-                <th className="py-2">Evaluation Study</th>
-                <th className="py-2">MoodleBot (IEEE 2025 Base Paper)</th>
-                <th className="py-2">EduMentor AI (Current System)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-white/5">
-                <td className="py-2 font-bold text-white">1. Student Acceptance (TAM)</td>
-                <td>30 completed (PU α=0.802, AT α=0.800)</td>
-                <td>N = {eval1?.totalResponses || 0} (Overall Mean = {eval1?.overallScore || 0}/5)</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="py-2 font-bold text-white">2. Manual Correctness</td>
-                <td>88/100 (88.0% correct)</td>
-                <td>{eval2?.overallCorrectRate || 0}% ({eval2?.overallCorrectCount || 0}/{eval2?.totalEvaluated || 0})</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="py-2 font-bold text-white">3. Automated Grounding Validation</td>
-                <td>Accuracy ~82%, Precision ~88.04%, Specificity ~8%</td>
-                <td>Acc {eval3?.metrics?.accuracy || 0}%, Prec {eval3?.metrics?.precision || 0}%, Spec {eval3?.metrics?.specificity || 0}%</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="py-2 font-bold text-white">4. Course Content Congruency</td>
-                <td>Implicit / Course specific context</td>
-                <td>{eval4?.courseSupportedRate || 0}% Course-supported (Mean {eval4?.meanCongruency || 0}/5)</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="py-2 font-bold text-white">5. Cost & Performance</td>
-                <td>~$1.65 / student (OpenAI GPT-4)</td>
-                <td>${eval5?.byConfiguration?.HYBRID_RRF?.costPer100QueriesUSD || 0} / 100 queries (Groq Llama 3.3 70B)</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="py-2 font-bold text-white">6. Hybrid RAG Retrieval</td>
-                <td>Not evaluated (Vector only, top-5)</td>
-                <td>P@5: {eval6?.byConfiguration?.HYBRID_RRF?.precisionAt5 || 0}, R@5: {eval6?.byConfiguration?.HYBRID_RRF?.recallAt5 || 0}, MRR: {eval6?.byConfiguration?.HYBRID_RRF?.mrr || 0}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        return (
+          <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <span>📋</span> Base Paper Comparison Panel (MoodleBot vs EduMentor AI)
+            </h3>
 
-        <div className="p-3 rounded-xl bg-white/5 text-[10px] text-white/40 italic">
-          "Cross-study values are descriptive and should not be interpreted as a controlled head-to-head comparison because the datasets, participants, models and experimental conditions differ."
-        </div>
-      </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-white/70">
+                <thead>
+                  <tr className="border-b border-white/10 text-white/40">
+                    <th className="py-2">Evaluation Study</th>
+                    <th className="py-2">MoodleBot (IEEE 2025 Base Paper)</th>
+                    <th className="py-2">EduMentor AI (Current System)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 font-bold text-white">1. Student Acceptance (TAM)</td>
+                    <td>30 completed (PU α=0.802, AT α=0.800)</td>
+                    <td>N = {eval1?.totalResponses || 0} (Overall Mean = {eval1?.overallScore || 0}/5)</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 font-bold text-white">2. Manual Correctness</td>
+                    <td>88/100 (88.0% correct)</td>
+                    {/* eval2 → data.realAIChatMetrics.correctRate / correctCount / totalEvaluated */}
+                    <td>{e2?.correctRate ?? e2?.overallCorrectRate ?? 0}% ({e2?.correctCount ?? e2?.overallCorrectCount ?? 0}/{e2?.totalEvaluated ?? 0})</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 font-bold text-white">3. Automated Grounding Validation</td>
+                    <td>Accuracy ~82%, Precision ~88.04%, Specificity ~8%</td>
+                    {/* eval3 → data.metrics.accuracy / precision / specificity (top-level) */}
+                    <td>Acc {e3metrics.accuracy ?? 0}%, Prec {e3metrics.precision ?? 0}%, Spec {e3metrics.specificity ?? 0}%</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 font-bold text-white">4. Course Content Congruency</td>
+                    <td>Implicit / Course specific context</td>
+                    {/* eval4 → data.realAIChatMetrics.courseSupportedRate / meanCongruency */}
+                    <td>{e4?.courseSupportedRate ?? 0}% Course-supported (Mean {e4?.meanCongruency ?? 0}/5)</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 font-bold text-white">5. Cost &amp; Performance</td>
+                    <td>~$1.65 / student (OpenAI GPT-4)</td>
+                    {/* eval5 → data.byConfiguration.HYBRID_RRF.costPer100QueriesUSD */}
+                    <td>${e5hybrid.costPer100QueriesUSD ?? 0} / 100 queries (Groq Llama 3.3 70B)</td>
+                  </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 font-bold text-white">6. Hybrid RAG Retrieval</td>
+                    <td>Not evaluated (Vector only, top-5)</td>
+                    {/* eval6 → data.byConfiguration.HYBRID_RRF.precisionAt5 / recallAt5 / mrr */}
+                    <td>P@5: {e6hybrid.precisionAt5 ?? 0}, R@5: {e6hybrid.recallAt5 ?? 0}, MRR: {e6hybrid.mrr ?? 0}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-3 rounded-xl bg-white/5 text-[10px] text-white/40 italic">
+              "Cross-study values are descriptive and should not be interpreted as a controlled head-to-head comparison because the datasets, participants, models and experimental conditions differ."
+            </div>
+          </div>
+        );
+      })()}
       </>
       )}
     </div>
