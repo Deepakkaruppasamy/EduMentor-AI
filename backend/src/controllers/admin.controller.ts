@@ -556,7 +556,7 @@ export const getAdminAnalytics = asyncHandler(async (req: Request, res: Response
 
     // Most frequently asked questions: top repeated chat titles (first user question)
     Chat.aggregate([
-      { $match: { title: { $exists: true, $ne: 'New Conversation', $ne: '' } } },
+      { $match: { title: { $exists: true, $nin: ['New Conversation', ''] } } },
       { $group: { _id: '$title', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 5 }
