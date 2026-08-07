@@ -1,4 +1,4 @@
-const CACHE_NAME = 'edumentor-cache-v5';
+const CACHE_NAME = 'edumentor-cache-v6';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -39,13 +39,19 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
-  // Skip caching for API, socket, and external requests
+  // Always pass through non-GET requests (POST/PUT/DELETE/PATCH) directly to network.
+  // Do NOT return early without respondWith — that causes "network error response" in the browser.
+  if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Skip SW caching for socket.io and cross-origin requests
   if (
-    event.request.method !== 'GET' ||
-    requestUrl.pathname.startsWith('/api') ||
     requestUrl.pathname.startsWith('/socket.io') ||
     requestUrl.origin !== self.location.origin
   ) {
+    event.respondWith(fetch(event.request));
     return;
   }
 
@@ -83,6 +89,8 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(() => {
+          // For SPA navigation requests, always fall back to index.html so
+          // client-side routes (like /rate-platform) work correctly offline/as PWA
           if (event.request.mode === 'navigate') {
             return caches.match('/index.html').then((cachedIndex) => {
               if (cachedIndex) return cachedIndex;
@@ -100,7 +108,8 @@ self.addEventListener('fetch', (event) => {
               );
             });
           }
-          return Response.error();
+          // For non-navigate failed requests, pass through the error
+          return fetch(event.request);
         });
     })
   );

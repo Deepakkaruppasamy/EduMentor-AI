@@ -8,6 +8,8 @@ import Quiz from '../models/Quiz';
 import Chat from '../models/Chat';
 import Document from '../models/Document';
 import AssignmentEvaluation from '../models/AssignmentEvaluation';
+import Feedback from '../models/Feedback';
+import Analytics from '../models/Analytics';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 import { sendEmail } from '../utils/email';
@@ -492,14 +494,109 @@ export const getAdminAnalytics = asyncHandler(async (req: Request, res: Response
     Quiz.countDocuments({ assignedBy: { $ne: null } })
   ]);
 
-  // 4. CHATBOT ANALYTICS
-  const avgResponseTime = 1250; // milliseconds
-  const hallucinationRate = 4.2; // percent
-  const retrievalAccuracy = 91.8; // percent
+  // 4. CHATBOT ANALYTICS — all values computed from real DB data
+  const [
+    analyticsAvgResponse,
+    hallucinationAgg,
+    retrievalAgg,
+    satisfactionAgg,
+    peakUsageAgg,
+    topQuestionsAgg,
+    languageStats
+  ] = await Promise.all([
+    // Avg response time from Analytics collection (updated by chat service)
+    Analytics.aggregate([
+      { $match: { avgResponseTime: { $gt: 0 } } },
+      { $group: { _id: null, avg: { $avg: '$avgResponseTime' } } }
+    ]),
 
-  const languageStats = await User.aggregate([
-    { $group: { _id: '$preferredLanguage', count: { $sum: 1 } } }
+    // Hallucination rate: flagged assistant messages / total assistant messages
+    Chat.aggregate([
+      { $unwind: '$messages' },
+      { $match: { 'messages.role': 'assistant' } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          flagged: {
+            $sum: {
+              $cond: [
+                { $gt: [{ $size: { $ifNull: ['$messages.hallucinationFlags', []] } }, 0] },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]),
+
+    // Retrieval accuracy: avg trustScore of assistant messages (0–1 scale → multiply by 100)
+    Chat.aggregate([
+      { $unwind: '$messages' },
+      {
+        $match: {
+          'messages.role': 'assistant',
+          'messages.trustScore': { $exists: true, $gt: 0 }
+        }
+      },
+      { $group: { _id: null, avgTrust: { $avg: '$messages.trustScore' } } }
+    ]),
+
+    // User satisfaction: avg Feedback rating (1–5) scaled to 0–100%
+    Feedback.aggregate([
+      { $group: { _id: null, avgRating: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]),
+
+    // Peak usage time: chat count grouped by hour of creation
+    Chat.aggregate([
+      { $group: { _id: { $hour: '$createdAt' }, count: { $sum: 1 } } },
+      { $sort: { '_id': 1 } }
+    ]),
+
+    // Most frequently asked questions: top repeated chat titles (first user question)
+    Chat.aggregate([
+      { $match: { title: { $exists: true, $ne: 'New Conversation', $ne: '' } } },
+      { $group: { _id: '$title', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]),
+
+    // Language breakdown from user preferred language
+    User.aggregate([
+      { $group: { _id: '$preferredLanguage', count: { $sum: 1 } } }
+    ])
   ]);
+
+  // Derive final values with sensible fallbacks
+  const avgResponseTime = analyticsAvgResponse.length
+    ? Math.round(analyticsAvgResponse[0].avg)
+    : 0;
+
+  const hallucinationRate =
+    hallucinationAgg.length && hallucinationAgg[0].total > 0
+      ? Math.round((hallucinationAgg[0].flagged / hallucinationAgg[0].total) * 1000) / 10
+      : 0;
+
+  const retrievalAccuracy =
+    retrievalAgg.length
+      ? Math.round(retrievalAgg[0].avgTrust * 100 * 10) / 10
+      : 0;
+
+  const userSatisfaction =
+    satisfactionAgg.length && satisfactionAgg[0].count > 0
+      ? Math.round((satisfactionAgg[0].avgRating / 5) * 100 * 10) / 10
+      : 0;
+
+  const peakUsageTime = peakUsageAgg.map((p: any) => ({
+    hour: `${String(p._id).padStart(2, '0')}:00`,
+    count: p.count
+  }));
+
+  const mostFrequentlyAskedQuestions = topQuestionsAgg.map((q: any) => ({
+    question: q._id,
+    count: q.count
+  }));
 
   // 5. COURSE ANALYTICS
   const popularCourses = await Course.aggregate([
@@ -593,17 +690,10 @@ export const getAdminAnalytics = asyncHandler(async (req: Request, res: Response
       avgResponseTime,
       hallucinationRate,
       retrievalAccuracy,
-      mostFrequentlyAskedQuestions: ['What is semantic search?', 'Explain TCP flow control', 'How do I normalize a table to 3NF?', 'What is RAG?'].map((q, idx) => ({ question: q, count: 45 - idx * 8 })),
-      languageUsage: languageStats.map(l => ({ name: l._id || 'English', value: l.count })),
-      peakUsageTime: [
-        { hour: '08:00', count: 12 },
-        { hour: '12:00', count: 48 },
-        { hour: '15:00', count: 62 },
-        { hour: '18:00', count: 85 },
-        { hour: '21:00', count: 110 },
-        { hour: '23:00', count: 54 }
-      ],
-      userSatisfaction: 92.5
+      mostFrequentlyAskedQuestions,
+      languageUsage: languageStats.map((l: any) => ({ name: l._id || 'English', value: l.count })),
+      peakUsageTime,
+      userSatisfaction
     },
     courseAnalytics: {
       mostPopularCourse,

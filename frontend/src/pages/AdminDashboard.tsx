@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -501,10 +501,10 @@ const SuperAdminDashboardView: React.FC = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <StatCard icon="💬" label="Total Conversations" value={data.chatbotAnalytics.totalConversations} color="#4f5dc8" />
-              <StatCard icon="⚡" label="Avg Response" value={`${data.chatbotAnalytics.avgResponseTime}ms`} color="#2d9a8a" />
-              <StatCard icon="⚠️" label="Hallucination Rate" value={`${data.chatbotAnalytics.hallucinationRate}%`} color="#c0524a" />
-              <StatCard icon="🎯" label="Retrieval Accuracy" value={`${data.chatbotAnalytics.retrievalAccuracy}%`} color="#34a87a" />
-              <StatCard icon="😊" label="User Satisfaction" value={`${data.chatbotAnalytics.userSatisfaction}%`} color="#c4893a" />
+              <StatCard icon="⚡" label="Avg Response" value={data.chatbotAnalytics.avgResponseTime ? `${data.chatbotAnalytics.avgResponseTime}ms` : 'No data'} color="#2d9a8a" />
+              <StatCard icon="⚠️" label="Hallucination Rate" value={data.chatbotAnalytics.hallucinationRate ? `${data.chatbotAnalytics.hallucinationRate}%` : 'No data'} color="#c0524a" />
+              <StatCard icon="🎯" label="Retrieval Accuracy" value={data.chatbotAnalytics.retrievalAccuracy ? `${data.chatbotAnalytics.retrievalAccuracy}%` : 'No data'} color="#34a87a" />
+              <StatCard icon="😊" label="User Satisfaction" value={data.chatbotAnalytics.userSatisfaction ? `${data.chatbotAnalytics.userSatisfaction}%` : 'No data'} color="#c4893a" />
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -645,15 +645,15 @@ const SuperAdminDashboardView: React.FC = () => {
               <div className="glass-card p-5 border border-white/5">
                 <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Logged-in Devices Breakdown</h3>
                 {data.securityDashboard.loginDevice.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={220}>
+                  <ResponsiveContainer width="100%" height={260}>
                     <PieChart>
-                      <Pie data={data.securityDashboard.loginDevice} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60}>
+                      <Pie data={data.securityDashboard.loginDevice} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70}>
                         {data.securityDashboard.loginDevice.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '9px' }} />
+                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '9px', paddingTop: '12px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
