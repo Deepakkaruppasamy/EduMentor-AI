@@ -65,10 +65,33 @@ export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Pro
             avgTrustScore: { $avg: '$messages.trustScore' },
             avgConfidence: { $avg: '$messages.confidenceScore' },
             hallucinatedCount: {
-              $sum: { $cond: [{ $lt: ['$messages.trustScore', 45] }, 1, 0] },
+              // trustScore < 45 = hallucinated (matches hallucination.service.ts threshold)
+              // Only count messages that actually have a trustScore stored
+              $sum: {
+                $cond: [
+                  { $and: [
+                    { $gt: ['$messages.trustScore', -1] },
+                    { $lt: ['$messages.trustScore', 45] }
+                  ]},
+                  1, 0
+                ]
+              },
             },
             verifiedCount: {
+              // trustScore >= 75 = fully verified (matches hallucination.service.ts)
               $sum: { $cond: [{ $gte: ['$messages.trustScore', 75] }, 1, 0] },
+            },
+            partialCount: {
+              // trustScore 45-74 = partially verified
+              $sum: {
+                $cond: [
+                  { $and: [
+                    { $gte: ['$messages.trustScore', 45] },
+                    { $lt: ['$messages.trustScore', 75] }
+                  ]},
+                  1, 0
+                ]
+              },
             },
             withSourcesCount: {
               $sum: {
@@ -96,21 +119,37 @@ export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Pro
     const agg = chatAgg[0] || {};
     const total = agg.totalMessages || 0;
     const verified = agg.verifiedCount || 0;
+    const partial = agg.partialCount || 0;
     const hallucinated = agg.hallucinatedCount || 0;
     const avgTrust = agg.avgTrustScore || 0;
     const avgConf = agg.avgConfidence || 0;
     const withSources = agg.withSourcesCount || 0;
 
+    // Accuracy: % of messages that are fully verified (trustScore >= 75)
     const accuracy = total > 0 ? Math.round((verified / total) * 100) : 0;
+
+    // Hallucination rate: % of messages with trustScore < 45
     const hallucinationRate = total > 0 ? Math.round((hallucinated / total) * 100) : 0;
-    const precision = total > 0 ? Math.round((verified / Math.max(verified + hallucinated, 1)) * 100) : 0;
-    const recall = total > 0 ? Math.round((verified / Math.max(total * 0.9, 1)) * 100) : 0;
-    const f1Score = precision + recall > 0 ? Math.round((2 * precision * recall) / (precision + recall)) : 0;
+
+    // Precision: average trustScore across all messages (0–100).
+    // This is the true grounding quality — binary verified/(verified+hallucinated)
+    // always returns 0 when no messages reach the >=75 threshold.
+    const precision = total > 0 ? Math.round(avgTrust) : 0;
+
+    // Recall: % of messages that are verified OR partially verified
+    const recall = total > 0 ? Math.round(((verified + partial) / total) * 100) : 0;
+
+    const f1Score =
+      precision + recall > 0
+        ? Math.round((2 * precision * recall) / (precision + recall))
+        : 0;
+
     const citationAccuracy = total > 0 ? Math.round((withSources / total) * 100) : 0;
     const totalAnalyticsQueries = analytics.reduce((s, a) => s + a.totalQueries, 0);
-    const avgRetrievalAccuracy = analytics.length > 0
-      ? Math.round(analytics.reduce((s, a) => s + (a.retrievalAccuracy || 0), 0) / analytics.length)
-      : 0;
+    const avgRetrievalAccuracy =
+      analytics.length > 0
+        ? Math.round(analytics.reduce((s, a) => s + (a.retrievalAccuracy || 0), 0) / analytics.length)
+        : 0;
 
     // Confidence distribution buckets (0–20, 21–40, 41–60, 61–80, 81–100)
     const confDist = await Chat.aggregate([
