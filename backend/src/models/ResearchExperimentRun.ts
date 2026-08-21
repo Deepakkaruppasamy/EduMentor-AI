@@ -10,7 +10,7 @@ export interface IResearchExperimentRun extends Document {
   datasetVersion: string;
   datasetSplit: 'development' | 'validation' | 'final_test';
   configurations: string[];
-  llmModel: string;               // e.g. "llama-3.3-70b-versatile"
+  llmModel: string;               // e.g. "openai/gpt-oss-120b"
   embeddingModel: string;         // e.g. "all-MiniLM-L6-v2"
   temperature: number;
   maxTokens: number;
@@ -45,7 +45,7 @@ const ResearchExperimentRunSchema = new Schema<IResearchExperimentRun>(
       type: String,
       enum: ['HYBRID_RRF', 'VECTOR_ONLY', 'BM25_ONLY', 'LLM_ONLY'],
     }],
-    llmModel: { type: String, default: 'llama-3.3-70b-versatile' },
+    llmModel: { type: String, default: 'openai/gpt-oss-120b' },
     embeddingModel: { type: String, default: 'all-MiniLM-L6-v2' },
     temperature: { type: Number, default: 0.3 },
     maxTokens: { type: Number, default: 2048 },

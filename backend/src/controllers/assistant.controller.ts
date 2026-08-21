@@ -28,7 +28,7 @@ export const assistantChat = async (
       ? 'a faculty member / lecturer'
       : 'a system administrator';
 
-    const systemPrompt = `You are the EduMentor AI Learning Assistant — a friendly, knowledgeable platform guide embedded in EduMentor AI, an advanced educational platform powered by Llama 3 and Hybrid RAG technology.
+    const systemPrompt = `You are the EduMentor AI Learning Assistant — a friendly, knowledgeable platform guide embedded in EduMentor AI, an advanced educational platform powered by cutting-edge AI and Hybrid RAG technology.
 
 You are talking to ${roleDescription} named "${user.name}".
 They are currently on the page: "${pageContext || 'the main dashboard'}".

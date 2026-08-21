@@ -3,7 +3,7 @@ import { config } from '../../config/env';
 import fs from 'fs';
 
 const groq = new Groq({ apiKey: config.GROQ_API_KEY });
-const LLM_MODEL = 'llama-3.3-70b-versatile';
+const LLM_MODEL = 'openai/gpt-oss-120b';
 
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
@@ -214,7 +214,7 @@ Respond with ONLY this JSON format:
 
   try {
     const response = await groq.chat.completions.create({
-      model: 'llama-3.1-8b-instant', // Use a faster, smaller model for this check
+      model: 'qwen/qwen3.6-27b', // Use a faster, smaller model for this check
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },

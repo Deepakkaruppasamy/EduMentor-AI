@@ -33,7 +33,7 @@ export interface IResearchChatSample extends Document {
   timestamp: Date;
 
   // Metadata Instrumentation
-  llmModel: string | null;                    // 'llama-3.3-70b-versatile' or null if unrecorded
+  llmModel: string | null;                    // 'openai/gpt-oss-120b' or null if unrecorded
   language: string | null;                 // User preferredLanguage or null
   explanationMode: string | null;          // 'standard', 'simply', 'detail', etc.
 

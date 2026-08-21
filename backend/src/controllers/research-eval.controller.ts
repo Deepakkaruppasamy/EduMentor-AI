@@ -27,13 +27,13 @@ import { detectHallucination } from '../services/hallucination/hallucination.ser
 import crypto from 'crypto';
 
 
-// Provider pricing constants for Eval 5 (Groq Llama 3.3 70B & HuggingFace embeddings)
+// Provider pricing constants for Eval 5 (Groq GPT-OSS-120B & HuggingFace embeddings)
 const GROQ_PRICING = {
   provider: 'Groq',
-  model: 'llama-3.3-70b-versatile',
+  model: 'openai/gpt-oss-120b',
   inputTokenPricePer1M: 0.59,   // $0.59 per 1M input tokens
   outputTokenPricePer1M: 0.79,  // $0.79 per 1M output tokens
-  pricingVersion: '2025-Q1',
+  pricingVersion: '2026-Q3',
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -1294,7 +1294,7 @@ export const exportResearchDataJSON = async (_req: AuthRequest, res: Response): 
       question: s.question,
       generatedAnswer: s.generatedAnswer,
       timestamp: s.timestamp,
-      model: s.llmModel || 'llama-3.3-70b-versatile',
+      model: s.llmModel || 'openai/gpt-oss-120b',
       language: s.language || 'English',
       explanationMode: s.explanationMode || 'standard',
       originalTrustScore: s.originalTrustScore,
@@ -1440,7 +1440,7 @@ export const exportRealAIChatSamplesCSV = async (_req: AuthRequest, res: Respons
         `"${(s.question || '').replace(/"/g, '""')}"`,
         `"${(s.generatedAnswer || '').replace(/"/g, '""')}"`,
         `"${s.timestamp ? new Date(s.timestamp).toISOString() : ''}"`,
-        `"${s.llmModel || 'llama-3.3-70b-versatile'}"`,
+        `"${s.llmModel || 'openai/gpt-oss-120b'}"`,
         `"${s.language || 'English'}"`,
         `"${s.explanationMode || 'standard'}"`,
         s.sourceAlignmentScore !== null ? s.sourceAlignmentScore : (s.originalTrustScore ? (s.originalTrustScore / 100).toFixed(2) : 'N/A'),
@@ -1710,7 +1710,7 @@ export const importAIChatSamples = async (req: AuthRequest, res: Response): Prom
         question: userQuestion,
         generatedAnswer: assistantMsg.content,
         timestamp: assistantMsg.timestamp || chat.createdAt,
-        llmModel: 'llama-3.3-70b-versatile',
+        llmModel: 'openai/gpt-oss-120b',
         language: (chat.user as any)?.preferredLanguage || 'English',
         explanationMode: 'standard',
         retrievedSources,
