@@ -151,6 +151,38 @@ export const LoginPage: React.FC = () => {
           </Link>
         </p>
       </motion.div>
+
+      {/* Open on Mobile Badge */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-20"
+      >
+        <Link
+          to="/download"
+          id="login-open-on-mobile-badge"
+          className="flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95"
+          style={{
+            background: 'rgba(13,14,20,0.85)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(99,102,241,0.35)',
+            color: '#a5b4fc',
+            boxShadow: '0 4px 24px rgba(79,93,200,0.2)',
+          }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <path d="M14 14h2v2h-2zM18 14h3M14 18h2M18 18h3v3M14 21h2" />
+          </svg>
+          <span>Open on Mobile</span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 opacity-60">
+            <path fillRule="evenodd" d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z" clipRule="evenodd" />
+          </svg>
+        </Link>
+      </motion.div>
     </div>
   );
 };

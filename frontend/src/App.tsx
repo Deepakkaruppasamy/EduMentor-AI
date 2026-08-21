@@ -7,6 +7,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { FirstLoginChangePage } from './pages/FirstLoginChangePage';
+import { DownloadPage } from './pages/DownloadPage';
 import { InactivityHandler } from './components/auth/InactivityHandler';
 import { AdminUserManagement } from './components/admin/AdminUserManagement';
 import { StudentDashboard } from './pages/StudentDashboard';
@@ -140,6 +141,8 @@ const App: React.FC = () => {
             <Route path="/reset-password" element={
               isAuthenticated ? <Navigate to={user?.isFirstLogin ? '/first-login-change' : (user?.role === 'student' ? '/dashboard' : '/admin')} replace /> : <ResetPasswordPage />
             } />
+            {/* Public QR / mobile page — no auth required */}
+            <Route path="/download" element={<DownloadPage />} />
 
             {/* Student Routes */}
             <Route path="/dashboard" element={
