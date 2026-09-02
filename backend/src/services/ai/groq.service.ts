@@ -33,6 +33,11 @@ Always:
 const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT;
 
 function buildCourseSystemPrompt(courseName: string, languagePrompt: string, context: string): string {
+  // Truncate context to ~5,000 chars (~1,200 tokens) to ensure total payload stays under 8,000 TPM limit of openai/gpt-oss-120b
+  const safeContext = context && context.length > 5000
+    ? context.substring(0, 5000) + '\n... [Context trimmed for token limit]'
+    : context;
+
   return `${BASE_SYSTEM_PROMPT}
 
 🎓 ACTIVE COURSE: "${courseName}"
@@ -46,7 +51,7 @@ You are currently acting as the AI tutor EXCLUSIVELY for the "${courseName}" cou
 ${languagePrompt}
 
 --- COURSE MATERIAL CONTEXT ---
-${context}
+${safeContext}
 --- END CONTEXT ---
 
 Base your answer primarily on the above context. If the context doesn't contain enough information about a ${courseName} topic, say so clearly.`;
@@ -67,35 +72,64 @@ export async function generateResponse(
     ? `\n- IMPORTANT: You MUST answer the user's question and explain all concepts natively in ${preferredLanguage}. Make the translation natural and preserve all academic definitions.`
     : '';
 
+  const safeContext = context && context.length > 5000
+    ? context.substring(0, 5000) + '\n... [Context trimmed for token limit]'
+    : context;
+
   const systemContent = courseName
-    ? buildCourseSystemPrompt(courseName, languagePrompt, context)
-    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`;
+    ? buildCourseSystemPrompt(courseName, languagePrompt, safeContext)
+    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${safeContext}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`;
 
   const systemMessage: LLMMessage = {
     role: 'system',
     content: systemContent,
   };
 
-  const allMessages = [systemMessage, ...messages];
+  const safeHistory = messages.slice(-4);
+  const allMessages = [systemMessage, ...safeHistory];
 
-  const completion = await groq.chat.completions.create({
-    model: LLM_MODEL,
-    messages: allMessages as any,
-    temperature,
-    max_tokens: 2048,
-    top_p: 0.9,
-  });
+  try {
+    const completion = await groq.chat.completions.create({
+      model: LLM_MODEL,
+      messages: allMessages as any,
+      temperature,
+      max_tokens: 2048,
+      top_p: 0.9,
+    });
 
-  const choice = completion.choices[0];
-  return {
-    content: choice.message.content || '',
-    usage: {
-      promptTokens: completion.usage?.prompt_tokens || 0,
-      completionTokens: completion.usage?.completion_tokens || 0,
-      totalTokens: completion.usage?.total_tokens || 0,
-    },
-    model: completion.model || LLM_MODEL,
-  };
+    const choice = completion.choices[0];
+    return {
+      content: choice.message.content || '',
+      usage: {
+        promptTokens: completion.usage?.prompt_tokens || 0,
+        completionTokens: completion.usage?.completion_tokens || 0,
+        totalTokens: completion.usage?.total_tokens || 0,
+      },
+      model: completion.model || LLM_MODEL,
+    };
+  } catch (err: any) {
+    if (err?.status === 413 || err?.message?.includes('Limit') || err?.message?.includes('Request too large')) {
+      console.warn('⚠️ Token limit exceeded for primary model, falling back to llama-3.3-70b-versatile');
+      const fallbackCompletion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: allMessages as any,
+        temperature,
+        max_tokens: 2048,
+        top_p: 0.9,
+      });
+      const choice = fallbackCompletion.choices[0];
+      return {
+        content: choice.message.content || '',
+        usage: {
+          promptTokens: fallbackCompletion.usage?.prompt_tokens || 0,
+          completionTokens: fallbackCompletion.usage?.completion_tokens || 0,
+          totalTokens: fallbackCompletion.usage?.total_tokens || 0,
+        },
+        model: fallbackCompletion.model || 'llama-3.3-70b-versatile',
+      };
+    }
+    throw err;
+  }
 }
 
 export async function generateWithoutContext(
@@ -113,25 +147,52 @@ export async function generateWithoutContext(
     content: systemOverride || SYSTEM_PROMPT,
   };
 
-  const completion = await groq.chat.completions.create({
-    model: LLM_MODEL,
-    messages: [systemMessage, ...messages] as any,
-    temperature,
-    max_tokens: 4096,
-    top_p: 0.9,
-    ...(jsonMode && { response_format: { type: 'json_object' } }),
-  });
+  const safeHistory = messages.slice(-6);
 
-  const choice = completion.choices[0];
-  return {
-    content: choice.message.content || '',
-    usage: {
-      promptTokens: completion.usage?.prompt_tokens || 0,
-      completionTokens: completion.usage?.completion_tokens || 0,
-      totalTokens: completion.usage?.total_tokens || 0,
-    },
-    model: completion.model || LLM_MODEL,
-  };
+  try {
+    const completion = await groq.chat.completions.create({
+      model: LLM_MODEL,
+      messages: [systemMessage, ...safeHistory] as any,
+      temperature,
+      max_tokens: 4096,
+      top_p: 0.9,
+      ...(jsonMode && { response_format: { type: 'json_object' } }),
+    });
+
+    const choice = completion.choices[0];
+    return {
+      content: choice.message.content || '',
+      usage: {
+        promptTokens: completion.usage?.prompt_tokens || 0,
+        completionTokens: completion.usage?.completion_tokens || 0,
+        totalTokens: completion.usage?.total_tokens || 0,
+      },
+      model: completion.model || LLM_MODEL,
+    };
+  } catch (err: any) {
+    if (err?.status === 413 || err?.message?.includes('Limit') || err?.message?.includes('Request too large')) {
+      console.warn('⚠️ Token limit exceeded for primary model, falling back to llama-3.3-70b-versatile');
+      const fallbackCompletion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [systemMessage, ...safeHistory] as any,
+        temperature,
+        max_tokens: 4096,
+        top_p: 0.9,
+        ...(jsonMode && { response_format: { type: 'json_object' } }),
+      });
+      const choice = fallbackCompletion.choices[0];
+      return {
+        content: choice.message.content || '',
+        usage: {
+          promptTokens: fallbackCompletion.usage?.prompt_tokens || 0,
+          completionTokens: fallbackCompletion.usage?.completion_tokens || 0,
+          totalTokens: fallbackCompletion.usage?.total_tokens || 0,
+        },
+        model: fallbackCompletion.model || 'llama-3.3-70b-versatile',
+      };
+    }
+    throw err;
+  }
 }
 
 export async function generateResponseStream(
@@ -150,37 +211,69 @@ export async function generateResponseStream(
     ? `\n- IMPORTANT: You MUST answer the user's question and explain all concepts natively in ${preferredLanguage}. Make the translation natural and preserve all academic definitions.`
     : '';
 
+  const safeContext = context && context.length > 5000
+    ? context.substring(0, 5000) + '\n... [Context trimmed for token limit]'
+    : context;
+
   const systemContent = courseName
-    ? buildCourseSystemPrompt(courseName, languagePrompt, context)
-    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${context}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`;
+    ? buildCourseSystemPrompt(courseName, languagePrompt, safeContext)
+    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${safeContext}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`;
 
   const systemMessage: LLMMessage = {
     role: 'system',
     content: systemContent,
   };
 
-  const allMessages = [systemMessage, ...messages];
+  const safeHistory = messages.slice(-4);
+  const allMessages = [systemMessage, ...safeHistory];
 
-  const stream = await groq.chat.completions.create({
-    model: LLM_MODEL,
-    messages: allMessages as any,
-    temperature,
-    max_tokens: 2048,
-    top_p: 0.9,
-    stream: true,
-  });
+  try {
+    const stream = await groq.chat.completions.create({
+      model: LLM_MODEL,
+      messages: allMessages as any,
+      temperature,
+      max_tokens: 2048,
+      top_p: 0.9,
+      stream: true,
+    });
 
-  for await (const chunk of stream) {
-    const token = chunk.choices[0]?.delta?.content || '';
-    if (token) {
-      onToken(token);
+    for await (const chunk of stream) {
+      const token = chunk.choices[0]?.delta?.content || '';
+      if (token) {
+        onToken(token);
+      }
     }
-  }
 
-  return {
-    model: LLM_MODEL,
-  };
+    return {
+      model: LLM_MODEL,
+    };
+  } catch (err: any) {
+    if (err?.status === 413 || err?.message?.includes('Limit') || err?.message?.includes('Request too large')) {
+      console.warn('⚠️ Token limit exceeded for primary model in stream, falling back to llama-3.3-70b-versatile');
+      const fallbackStream = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: allMessages as any,
+        temperature,
+        max_tokens: 2048,
+        top_p: 0.9,
+        stream: true,
+      });
+
+      for await (const chunk of fallbackStream) {
+        const token = chunk.choices[0]?.delta?.content || '';
+        if (token) {
+          onToken(token);
+        }
+      }
+
+      return {
+        model: 'llama-3.3-70b-versatile',
+      };
+    }
+    throw err;
+  }
 }
+
 
 /**
  * Lightweight check: uses a fast LLM call to determine if a question
