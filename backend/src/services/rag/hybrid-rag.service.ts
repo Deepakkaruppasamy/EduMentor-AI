@@ -29,9 +29,10 @@ export interface HybridRAGResult {
 export async function hybridRetrieve(
   query: string,
   collectionName: string,
-  topK = config.TOP_K_RESULTS
+  topK = config.TOP_K_RESULTS,
+  targetDocumentId?: string
 ): Promise<HybridRAGResult> {
-  const fetchCount = topK * 2; // fetch more, then re-rank
+  const fetchCount = topK * 3; // fetch more, then re-rank
 
   // Run both retrieval methods in parallel
   const [vectorResults, bm25Results] = await Promise.all([
@@ -39,8 +40,16 @@ export async function hybridRetrieve(
     Promise.resolve(getBM25Index(collectionName).search(query, fetchCount)),
   ]);
 
+  let filteredVector = vectorResults;
+  let filteredBM25 = bm25Results;
+
+  if (targetDocumentId) {
+    filteredVector = vectorResults.filter((v) => String(v.metadata?.documentId || '') === String(targetDocumentId));
+    filteredBM25 = bm25Results.filter((b) => String(b.metadata?.documentId || '') === String(targetDocumentId));
+  }
+
   // Map vector results to the structure expected by RRF (v.document -> text)
-  const mappedVectorResults = vectorResults.map((v) => ({
+  const mappedVectorResults = filteredVector.map((v) => ({
     id: v.id,
     text: v.document,
     metadata: v.metadata,
@@ -48,7 +57,8 @@ export async function hybridRetrieve(
   }));
 
   // Apply Reciprocal Rank Fusion
-  const fused = reciprocalRankFusion(mappedVectorResults, bm25Results);
+  const fused = reciprocalRankFusion(mappedVectorResults, filteredBM25);
+
 
   // Take top-K after fusion
   const topResults = fused.slice(0, topK);

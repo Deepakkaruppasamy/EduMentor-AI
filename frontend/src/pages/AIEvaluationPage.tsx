@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { aiEvaluationService } from '../services/ai-evaluation.service';
 import { ResearchValidationDashboard } from '../components/research/ResearchValidationDashboard';
+import { LiveRetrievalInspector } from '../components/admin/LiveRetrievalInspector';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
@@ -23,7 +24,7 @@ const TOOLTIP_STYLE = {
 };
 
 type Section =
-  | 'overview' | 'scientific-eval' | 'chatbot' | 'rag' | 'explain' | 'assignments'
+  | 'overview' | 'scientific-eval' | 'live-inspector' | 'chatbot' | 'rag' | 'explain' | 'assignments'
   | 'notes' | 'study-planner' | 'research' | 'support-bot'
   | 'communication' | 'faculty' | 'students' | 'system' | 'security'
   | 'tam' | 'reports';
@@ -31,6 +32,8 @@ type Section =
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
   { id: 'overview',            label: 'Overview',                icon: '🏠' },
   { id: 'scientific-eval',     label: 'Scientific Evaluation',   icon: '🎓' },
+  { id: 'live-inspector',      label: 'Live Vector Inspector',   icon: '🔬' },
+
   { id: 'chatbot',             label: 'AI Chatbot',              icon: '🤖' },
   { id: 'rag',                 label: 'Hybrid RAG',              icon: '🔍' },
   { id: 'explain',             label: 'Explain Mode',            icon: '💡' },
@@ -939,10 +942,14 @@ export const AIEvaluationPage: React.FC = () => {
     if (activeSection === 'scientific-eval') {
       return <ResearchValidationDashboard />;
     }
+    if (activeSection === 'live-inspector') {
+      return <LiveRetrievalInspector />;
+    }
     if (activeSection === 'reports') {
 
       return <ReportsPanel allData={sectionData} />;
     }
+
     const d = sectionData[activeSection];
     if (loading[activeSection]) return <Spinner />;
     if (!d) return <div className="text-center py-16 text-white/30 text-sm">No data loaded yet</div>;

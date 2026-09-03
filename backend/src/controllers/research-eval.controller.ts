@@ -1107,47 +1107,14 @@ export const getEvaluation6RetrievalMetrics = async (_req: AuthRequest, res: Res
         success: true,
         data: {
           totalEvaluated: 0,
-          byConfiguration: {
-            HYBRID_RRF: {
-              totalEvaluated: 0,
-              precisionAt1: 0.92,
-              precisionAt3: 0.88,
-              precisionAt5: 0.84,
-              recallAt1: 0.75,
-              recallAt3: 0.89,
-              recallAt5: 0.95,
-              mrr: 0.94,
-              ndcgAt5: 0.91,
-            },
-            VECTOR_ONLY: {
-              totalEvaluated: 0,
-              precisionAt1: 0.82,
-              precisionAt3: 0.78,
-              precisionAt5: 0.72,
-              recallAt1: 0.65,
-              recallAt3: 0.79,
-              recallAt5: 0.85,
-              mrr: 0.83,
-              ndcgAt5: 0.80,
-            },
-            BM25_ONLY: {
-              totalEvaluated: 0,
-              precisionAt1: 0.74,
-              precisionAt3: 0.69,
-              precisionAt5: 0.64,
-              recallAt1: 0.58,
-              recallAt3: 0.68,
-              recallAt5: 0.74,
-              mrr: 0.75,
-              ndcgAt5: 0.71,
-            },
-          },
-          classification: 'RESEARCH_VALIDATED',
-          note: 'Showing baseline research metrics. Run an ablation batch to compute live evaluations.',
+          byConfiguration: {},
+          classification: 'NO_DATA',
+          note: 'No ablation benchmark runs recorded yet. Execute an evaluation batch using npm run eval:benchmark.',
         },
       });
       return;
     }
+
 
 
     const configStats: Record<string, {

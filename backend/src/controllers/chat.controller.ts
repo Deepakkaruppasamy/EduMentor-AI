@@ -11,7 +11,7 @@ import { buildExplainableResult } from '../services/explainability/explainabilit
 import { trackStudentQuery } from '../services/recommendations/recommendation.service';
 
 export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { question, courseId, chatId } = req.body;
+  const { question, courseId, chatId, documentId } = req.body;
   const startTime = Date.now();
 
   if (!question || !courseId) {
@@ -36,7 +36,8 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
   }
 
   // 1. Hybrid RAG retrieval
-  const ragResult = await hybridRetrieve(question, course.chromaCollection);
+  const ragResult = await hybridRetrieve(question, course.chromaCollection, undefined, documentId);
+
 
   // 2. Build chat history for context
   let chat = chatId ? await Chat.findById(chatId) : null;
