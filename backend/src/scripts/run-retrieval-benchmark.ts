@@ -4,8 +4,8 @@ import path from 'path';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-import { ExpertReview } from '../models/ExpertReview';
-import { Course } from '../models/Course';
+import ExpertReview from '../models/ExpertReview';
+import Course from '../models/Course';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
 import { vectorSearch } from '../utils/chroma';
 import { getBM25Index } from '../services/rag/bm25-search.service';
@@ -35,8 +35,9 @@ async function runBenchmark() {
   let totalEvaluations = 0;
 
   for (const q of BENCHMARK_QUESTIONS) {
-    const course = courses.find(c => c.code === q.courseCode) || courses[0];
+    const course = courses.find((c: any) => c.code === q.courseCode) || courses[0];
     const collectionName = course ? course.chromaCollection : 'general';
+
 
     console.log(`\n🔍 Evaluating Question: "${q.question}" (Course: ${q.courseCode || 'General'})`);
 
