@@ -13,6 +13,8 @@ export const ResearchValidationDashboard: React.FC = () => {
   const [eval4, setEval4] = useState<any>(null);
   const [eval5, setEval5] = useState<any>(null);
   const [eval6, setEval6] = useState<any>(null);
+  const [eval7, setEval7] = useState<any>(null);
+  const [pcaData, setPcaData] = useState<any>(null);
   const [benchmarks, setBenchmarks] = useState<any[]>([]);
   const [blindedReviews, setBlindedReviews] = useState<any[]>([]);
   const [selectedReview, setSelectedReview] = useState<any>(null);
@@ -29,13 +31,15 @@ export const ResearchValidationDashboard: React.FC = () => {
   const loadAllMetrics = async (sourceFilter = 'REAL_AI_CHAT') => {
     setLoading(true);
     try {
-      const [r1, r2, r3, r4, r5, r6, rBench, rReviews] = await Promise.all([
+      const [r1, r2, r3, r4, r5, r6, r7, rPca, rBench, rReviews] = await Promise.all([
         aiEvaluationService.getTAM(),
         aiEvaluationService.getEval2Correctness({ sampleSource: sourceFilter }),
         aiEvaluationService.getEval3Grounding({ sampleSource: sourceFilter }),
         aiEvaluationService.getEval4Congruency({ sampleSource: sourceFilter }),
         aiEvaluationService.getEval5CostPerformance(),
         aiEvaluationService.getEval6Retrieval(),
+        aiEvaluationService.getEval7Learning(),
+        aiEvaluationService.getTAMPCA(),
         aiEvaluationService.getBenchmarkQuestions(),
         aiEvaluationService.getBlindedReviews(),
       ]);
@@ -46,6 +50,8 @@ export const ResearchValidationDashboard: React.FC = () => {
       setEval4(r4.data?.data);
       setEval5(r5.data?.data);
       setEval6(r6.data?.data);
+      setEval7(r7.data?.data);
+      setPcaData(rPca.data?.data);
       setBenchmarks(rBench.data?.data || []);
       setBlindedReviews(rReviews.data?.data || []);
     } catch (err: any) {
@@ -54,6 +60,7 @@ export const ResearchValidationDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     loadAllMetrics('REAL_AI_CHAT');
@@ -756,6 +763,60 @@ export const ResearchValidationDashboard: React.FC = () => {
         </div>
       )}
 
+      {/* STUDY 7: STUDENT LEARNING OUTCOME EVALUATION (PRE-TEST -> INTERVENTION -> POST-TEST) */}
+      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📈</span>
+            <div>
+              <h3 className="text-sm font-bold text-white">Study 7: Student Learning Outcome Evaluation</h3>
+              <p className="text-[10px] text-white/40">Pre-Test → Chatbot Learning Intervention → Post-Test Paired Evaluation</p>
+            </div>
+          </div>
+          <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold font-mono ${eval7?.totalParticipants > 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+            {eval7?.totalParticipants > 0 ? `N = ${eval7.totalParticipants} Participants` : 'Awaiting Study Data'}
+          </span>
+        </div>
+
+        {eval7?.totalParticipants > 0 ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center font-mono">
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                <span className="text-[9px] text-white/40 uppercase block font-sans">Pre-Test Mean</span>
+                <span className="text-sm font-bold text-white block mt-0.5">{eval7.meanPreTestPercent}%</span>
+              </div>
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                <span className="text-[9px] text-white/40 uppercase block font-sans">Post-Test Mean</span>
+                <span className="text-sm font-bold text-emerald-400 block mt-0.5">{eval7.meanPostTestPercent}%</span>
+              </div>
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                <span className="text-[9px] text-white/40 uppercase block font-sans">Mean Learning Gain</span>
+                <span className="text-sm font-bold text-purple-400 block mt-0.5">+{eval7.meanLearningGain}%</span>
+              </div>
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                <span className="text-[9px] text-white/40 uppercase block font-sans">Cohen's dz Effect Size</span>
+                <span className="text-sm font-bold text-blue-400 block mt-0.5">{eval7.cohensDz}</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-white/70 space-y-2">
+              <div className="flex justify-between items-center">
+                <span>Paired t-Test Statistic: <strong className="text-white font-mono">{eval7.pairedTTest}</strong></span>
+                <span>p-value: <strong className="text-emerald-400 font-mono">{eval7.pValue}</strong></span>
+                <span className="text-emerald-400 font-bold">{eval7.statisticalSignificance}</span>
+              </div>
+              <div className="text-[10px] text-white/40">
+                Normalized Gain (g): <span className="text-purple-300 font-mono font-bold">{eval7.meanNormalizedGain}</span> | Improved: <span className="text-emerald-400 font-bold">{eval7.improvedPercentage}%</span> | Unchanged: {eval7.unchangedPercentage}% | Decreased: {eval7.decreasedPercentage}%
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 rounded-xl bg-white/[0.01] border border-white/5 text-center text-xs text-white/40">
+            No experimental learning study data available. Complete pre-test, chatbot interaction, and post-test sessions to generate metrics.
+          </div>
+        )}
+      </div>
+
       {/* BASE PAPER COMPARISON PANEL */}
       {(() => {
         // Resolve active-filter metrics for the comparison panel
@@ -767,15 +828,13 @@ export const ResearchValidationDashboard: React.FC = () => {
           : (eval4?.controlledBenchmarkMetrics || eval4);
         const e3metrics = eval3?.metrics || {};
         const e3cm     = eval3?.confusionMatrix || {};
-        // Precision is mathematically undefined when no positive predictions (TP+FP=0)
         const e3precisionUndef = ((e3cm.tp ?? 0) + (e3cm.fp ?? 0)) === 0;
         const e5hybrid = eval5?.byConfiguration?.HYBRID_RRF || {};
         const e6hybrid = eval6?.byConfiguration?.HYBRID_RRF || {};
-        // IR metrics fall back to research baseline when actual values are 0
-        // (happens when questions have no groundTruthSources — consistent with card)
-        const e6p5  = e6hybrid.precisionAt5  || 0.84;
-        const e6r5  = e6hybrid.recallAt5     || 0.95;
-        const e6mrr = e6hybrid.mrr           || 0.94;
+
+        const e6p5  = e6hybrid.precisionAt5 !== undefined ? e6hybrid.precisionAt5 : 'N/A';
+        const e6r5  = e6hybrid.recallAt5 !== undefined ? e6hybrid.recallAt5 : 'N/A';
+        const e6mrr = e6hybrid.mrr !== undefined ? e6hybrid.mrr : 'N/A';
 
         return (
           <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
@@ -788,8 +847,8 @@ export const ResearchValidationDashboard: React.FC = () => {
                 <thead>
                   <tr className="border-b border-white/10 text-white/40">
                     <th className="py-2">Evaluation Study</th>
-                    <th className="py-2">MoodleBot (IEEE 2025 Base Paper)</th>
-                    <th className="py-2">EduMentor AI (Current System)</th>
+                    <th className="py-2">Base Paper Reference (IEEE 2025)</th>
+                    <th className="py-2">EduMentor AI Experimental Result</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -820,22 +879,28 @@ export const ResearchValidationDashboard: React.FC = () => {
                   <tr className="border-b border-white/5">
                     <td className="py-2 font-bold text-white">5. Cost &amp; Performance</td>
                     <td>~$1.65 / student (OpenAI GPT-4)</td>
-                    <td>${e5hybrid.costPer100QueriesUSD ?? 0} / 100 queries (Groq Llama 3.3 70B)</td>
+                    <td>${e5hybrid.costPer100QueriesUSD ?? 0} / 100 queries (Groq GPT-OSS-120B)</td>
                   </tr>
                   <tr className="border-b border-white/5">
                     <td className="py-2 font-bold text-white">6. Hybrid RAG Retrieval</td>
                     <td>Not evaluated (Vector only, top-5)</td>
                     <td>P@5: {e6p5}, R@5: {e6r5}, MRR: {e6mrr}</td>
                   </tr>
+                  <tr className="border-b border-white/5">
+                    <td className="py-2 font-bold text-white">7. Student Learning Outcome</td>
+                    <td>Not evaluated in base paper</td>
+                    <td>N = {eval7?.totalParticipants || 0} (Mean Gain = +{eval7?.meanLearningGain || 0}%)</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
             <div className="p-3 rounded-xl bg-white/5 text-[10px] text-white/40 italic">
-              "Cross-study values are descriptive and should not be interpreted as a controlled head-to-head comparison because the datasets, participants, models and experimental conditions differ."
+              "Base paper values are provided for reference only. EduMentor AI results are strictly computed from real experimental observations stored in the database."
             </div>
           </div>
         );
+
       })()}
       </>
       )}

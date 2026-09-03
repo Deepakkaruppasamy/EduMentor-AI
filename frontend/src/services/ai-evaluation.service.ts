@@ -42,9 +42,12 @@ export const aiEvaluationService = {
   getEval4Congruency: (params?: any) => api.get('/research-eval/eval4-congruency', { params }),
   getEval5CostPerformance: () => api.get('/research-eval/eval5-cost-performance'),
   getEval6Retrieval: () => api.get('/research-eval/eval6-retrieval'),
+  getEval7Learning: () => api.get('/research-eval/eval7-learning'),
+  getTAMPCA: () => api.get('/research-eval/tam-pca'),
   exportCSV: () => api.get('/research-eval/export/csv', { responseType: 'blob' }),
   exportJSON: () => api.get('/research-eval/export/json'),
   exportRealAIChatSamplesCSV: () => api.get('/research-eval/export/real-chat-csv', { responseType: 'blob' }),
+
 
   // Real AI Chat Sample Import & Management
   getAIChatCandidates: (params?: any) => api.get('/research-eval/chat-candidates', { params }),
