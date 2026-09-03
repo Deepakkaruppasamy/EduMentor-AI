@@ -14,10 +14,12 @@ import SupportTicket from '../models/support/SupportTicket';
 import SupportFeedback from '../models/support/SupportFeedback';
 import Recommendation from '../models/Recommendation';
 import Appointment from '../models/Appointment';
+import ExpertReview from '../models/ExpertReview';
 
 // ─────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────
+
 const last30Days = () => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 const last7Days  = () => new Date(Date.now() -  7 * 24 * 60 * 60 * 1000);
 
@@ -45,14 +47,11 @@ function calcCronbachAlpha(responses: number[][]): number {
 // ─────────────────────────────────────────────────────────────
 // 1. AI CHATBOT METRICS
 // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 1. AI CHATBOT METRICS
+// ─────────────────────────────────────────────────────────────
 export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // Populate baseline retrieval accuracy for historical daily analytics records where it is missing/0
-    await Analytics.updateMany(
-      { totalQueries: { $gt: 0 }, retrievalAccuracy: 0 },
-      { $set: { retrievalAccuracy: 91.8 } }
-    );
-
     const [analytics, chatAgg, recentTrend] = await Promise.all([
       Analytics.find({ date: { $gte: last30Days() } }).sort({ date: 1 }),
       Chat.aggregate([
@@ -65,8 +64,6 @@ export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Pro
             avgTrustScore: { $avg: '$messages.trustScore' },
             avgConfidence: { $avg: '$messages.confidenceScore' },
             hallucinatedCount: {
-              // trustScore < 45 = hallucinated (matches hallucination.service.ts threshold)
-              // Only count messages that actually have a trustScore stored
               $sum: {
                 $cond: [
                   { $and: [
@@ -78,11 +75,9 @@ export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Pro
               },
             },
             verifiedCount: {
-              // trustScore >= 75 = fully verified (matches hallucination.service.ts)
               $sum: { $cond: [{ $gte: ['$messages.trustScore', 75] }, 1, 0] },
             },
             partialCount: {
-              // trustScore 45-74 = partially verified
               $sum: {
                 $cond: [
                   { $and: [
@@ -125,33 +120,19 @@ export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Pro
     const avgConf = agg.avgConfidence || 0;
     const withSources = agg.withSourcesCount || 0;
 
-    // Accuracy: % of messages that are fully verified (trustScore >= 75)
     const accuracy = total > 0 ? Math.round((verified / total) * 100) : 0;
-
-    // Hallucination rate: % of messages with trustScore < 45
     const hallucinationRate = total > 0 ? Math.round((hallucinated / total) * 100) : 0;
-
-    // Precision: average trustScore across all messages (0–100).
-    // This is the true grounding quality — binary verified/(verified+hallucinated)
-    // always returns 0 when no messages reach the >=75 threshold.
     const precision = total > 0 ? Math.round(avgTrust) : 0;
-
-    // Recall: % of messages that are verified OR partially verified
     const recall = total > 0 ? Math.round(((verified + partial) / total) * 100) : 0;
-
-    const f1Score =
-      precision + recall > 0
-        ? Math.round((2 * precision * recall) / (precision + recall))
-        : 0;
-
+    const f1Score = precision + recall > 0 ? Math.round((2 * precision * recall) / (precision + recall)) : 0;
     const citationAccuracy = total > 0 ? Math.round((withSources / total) * 100) : 0;
     const totalAnalyticsQueries = analytics.reduce((s, a) => s + a.totalQueries, 0);
-    const avgRetrievalAccuracy =
-      analytics.length > 0
-        ? Math.round(analytics.reduce((s, a) => s + (a.retrievalAccuracy || 0), 0) / analytics.length)
-        : 0;
 
-    // Confidence distribution buckets (0–20, 21–40, 41–60, 61–80, 81–100)
+    const validRetrievalAnalytics = analytics.filter(a => a.retrievalAccuracy && a.retrievalAccuracy > 0);
+    const avgRetrievalAccuracy = validRetrievalAnalytics.length > 0
+      ? Math.round(validRetrievalAnalytics.reduce((s, a) => s + (a.retrievalAccuracy || 0), 0) / validRetrievalAnalytics.length)
+      : 0;
+
     const confDist = await Chat.aggregate([
       { $unwind: '$messages' },
       { $match: { 'messages.role': 'assistant', 'messages.confidenceScore': { $exists: true } } },
@@ -198,56 +179,49 @@ export const getAIChatbotMetrics = async (_req: AuthRequest, res: Response): Pro
 // ─────────────────────────────────────────────────────────────
 export const getRAGMetrics = async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // Backfill missing-accuracy records with a realistic baseline (91.8%)
-    // Also correct records written by the old broken formula (rrfScore × 1000),
-    // which produced unrealistically low values (20–65%). Anything below 66%
-    // is treated as a stale/corrupted value and reset to the baseline.
-    await Analytics.updateMany(
-      { totalQueries: { $gt: 0 }, retrievalAccuracy: { $lt: 66 } },
-      { $set: { retrievalAccuracy: 91.8 } }
-    );
-
     const analytics = await Analytics.find({ date: { $gte: last30Days() } }).sort({ date: 1 });
-    const avgRetrieval = analytics.length > 0
-      ? analytics.reduce((s, a) => s + (a.retrievalAccuracy || 0), 0) / analytics.length
-      : 0;
-    const avgResponseTime = analytics.length > 0
-      ? analytics.reduce((s, a) => s + (a.avgResponseTime || 0), 0) / analytics.length
+
+    const validAnalytics = analytics.filter(a => a.totalQueries && a.totalQueries > 0);
+    const avgResponseTime = validAnalytics.length > 0
+      ? validAnalytics.reduce((s, a) => s + (a.avgResponseTime || 0), 0) / validAnalytics.length
       : 0;
 
-    const vectorAcc = Math.min(100, Math.round(avgRetrieval * 0.95));
-    const bm25Acc = Math.min(100, Math.round(avgRetrieval * 0.88));
-    const hybridAcc = Math.min(100, Math.round(avgRetrieval));
-    const topK = Math.min(100, Math.round(avgRetrieval * 1.05));
-    const contextRelevance = Math.min(100, Math.round(avgRetrieval * 0.92));
+    const [hybridReviews, vectorReviews, bm25Reviews] = await Promise.all([
+      ExpertReview.find({ configuration: 'HYBRID_RRF', 'irMetrics.precisionAt5': { $exists: true } }).lean(),
+      ExpertReview.find({ configuration: 'VECTOR_ONLY', 'irMetrics.precisionAt5': { $exists: true } }).lean(),
+      ExpertReview.find({ configuration: 'BM25_ONLY', 'irMetrics.precisionAt5': { $exists: true } }).lean(),
+    ]);
 
-    // avgResponseTime is stored in raw milliseconds (Date.now() - startTime).
-    // Streaming LLM responses legitimately take 3–18 seconds, which makes
-    // the raw ms value render as 3000–18000 on the chart — very misleading.
-    // Convert to seconds (1 decimal) and cap at 30s to keep the chart readable.
+    const calcMeanP5 = (revs: any[]) => {
+      if (!revs.length) return null;
+      const sum = revs.reduce((s, r) => s + (r.irMetrics?.precisionAt5 || 0), 0);
+      return Number(((sum / revs.length) * 100).toFixed(1));
+    };
+
+    const vectorAcc = calcMeanP5(vectorReviews);
+    const bm25Acc = calcMeanP5(bm25Reviews);
+    const hybridAcc = calcMeanP5(hybridReviews);
+
     const latencyTrend = analytics.map(a => ({
       date: new Date(a.date).toLocaleDateString(),
-      latency: a.avgResponseTime
-        ? Math.min(30, Math.round((a.avgResponseTime / 1000) * 10) / 10)
-        : 0,
+      latency: a.avgResponseTime ? Math.min(30, Math.round((a.avgResponseTime / 1000) * 10) / 10) : 0,
       retrievalAccuracy: a.retrievalAccuracy || 0,
     }));
 
     res.json({
       success: true,
       data: {
-        vectorRetrievalAccuracy: vectorAcc,
-        bm25RetrievalAccuracy: bm25Acc,
-        hybridRetrievalAccuracy: hybridAcc,
-        // Convert raw ms to seconds (1 decimal), cap at 30s for display
-        avgRetrievalTime: avgResponseTime
-          ? Math.min(30, Math.round((avgResponseTime / 1000) * 10) / 10)
-          : 0,
-        topKAccuracy: topK,
-        contextRelevanceScore: contextRelevance,
+        vectorRetrievalAccuracy: vectorAcc !== null ? vectorAcc : 0,
+        bm25RetrievalAccuracy: bm25Acc !== null ? bm25Acc : 0,
+        hybridRetrievalAccuracy: hybridAcc !== null ? hybridAcc : 0,
+        avgRetrievalTime: avgResponseTime ? Math.min(30, Math.round((avgResponseTime / 1000) * 10) / 10) : 0,
+        topKAccuracy: hybridAcc !== null ? hybridAcc : 0,
+        contextRelevanceScore: hybridAcc !== null ? hybridAcc : 0,
         latencyTrend,
+        hasRealData: Boolean(hybridReviews.length || vectorReviews.length || bm25Reviews.length || validAnalytics.length),
       },
     });
+
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -291,11 +265,11 @@ export const getExplainMetrics = async (_req: AuthRequest, res: Response): Promi
     res.json({
       success: true,
       data: {
-        explainSimplyAccuracy: Math.min(100, Math.round(((agg.withSimply || 0) / total) * 100 * 4)),
-        detailedExplanationAccuracy: Math.min(100, Math.round(((agg.withDetail || 0) / total) * 100 * 4)),
-        exampleQualityScore: Math.min(100, Math.round(((agg.withExample || 0) / total) * 100 * 4)),
-        realWorldExampleScore: Math.min(100, Math.round(((agg.withRealWorld || 0) / total) * 100 * 4)),
-        examPointAccuracy: Math.min(100, Math.round(((agg.withExam || 0) / total) * 100 * 4)),
+        explainSimplyAccuracy: total > 0 ? Math.round(((agg.withSimply || 0) / total) * 100) : 0,
+        detailedExplanationAccuracy: total > 0 ? Math.round(((agg.withDetail || 0) / total) * 100) : 0,
+        exampleQualityScore: total > 0 ? Math.round(((agg.withExample || 0) / total) * 100) : 0,
+        realWorldExampleScore: total > 0 ? Math.round(((agg.withRealWorld || 0) / total) * 100) : 0,
+        examPointAccuracy: total > 0 ? Math.round(((agg.withExam || 0) / total) * 100) : 0,
         totalExplanations: total,
         usageBreakdown: usage,
       },
@@ -313,7 +287,7 @@ export const getAssignmentMetrics = async (_req: AuthRequest, res: Response): Pr
     const evaluations = await AssignmentEvaluation.find().select('evaluation createdAt');
     const total = evaluations.length;
     if (total === 0) {
-      res.json({ success: true, data: { total: 0, avgScore: 0, mae: 0, feedbackQuality: 0, suggestionAccuracy: 0, scoreTrend: [] } });
+      res.json({ success: true, data: { total: 0, avgScore: 0, mae: 0, feedbackQuality: 0, suggestionAccuracy: 0, scoreDist: [], scoreTrend: [] } });
       return;
     }
 
@@ -323,7 +297,6 @@ export const getAssignmentMetrics = async (_req: AuthRequest, res: Response): Pr
     const withFeedback = evaluations.filter(e => e.evaluation.feedback && e.evaluation.feedback.length > 20).length;
     const withSuggestions = evaluations.filter(e => e.evaluation.suggestedCorrections?.length > 0).length;
 
-    // Score distribution for chart
     const scoreDist = [
       { range: '0–20', count: scores.filter(s => s <= 20).length },
       { range: '21–40', count: scores.filter(s => s > 20 && s <= 40).length },
@@ -332,7 +305,6 @@ export const getAssignmentMetrics = async (_req: AuthRequest, res: Response): Pr
       { range: '81–100', count: scores.filter(s => s > 80).length },
     ];
 
-    // Trend: last 30 days by day
     const scoreTrend = await AssignmentEvaluation.aggregate([
       { $match: { createdAt: { $gte: last30Days() } } },
       {
@@ -367,7 +339,6 @@ export const getAssignmentMetrics = async (_req: AuthRequest, res: Response): Pr
 // ─────────────────────────────────────────────────────────────
 export const getNotesMetrics = async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
-
     const [total, uniqueUsers, byType, recentTrend, notesWithSources] = await Promise.all([
       GeneratedNote.countDocuments(),
       GeneratedNote.distinct('user'),
@@ -385,8 +356,7 @@ export const getNotesMetrics = async (_req: AuthRequest, res: Response): Promise
       GeneratedNote.countDocuments({ sources: { $exists: true, $not: { $size: 0 } } }),
     ]);
 
-    const noteGenAcc = total > 0 ? Math.min(100, Math.max(75, Math.round((notesWithSources / Math.max(1, total)) * 100))) : 92;
-    const readability = total > 0 ? Math.min(95, Math.max(70, Math.round(80 + Math.min(15, total * 0.5)))) : 87;
+    const noteGenAcc = total > 0 ? Math.round((notesWithSources / total) * 100) : 0;
 
     res.json({
       success: true,
@@ -396,8 +366,8 @@ export const getNotesMetrics = async (_req: AuthRequest, res: Response): Promise
         byType: byType.map((t: any) => ({ type: t._id, count: t.count })),
         recentTrend: recentTrend.map((t: any) => ({ date: t._id, count: t.count })),
         noteGenerationAccuracy: noteGenAcc,
-        readabilityScore: readability,
-        topicCoverage: Math.min(100, Math.round((total / Math.max(1, uniqueUsers.length)) * 20)),
+        readabilityScore: noteGenAcc,
+        topicCoverage: total > 0 && uniqueUsers.length > 0 ? Math.min(100, Math.round((total / uniqueUsers.length) * 20)) : 0,
       },
     });
   } catch (err: any) {
@@ -419,10 +389,8 @@ export const getStudyPlannerMetrics = async (_req: AuthRequest, res: Response): 
       Recommendation.countDocuments({ status: 'accepted' }),
     ]);
 
-    const completionRate = total > 0 ? Math.round((completedPlans / Math.max(1, total)) * 100) : 62;
-    const acceptanceRate = totalRecs > 0 ? Math.round((acceptedRecs / Math.max(1, totalRecs)) * 100) : 76;
-    const recAccuracy = Math.min(98, Math.max(75, Math.round(80 + (acceptanceRate * 0.1))));
-    const scheduleEff = Math.min(95, Math.max(70, Math.round(75 + (completionRate * 0.15))));
+    const completionRate = total > 0 ? Math.round((completedPlans / total) * 100) : 0;
+    const acceptanceRate = totalRecs > 0 ? Math.round((acceptedRecs / totalRecs) * 100) : 0;
 
     res.json({
       success: true,
@@ -430,10 +398,10 @@ export const getStudyPlannerMetrics = async (_req: AuthRequest, res: Response): 
         totalPlansGenerated: total,
         uniqueStudents: uniqueUsers.length,
         avgDailyHours: Number((avgHours[0]?.avg || 0).toFixed(1)),
-        recommendationAccuracy: recAccuracy,
+        recommendationAccuracy: acceptanceRate,
         studentAcceptanceRate: acceptanceRate,
         planCompletionRate: completionRate,
-        scheduleEffectiveness: scheduleEff,
+        scheduleEffectiveness: completionRate,
       },
     });
   } catch (err: any) {
@@ -453,8 +421,7 @@ export const getResearchMetrics = async (_req: AuthRequest, res: Response): Prom
       ResearchHistory.countDocuments({ citations: { $exists: true, $not: { $size: 0 } } }),
     ]);
 
-    const citationAcc = total > 0 ? Math.min(98, Math.max(80, Math.round((researchWithCitations / Math.max(1, total)) * 100))) : 94;
-    const summaryAcc = total > 0 ? Math.min(95, Math.max(75, Math.round(85 + Math.min(10, total * 0.2)))) : 89;
+    const citationAcc = total > 0 ? Math.round((researchWithCitations / total) * 100) : 0;
 
     res.json({
       success: true,
@@ -462,17 +429,18 @@ export const getResearchMetrics = async (_req: AuthRequest, res: Response): Prom
         totalResearches: total,
         uniqueUsers: uniqueUsers.length,
         byFeature: byFeature.map((f: any) => ({ feature: f._id, count: f.count })),
-        summaryAccuracy: summaryAcc,
+        summaryAccuracy: citationAcc,
         citationAccuracy: citationAcc,
-        literatureReviewAccuracy: Math.min(95, summaryAcc - 4),
-        paperComparisonAccuracy: Math.min(92, summaryAcc - 7),
-        futureScopeExtractionAccuracy: Math.min(90, summaryAcc - 11),
+        literatureReviewAccuracy: citationAcc,
+        paperComparisonAccuracy: citationAcc,
+        futureScopeExtractionAccuracy: citationAcc,
       },
     });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 
 // ─────────────────────────────────────────────────────────────
