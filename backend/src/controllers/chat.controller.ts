@@ -507,3 +507,58 @@ export const explainMessage = asyncHandler(async (req: AuthRequest, res: Respons
     res.status(500).json({ success: false, message: err.message || 'AI explanation generation failed.' });
   }
 });
+
+// GET /api/chat/live-inspect?question=...&courseId=...
+export const inspectLiveRetrieval = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { question, courseId } = req.query;
+
+  if (!question || typeof question !== 'string') {
+    return res.status(400).json({ success: false, message: 'Missing required query parameter: question' });
+  }
+
+  let chromaCollection = 'general';
+  let courseTitle = 'General Course';
+
+  if (courseId) {
+    const course = await Course.findById(courseId);
+    if (course) {
+      chromaCollection = course.chromaCollection;
+      courseTitle = course.title;
+    }
+  }
+
+  const t0 = Date.now();
+  const relevanceCheck = await isQuestionRelevantToCourse(question, courseTitle);
+  const ragResult = await hybridRetrieve(question, chromaCollection);
+  const retrievalLatencyMs = Date.now() - t0;
+
+  const explainableResult = buildExplainableResult(
+    'Inspection Mode Demo',
+    ragResult.chunks,
+    ragResult.retrievalMethod
+  );
+
+  res.json({
+    success: true,
+    inspection: {
+      question,
+      courseTitle,
+      relevanceCheck,
+      retrievalLatencyMs,
+      retrievalMethod: ragResult.retrievalMethod,
+      totalChunksRetrieved: ragResult.chunks.length,
+      retrievedChunks: ragResult.chunks.map((c) => ({
+        id: c.id,
+        documentName: c.documentName,
+        pageNumber: c.pageNumber,
+        vectorScore: c.vectorScore,
+        bm25Score: c.bm25Score,
+        rrfFinalScore: c.finalScore,
+        rank: c.rank,
+        excerpt: c.text.substring(0, 300) + (c.text.length > 300 ? '...' : ''),
+      })),
+      explainableSources: explainableResult.sources,
+    },
+  });
+});
+
