@@ -1,6 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { researchService } from '../services/research.service';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { formatMarkdownContent } from '../utils/markdown';
 import toast from 'react-hot-toast';
 import { BookmarkButton } from '../components/common/BookmarkButton';
 import { recentlyViewedService } from '../services/recently-viewed.service';
@@ -190,7 +192,7 @@ export const ResearchAssistantPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto prose prose-invert prose-sm max-w-none" style={{ scrollbarWidth: 'thin' }}>
-                  <ReactMarkdown>{result.result}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{formatMarkdownContent(result.result)}</ReactMarkdown>
                 </div>
               </div>
             ) : (

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { formatMarkdownContent } from '../utils/markdown';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import api from '../services/api';
@@ -376,7 +378,7 @@ export const FacultyAIAssistantPage: React.FC = () => {
               <Loader message="EduMentor AI is constructing your customized curriculum materials..." />
             ) : generatedContent ? (
               <div className="prose prose-invert prose-sm max-w-none">
-                <ReactMarkdown>{generatedContent}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{formatMarkdownContent(generatedContent)}</ReactMarkdown>
               </div>
             ) : (
               <div className="h-full flex flex-col justify-center items-center text-center text-white/20">

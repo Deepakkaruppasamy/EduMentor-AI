@@ -639,3 +639,48 @@ html.colorblind-friendly {
   from { width: 100%; }
   to   { width: 0%; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GFM MARKDOWN TABLE STYLING
+   ═══════════════════════════════════════════════════════════════════════════ */
+.prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 0.85rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.825rem;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.prose th {
+  background: rgba(79, 93, 200, 0.18);
+  color: #e8eaf2;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  text-transform: uppercase;
+  font-size: 0.725rem;
+  letter-spacing: 0.05em;
+}
+
+.prose td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.prose tr:last-child td {
+  border-bottom: none;
+}
+
+.prose tr:hover td {
+  background: rgba(255, 255, 255, 0.04);
+}

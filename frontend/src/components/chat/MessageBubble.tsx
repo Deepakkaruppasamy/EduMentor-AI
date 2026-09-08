@@ -1,6 +1,8 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { formatMarkdownContent } from '../../utils/markdown';
 import { ChatMessage } from '../../types';
 import { SourcePanel } from './SourcePanel';
 import { TrustScoreBadge } from './TrustScoreBadge';
@@ -97,8 +99,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chatId, m
                   <span className="text-[11px] animate-pulse font-medium">Re-explaining concepts...</span>
                 </div>
               ) : (
-                <ReactMarkdown>
-                  {activeExplanation === 'original' ? message.content : explanations[activeExplanation]}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {formatMarkdownContent(activeExplanation === 'original' ? message.content : explanations[activeExplanation])}
                 </ReactMarkdown>
               )}
             </div>

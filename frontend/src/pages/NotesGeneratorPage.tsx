@@ -1,6 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { notesService } from '../services/notes.service';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { formatMarkdownContent } from '../utils/markdown';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import { BookmarkButton } from '../components/common/BookmarkButton';
@@ -173,7 +175,7 @@ export const NotesGeneratorPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto prose prose-invert prose-sm max-w-none" style={{ scrollbarWidth: 'thin' }}>
-                  <ReactMarkdown>{currentNote.content}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{formatMarkdownContent(currentNote.content)}</ReactMarkdown>
                 </div>
               </div>
             ) : (

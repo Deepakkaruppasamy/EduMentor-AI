@@ -5,6 +5,8 @@ import { Course } from '../types';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { formatMarkdownContent } from '../utils/markdown';
 import api from '../services/api';
 import { Loader } from '../components/common/Loader';
 
@@ -261,7 +263,7 @@ export const ReportsPage: React.FC = () => {
               <Loader message="Gathering live databases statistics and synthesizing audit summaries..." />
             ) : reportContent ? (
               <div className="prose prose-invert prose-sm max-w-none">
-                <ReactMarkdown>{reportContent}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{formatMarkdownContent(reportContent)}</ReactMarkdown>
               </div>
             ) : (
               <div className="h-full flex flex-col justify-center items-center text-center text-white/20">
