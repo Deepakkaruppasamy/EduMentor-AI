@@ -3,6 +3,10 @@ import Recommendation, { IRecommendation } from '../../models/Recommendation';
 import Chat from '../../models/Chat';
 import Quiz from '../../models/Quiz';
 import { generateWithoutContext } from '../ai/groq.service';
+import { recordConceptInteraction, generateRevisionAlerts, RetentionStatus } from '../memory/ebbinghaus.service';
+
+// Re-export Ebbinghaus types for controller access
+export { RetentionStatus, generateRevisionAlerts, getRetentionLandscape } from '../memory/ebbinghaus.service';
 
 /**
  * Update student topic tracking based on a new query
@@ -42,6 +46,18 @@ export async function trackStudentQuery(
 
   rec.lastUpdated = new Date();
   await rec.save();
+
+  // ── N4: Ebbinghaus Spaced-Repetition Update ────────────────────────────────
+  // Record each retrieved topic as a concept interaction with a neutral
+  // accuracy of 0.5 (non-quiz interaction — student is querying, not testing).
+  // This starts/updates the forgetting curve for each concept.
+  await Promise.all(
+    retrievedTopics.map((topic) =>
+      recordConceptInteraction(studentId, courseId, topic, 0.5).catch((err) =>
+        console.warn(`[Ebbinghaus] Failed to record interaction for topic "${topic}":`, err)
+      )
+    )
+  );
 }
 
 /**
@@ -77,6 +93,14 @@ export async function updateQuizPerformance(
   const strongTopics = rec.topicProgress.filter((t) => t.strength === 'strong').map((t) => t.topic);
   rec.weakTopics = weakTopics;
   rec.strongTopics = strongTopics;
+
+  // ── N4: Ebbinghaus Strength Update on Quiz Completion ─────────────────────
+  // Update memory strength S_k using accurate quiz performance score A_k.
+  // This tightens the forgetting curve for correctly recalled concepts.
+  const quizAccuracy = maxScore > 0 ? score / maxScore : 0;
+  await recordConceptInteraction(studentId, courseId, topic, quizAccuracy).catch((err) =>
+    console.warn(`[Ebbinghaus] Failed to update quiz strength for topic "${topic}":`, err)
+  );
 
   // Update avg quiz score
   const allQuizzes = await Quiz.find({ student: studentId, course: courseId, status: 'completed' });

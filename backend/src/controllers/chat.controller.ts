@@ -6,9 +6,10 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 import { hybridRetrieve } from '../services/rag/hybrid-rag.service';
 import { generateResponse, generateResponseStream, extractConceptGraph, generateWithoutContext, isQuestionRelevantToCourse } from '../services/ai/groq.service';
-import { detectHallucination } from '../services/hallucination/hallucination.service';
+import { detectHallucination, selfCorrectResponse } from '../services/hallucination/hallucination.service';
 import { buildExplainableResult } from '../services/explainability/explainability.service';
 import { trackStudentQuery } from '../services/recommendations/recommendation.service';
+import { classifyBloomLevel } from '../services/cognitive/bloom-classifier.service';
 
 export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { question, courseId, chatId, documentId } = req.body;
@@ -35,8 +36,8 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
     });
   }
 
-  // 1. Hybrid RAG retrieval
-  const ragResult = await hybridRetrieve(question, course.chromaCollection, undefined, documentId);
+  // 1. Hybrid RAG retrieval — with Graph-RAG query expansion (N2)
+  const ragResult = await hybridRetrieve(question, course.chromaCollection, undefined, documentId, courseId);
 
 
   // 2. Build chat history for context
@@ -58,22 +59,46 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
 
   const preferredLanguage = req.user?.preferredLanguage || 'English';
 
-  // 3. Generate LLM response
-  const llmResponse = await generateResponse(recentHistory, ragResult.context, 0.3, preferredLanguage, course.title);
+  // N1: Bloom's Taxonomy Cognitive Classification
+  // Classify the query into a Bloom level and get an adaptive system prompt suffix.
+  // Runs in parallel with other setup — non-blocking on failure.
+  let bloomSuffix: string | undefined;
+  let bloomLevel: string | undefined;
+  try {
+    const bloom = await classifyBloomLevel(question, course.title);
+    bloomSuffix = bloom.systemPromptSuffix;
+    bloomLevel = bloom.level;
+  } catch {
+    // Non-fatal: proceed without Bloom adaptation
+  }
+
+  // 3. Generate LLM response with Bloom-adaptive prompt (N1)
+  const llmResponse = await generateResponse(recentHistory, ragResult.context, 0.3, preferredLanguage, course.title, bloomSuffix);
 
   // 4. Hallucination detection
   const chunkTexts = ragResult.chunks.map((c) => c.text);
   const hallucinationResult = await detectHallucination(llmResponse.content, chunkTexts);
 
+  // N3: Self-Correction Refinement Loop
+  // If TrustScore < 65%, automatically critique and rewrite low-trust sentences.
+  const correctionResult = await selfCorrectResponse(
+    llmResponse.content,
+    hallucinationResult,
+    chunkTexts,
+    course.title,
+    question
+  );
+  const finalAnswer = correctionResult.correctedResponse;
+
   // 5. Explainable AI
   const explainableResult = buildExplainableResult(
-    llmResponse.content,
+    finalAnswer,
     ragResult.chunks,
     ragResult.retrievalMethod
   );
 
   // 5.5. Extract concept map
-  const conceptGraph = await extractConceptGraph(question, llmResponse.content);
+  const conceptGraph = await extractConceptGraph(question, finalAnswer);
 
   // 6. Save chat messages
   chat.messages.push({
@@ -83,7 +108,7 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
   });
   chat.messages.push({
     role: 'assistant',
-    content: llmResponse.content,
+    content: finalAnswer,
     sources: ragResult.chunks.map((c) => ({
       documentId: c.documentId as any,
       documentName: c.documentName,
@@ -109,9 +134,6 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
 
   // 8. Update analytics
   const responseTime = Date.now() - startTime;
-  // Use vectorScore (cosine similarity 0–1) as the retrieval accuracy proxy.
-  // rrfScore (1/(60+rank) ≈ 0.016) is too small for meaningful % — it caps at ~50%.
-  // vectorScore of 0.75–0.95 naturally produces realistic 75–95% accuracy readings.
   const retrievalAcc = ragResult.chunks.length > 0
     ? Math.min(100, Math.round(
         (ragResult.chunks.reduce((s, c) => s + (c.vectorScore > 0 ? c.vectorScore : c.finalScore * 30), 0)
@@ -123,8 +145,20 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
   res.json({
     success: true,
     chatId: chat._id,
-    answer: llmResponse.content,
+    answer: finalAnswer,
     conceptGraph,
+    // N1: Bloom cognitive classification metadata
+    bloomLevel,
+    // N2: Graph-RAG expansion metadata
+    graphExpansion: ragResult.graphExpansion
+      ? { prerequisiteConcepts: ragResult.graphExpansion.prerequisiteConcepts, expandedQuery: ragResult.graphExpansion.expandedQuery }
+      : undefined,
+    // N3: Self-correction metadata
+    selfCorrection: correctionResult.wasTriggered
+      ? { wasTriggered: true, iterations: correctionResult.iterations, originalTrustScore: correctionResult.originalTrustScore, improvedTrustScore: correctionResult.improvedTrustScore }
+      : { wasTriggered: false },
+    // N5: Context pruner stats
+    prunerStats: ragResult.prunerStats,
     hallucination: {
       trustScore: hallucinationResult.trustScore,
       status: hallucinationResult.status,
@@ -179,8 +213,8 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
     return;
   }
 
-  // 1. Hybrid RAG retrieval
-  const ragResult = await hybridRetrieve(question, course.chromaCollection);
+  // 1. Hybrid RAG retrieval — with Graph-RAG query expansion (N2)
+  const ragResult = await hybridRetrieve(question, course.chromaCollection, undefined, undefined, courseId);
 
   // 2. Build chat history for context
   let chat = chatId ? await Chat.findById(chatId) : null;

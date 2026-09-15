@@ -1,11 +1,16 @@
 import { generateEmbedding, cosineSimilarity } from '../../utils/embeddings';
 import { config } from '../../config/env';
+export { selfCorrectResponse, SelfCorrectionResult } from './self-correction.service';
 
 export interface SentenceAnalysis {
   sentence: string;
   maxSimilarity: number;
   bestMatchChunk: string;
   isHallucinated: boolean;
+  /** N-gram overlap component of the dual-metric grounding score */
+  ngramOverlap?: number;
+  /** Combined α·nGram + (1-α)·cosine grounding score */
+  groundingScore?: number;
 }
 
 export interface HallucinationResult {
@@ -15,6 +20,8 @@ export interface HallucinationResult {
   hallucinatedSentences: string[];
   supportedSentences: string[];
   verdict: string;
+  /** Whether the self-correction loop was triggered (N3) */
+  selfCorrectionTriggered?: boolean;
 }
 
 /**

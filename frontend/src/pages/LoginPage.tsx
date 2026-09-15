@@ -7,14 +7,46 @@ import { useAuthStore } from '../store/auth.store';
 import { Logo } from '../components/common/Logo';
 import { scaleInVariants } from '../utils/motion';
 
+// ── Validation helpers ────────────────────────────────────────────────────────
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function validateEmailField(value: string): string {
+  if (!value.trim()) return 'Email is required.';
+  if (!EMAIL_REGEX.test(value.trim())) return 'Please enter a valid email address.';
+  return '';
+}
+
+function validatePasswordField(value: string): string {
+  if (!value) return 'Password is required.';
+  if (value.length < 6) return 'Password must be at least 6 characters.';
+  return '';
+}
+
+// ── Field Error component ─────────────────────────────────────────────────────
+const FieldError: React.FC<{ message: string }> = ({ message }) =>
+  message ? (
+    <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 flex-shrink-0">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+      </svg>
+      {message}
+    </p>
+  ) : null;
+
+// ── Component ─────────────────────────────────────────────────────────────────
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail]               = useState('');
+  const [password, setPassword]         = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe]     = useState(false);
+  const [isLoading, setIsLoading]       = useState(false);
+
+  // Per-field error state
+  const [errors, setErrors] = useState<{ email: string; password: string }>({ email: '', password: '' });
+  const [touched, setTouched] = useState<{ email: boolean; password: boolean }>({ email: false, password: false });
+
   const { setAuth } = useAuthStore();
-  const navigate = useNavigate();
+  const navigate    = useNavigate();
 
   // Load Remember Me email
   useEffect(() => {
@@ -22,20 +54,39 @@ export const LoginPage: React.FC = () => {
     setRememberMe(savedRemember);
     if (savedRemember) {
       const savedEmail = localStorage.getItem('rememberMeEmail');
-      if (savedEmail) {
-        setEmail(savedEmail);
-      }
+      if (savedEmail) setEmail(savedEmail);
     }
   }, []);
 
+  // Live validation on change (only after field has been touched)
+  useEffect(() => {
+    if (touched.email)    setErrors(prev => ({ ...prev, email:    validateEmailField(email) }));
+  }, [email, touched.email]);
+
+  useEffect(() => {
+    if (touched.password) setErrors(prev => ({ ...prev, password: validatePasswordField(password) }));
+  }, [password, touched.password]);
+
+  const handleBlur = (field: 'email' | 'password') => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    if (field === 'email')    setErrors(prev => ({ ...prev, email:    validateEmailField(email) }));
+    if (field === 'password') setErrors(prev => ({ ...prev, password: validatePasswordField(password) }));
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Mark all fields touched to show any remaining errors
+    setTouched({ email: true, password: true });
+    const emailErr    = validateEmailField(email);
+    const passwordErr = validatePasswordField(password);
+    setErrors({ email: emailErr, password: passwordErr });
+    if (emailErr || passwordErr) return;
+
     setIsLoading(true);
     try {
       const { user, token } = await authService.login({ email, password });
       setAuth(user, token);
-      
-      // Save Remember Me details
+
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
         localStorage.setItem('rememberMeEmail', email);
@@ -47,22 +98,32 @@ export const LoginPage: React.FC = () => {
       toast.success(`Welcome back, ${user.name}!`);
       navigate(user.role === 'student' ? '/dashboard' : '/admin');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Invalid credentials');
+      // Map server-side field errors back to their fields
+      const serverErrors: { field: string; message: string }[] = err.response?.data?.errors || [];
+      if (serverErrors.length > 0) {
+        const fieldMap: { email: string; password: string } = { email: '', password: '' };
+        serverErrors.forEach((e: { field: string; message: string }) => {
+          if (e.field === 'email')    fieldMap.email    = e.message;
+          if (e.field === 'password') fieldMap.password = e.message;
+        });
+        setErrors(fieldMap);
+      } else {
+        toast.error(err.response?.data?.message || 'Invalid credentials');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  const inputClass = (field: 'email' | 'password') =>
+    `input-field transition-all ${touched[field] && errors[field] ? 'border-red-500/60 bg-red-500/5 focus:border-red-400' : touched[field] && !errors[field] ? 'border-green-500/40 bg-green-500/5' : ''}`;
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       {/* Background Orbs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]" 
-          style={{ 
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)', 
-            backgroundSize: '24px 24px' 
-          }} 
-        />
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full blur-3xl opacity-20"
           style={{ background: 'radial-gradient(circle, #4f5dc8, transparent)' }} />
         <div className="absolute -bottom-40 -right-40 h-80 w-80 rounded-full blur-3xl opacity-15"
@@ -75,7 +136,6 @@ export const LoginPage: React.FC = () => {
         animate="visible"
         className="glass-card w-full max-w-sm p-8"
       >
-
         {/* Logo */}
         <div className="mb-8 text-center">
           <Logo size="lg" className="mx-auto mb-4" />
@@ -83,29 +143,59 @@ export const LoginPage: React.FC = () => {
           <p className="mt-1 text-sm text-white/40 font-mono">Your intelligent learning companion</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4" noValidate>
+          {/* Email */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-white/60">Email</label>
-            <input id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              placeholder="your@university.edu" className="input-field" autoComplete="email" />
+            <label htmlFor="login-email" className="mb-1.5 flex items-center justify-between text-xs font-medium text-white/60">
+              <span>Email</span>
+              {touched.email && !errors.email && (
+                <span className="text-green-400 flex items-center gap-1 text-[10px]">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                  Valid
+                </span>
+              )}
+            </label>
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onBlur={() => handleBlur('email')}
+              placeholder="your@university.edu"
+              className={inputClass('email')}
+              autoComplete="email"
+              aria-invalid={!!errors.email}
+            />
+            <FieldError message={errors.email} />
           </div>
+
+          {/* Password */}
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <label className="block text-xs font-medium text-white/60">Password</label>
-              <Link 
-                to="/forgot-password"
-                className="text-xs text-primary-400 hover:text-primary-300 font-semibold transition-colors focus:outline-none"
-              >
+              <label htmlFor="login-password" className="block text-xs font-medium text-white/60">Password</label>
+              <Link to="/forgot-password" className="text-xs text-primary-400 hover:text-primary-300 font-semibold transition-colors focus:outline-none">
                 Forgot password?
               </Link>
             </div>
             <div className="relative">
-              <input id="login-password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                placeholder="••••••••" className="input-field pr-10" autoComplete="current-password" />
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onBlur={() => handleBlur('password')}
+                placeholder="••••••••"
+                className={`${inputClass('password')} pr-10`}
+                autoComplete="current-password"
+                aria-invalid={!!errors.password}
+              />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors focus:outline-none"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -119,22 +209,30 @@ export const LoginPage: React.FC = () => {
                 )}
               </button>
             </div>
+            <FieldError message={errors.password} />
           </div>
 
+          {/* Remember Me */}
           <div className="flex items-center">
-            <input 
-              id="remember-me" 
-              type="checkbox" 
-              checked={rememberMe} 
+            <input
+              id="remember-me"
+              type="checkbox"
+              checked={rememberMe}
               onChange={e => setRememberMe(e.target.checked)}
-              className="h-4 w-4 rounded border-white/10 bg-white/5 text-primary-600 focus:ring-primary-500 focus:ring-offset-0" 
+              className="h-4 w-4 rounded border-white/10 bg-white/5 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
             />
             <label htmlFor="remember-me" className="ml-2 block text-xs font-medium text-white/60 select-none cursor-pointer">
               Remember Me
             </label>
           </div>
 
-          <button id="login-submit" type="submit" disabled={isLoading} className="btn-primary w-full mt-2">
+          {/* Submit */}
+          <button
+            id="login-submit"
+            type="submit"
+            disabled={isLoading}
+            className="btn-primary w-full mt-2"
+          >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -163,19 +261,11 @@ export const LoginPage: React.FC = () => {
           to="/download"
           id="login-open-on-mobile-badge"
           className="flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95"
-          style={{
-            background: 'rgba(13,14,20,0.85)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(99,102,241,0.35)',
-            color: '#a5b4fc',
-            boxShadow: '0 4px 24px rgba(79,93,200,0.2)',
-          }}
+          style={{ background: 'rgba(13,14,20,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(99,102,241,0.35)', color: '#a5b4fc', boxShadow: '0 4px 24px rgba(79,93,200,0.2)' }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-            <rect x="3" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" />
-            <path d="M14 14h2v2h-2zM18 14h3M14 18h2M18 18h3v3M14 21h2" />
+            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h2v2h-2zM18 14h3M14 18h2M18 18h3v3M14 21h2" />
           </svg>
           <span>Open on Mobile</span>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 opacity-60">

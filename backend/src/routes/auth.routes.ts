@@ -1,22 +1,33 @@
 import { Router } from 'express';
-import { register, login, getMe, getAllUsers, updateUser, updateAvatar, uploadImage, forgotPassword, resendOtp, resetPassword, changePassword, firstLoginChangePassword } from '../controllers/auth.controller';
+import {
+  register, login, getMe, getAllUsers, updateUser, updateAvatar,
+  uploadImage, forgotPassword, resendOtp, resetPassword, changePassword, firstLoginChangePassword,
+} from '../controllers/auth.controller';
 import { protect, authorize } from '../middleware/auth';
 import { upload } from '../middleware/upload';
+import {
+  validateLogin,
+  validateRegister,
+  validateForgotPassword,
+  validateResetPassword,
+  validateChangePassword,
+  validateFirstLoginChangePassword,
+} from '../middleware/validation';
 
 const router = Router();
 
-router.post('/register', register);
-router.post('/login', login);
-router.get('/me', protect, getMe);
-router.put('/me', protect, updateUser);
-router.post('/upload-image', protect, upload.single('image'), uploadImage);
-router.get('/users', protect, authorize('admin', 'faculty'), getAllUsers);
-router.post('/forgot-password', forgotPassword);
-router.post('/resend-otp', resendOtp);
-router.post('/reset-password', resetPassword);
-router.put('/change-password', protect, changePassword);
-router.post('/first-login-change', firstLoginChangePassword);
+router.post('/register',             validateRegister,                 register);
+router.post('/login',                validateLogin,                    login);
+router.get('/me',                    protect,                          getMe);
+router.put('/me',                    protect,                          updateUser);
+router.post('/upload-image',         protect, upload.single('image'),  uploadImage);
+router.get('/users',                 protect, authorize('admin', 'faculty'), getAllUsers);
+router.post('/forgot-password',      validateForgotPassword,           forgotPassword);
+router.post('/resend-otp',                                             resendOtp);
+router.post('/reset-password',       validateResetPassword,            resetPassword);
+router.put('/change-password',       protect, validateChangePassword,  changePassword);
+router.post('/first-login-change',   validateFirstLoginChangePassword, firstLoginChangePassword);
 // Avatar system route
-router.put('/avatar', protect, updateAvatar);
+router.put('/avatar',                protect,                          updateAvatar);
 
 export default router;

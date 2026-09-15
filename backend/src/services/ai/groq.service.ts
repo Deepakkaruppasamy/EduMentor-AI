@@ -65,7 +65,9 @@ export async function generateResponse(
   context: string,
   temperature = 0.3,
   preferredLanguage = 'English',
-  courseName?: string
+  courseName?: string,
+  /** N1: Bloom's Taxonomy adaptive system prompt suffix from bloom-classifier.service.ts */
+  bloomSystemSuffix?: string
 ): Promise<LLMResponse> {
   if (!config.GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is missing. Please configure it in your server environment variables.');
@@ -80,8 +82,10 @@ export async function generateResponse(
     : context;
 
   const systemContent = courseName
-    ? buildCourseSystemPrompt(courseName, languagePrompt, safeContext)
-    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${safeContext}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.`;
+    ? buildCourseSystemPrompt(courseName, languagePrompt, safeContext) +
+      (bloomSystemSuffix ? `\n\n${bloomSystemSuffix}` : '')
+    : `${BASE_SYSTEM_PROMPT}${languagePrompt}\n\n--- COURSE MATERIAL CONTEXT ---\n${safeContext}\n--- END CONTEXT ---\n\nBase your answer primarily on the above context. If the context doesn't contain enough information, say so clearly.` +
+      (bloomSystemSuffix ? `\n\n${bloomSystemSuffix}` : '');
 
   const systemMessage: LLMMessage = {
     role: 'system',
