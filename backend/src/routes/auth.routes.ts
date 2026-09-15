@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   register, login, getMe, getAllUsers, updateUser, updateAvatar,
   uploadImage, forgotPassword, resendOtp, resetPassword, changePassword, firstLoginChangePassword,
+  checkEmailStatus,
 } from '../controllers/auth.controller';
 import { protect, authorize } from '../middleware/auth';
 import { upload } from '../middleware/upload';
@@ -18,6 +19,7 @@ const router = Router();
 
 router.post('/register',             validateRegister,                 register);
 router.post('/login',                validateLogin,                    login);
+router.post('/check-email',                                            checkEmailStatus);
 router.get('/me',                    protect,                          getMe);
 router.put('/me',                    protect,                          updateUser);
 router.post('/upload-image',         protect, upload.single('image'),  uploadImage);

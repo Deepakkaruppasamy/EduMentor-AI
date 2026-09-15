@@ -24,6 +24,17 @@ export const authService = {
     const { data } = await api.post('/auth/register', credentials);
     return data;
   },
+  checkEmailStatus: async (email: string, mode: 'register' | 'login' | 'forgot' = 'register'): Promise<{ success: boolean; isLive: boolean; message: string }> => {
+    try {
+      const { data } = await api.post('/auth/check-email', { email, mode });
+      return data;
+    } catch (err: any) {
+      if (err.response && err.response.data) {
+        return err.response.data;
+      }
+      return { success: false, isLive: false, message: 'Failed to verify live status of email.' };
+    }
+  },
   getMe: async (): Promise<User> => {
     const { data } = await api.get('/auth/me');
     return data.user;

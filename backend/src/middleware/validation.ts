@@ -1,11 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import dns from 'dns';
+import User from '../models/User';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Validation Middleware
-//
-// Provides field-level validation for all auth endpoints.
-// Returns a structured array of field errors so the frontend can
-// highlight specific inputs rather than showing a generic message.
+// Comprehensive Auth & Live Email Validation Middleware
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface FieldError {
@@ -13,12 +11,137 @@ export interface FieldError {
   message: string;
 }
 
-// ── Reusable Validators ──────────────────────────────────────────────────────
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+// Known disposable email provider domain list
+const DISPOSABLE_DOMAINS = new Set([
+  'mailinator.com', 'guerrillamail.com', 'guerrillamail.net', 'guerrillamail.org',
+  'tempmail.com', 'temp-mail.org', 'tempmail.net', 'tempmailo.com', '10minutemail.com',
+  'throwawaymail.com', 'trashmail.com', 'trashmail.net', 'yopmail.com', 'yopmail.net',
+  'sharklasers.com', 'getairmail.com', 'dispostable.com', 'fakeinbox.com', 'maildrop.cc',
+  'crazymailing.com', 'nada.ltd', 'getnada.com', 'mohmal.com', 'mytemp.email',
+  'inboxkitten.com', 'burnermail.io', 'dropmail.me', 'pokemail.net', 'spamgourmet.com',
+  'byom.de', 'disposablemail.com', 'disposable.com', 'tempr.email', 'dispostable.com',
+  'mailnesia.com', 'mailcatch.com', 'anonbox.net', 'spambox.us', 'binkmail.com',
+  'safetymail.info', 'zippymail.info', 'trashymail.com', 'klzlk.com'
+]);
+
+// Known fake/test placeholder domains
+const FAKE_TEST_DOMAINS = new Set([
+  'test.com', 'test.org', 'test.net', 'example.com', 'example.org', 'example.net',
+  'testing.com', 'invalid.com', 'localhost.com', 'sample.com', 'foo.bar', 'domain.com',
+  'fake.com', 'dummy.com', 'mysite.com', 'nospam.com', 'noemail.com'
+]);
+
 /**
- * Returns an error message if the email is invalid, otherwise null.
+ * Perform DNS MX record lookup to check if a domain has active mail servers.
+ */
+export const checkDomainMx = (domain: string, timeoutMs: number = 3500): Promise<boolean> => {
+  return new Promise((resolve) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        resolve(true); // Fallback to true on timeout so network slowness doesn't block valid users
+      }
+    }, timeoutMs);
+
+    dns.resolveMx(domain, (err, addresses) => {
+      if (settled) return;
+      if (!err && Array.isArray(addresses) && addresses.length > 0) {
+        settled = true;
+        clearTimeout(timer);
+        return resolve(true);
+      }
+      // Fallback: check A record if MX record is omitted
+      dns.resolve4(domain, (err4, addrs4) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (!err4 && Array.isArray(addrs4) && addrs4.length > 0) {
+          return resolve(true);
+        }
+        return resolve(false);
+      });
+    });
+  });
+};
+
+/**
+ * 3-Layer Live Email Verification:
+ * 1. Syntax / Format Regex
+ * 2. Disposable & Fake Test Domain Blocklist
+ * 3. DNS MX Record Lookup (checks if recipient domain has live mail servers)
+ * 4. Optional Database existence/uniqueness check
+ */
+export async function validateLiveEmail(
+  email: string,
+  options: { checkAlreadyExists?: boolean; mustExistInDb?: boolean } = {}
+): Promise<string | null> {
+  if (!email || !email.trim()) return 'Email is required.';
+
+  const trimmed = email.trim().toLowerCase();
+
+  // Layer 1: Syntax / Format
+  if (!EMAIL_REGEX.test(trimmed)) {
+    return 'Please enter a valid email address (e.g. user@domain.com).';
+  }
+
+  const parts = trimmed.split('@');
+  if (parts.length !== 2) return 'Please enter a valid email address.';
+
+  const [localPart, domain] = parts;
+
+  // Layer 2: Test / Fake local part patterns
+  if (['test', 'abc', 'asdf', 'qwerty', '1234', 'admin', 'user', 'fake'].includes(localPart)) {
+    return 'Generic or test email addresses are not permitted. Please use your real email address.';
+  }
+
+  // Layer 2: Disposable domain check
+  if (DISPOSABLE_DOMAINS.has(domain)) {
+    return 'Temporary/disposable email addresses are not allowed. Please use a live email address.';
+  }
+
+  // Layer 2: Fake test domain check
+  if (FAKE_TEST_DOMAINS.has(domain)) {
+    return 'Test or example email domains are not allowed. Please enter your actual live email.';
+  }
+
+  // Layer 3: DNS MX resolution (verify domain mail servers)
+  const isLive = await checkDomainMx(domain);
+  if (!isLive) {
+    return `The email domain (@${domain}) does not have an active mail server. Please check for typos or enter a live email.`;
+  }
+
+  // Layer 4: Database Uniqueness check (for Registration)
+  if (options.checkAlreadyExists) {
+    try {
+      const existing = await User.findOne({ email: trimmed });
+      if (existing) {
+        return 'This email address is already registered. Please sign in or use another email.';
+      }
+    } catch (err) {
+      // DB error shouldn't crash validation, will be caught by controller
+    }
+  }
+
+  // Layer 4: Database Existence check (for Password Reset)
+  if (options.mustExistInDb) {
+    try {
+      const existing = await User.findOne({ email: trimmed });
+      if (!existing) {
+        return 'No account was found with this email address.';
+      }
+    } catch (err) {
+      // DB error fallback
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Sync email format validator for basic inline checks.
  */
 export function validateEmail(email: string): string | null {
   if (!email || !email.trim()) return 'Email is required.';
@@ -28,12 +151,6 @@ export function validateEmail(email: string): string | null {
 
 /**
  * Password strength validator.
- * Rules:
- *   - At least 8 characters
- *   - At least 1 uppercase letter
- *   - At least 1 lowercase letter
- *   - At least 1 digit
- *   - At least 1 special character
  */
 export function validatePassword(password: string): string | null {
   if (!password) return 'Password is required.';
@@ -87,17 +204,16 @@ export function validateDepartment(department: string): string | null {
   return null;
 }
 
-// ── Middleware Functions ─────────────────────────────────────────────────────
+// ── Express Middleware Functions ─────────────────────────────────────────────
 
 /**
- * Validates the login request body.
- * Checks: email format, password presence.
+ * Validates login request body with live email check.
  */
-export const validateLogin = (req: Request, res: Response, next: NextFunction): void => {
+export const validateLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email, password } = req.body;
   const errors: FieldError[] = [];
 
-  const emailErr = validateEmail(email);
+  const emailErr = await validateLiveEmail(email);
   if (emailErr) errors.push({ field: 'email', message: emailErr });
 
   if (!password) errors.push({ field: 'password', message: 'Password is required.' });
@@ -111,17 +227,17 @@ export const validateLogin = (req: Request, res: Response, next: NextFunction): 
 };
 
 /**
- * Validates the registration request body.
- * Checks: name, email format, role, department, phone (if provided), semester (if provided).
+ * Validates registration request body with 3-layer live email & duplicate email checks.
  */
-export const validateRegister = (req: Request, res: Response, next: NextFunction): void => {
+export const validateRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { name, email, role, department, phone, semester } = req.body;
   const errors: FieldError[] = [];
 
   const nameErr = validateName(name);
   if (nameErr) errors.push({ field: 'name', message: nameErr });
 
-  const emailErr = validateEmail(email);
+  // Live email validation + check if already registered in DB
+  const emailErr = await validateLiveEmail(email, { checkAlreadyExists: true });
   if (emailErr) errors.push({ field: 'email', message: emailErr });
 
   if (!role || !['student', 'faculty', 'admin'].includes(role)) {
@@ -149,8 +265,7 @@ export const validateRegister = (req: Request, res: Response, next: NextFunction
 };
 
 /**
- * Validates the change-password request body.
- * Checks: currentPassword presence, newPassword strength.
+ * Validates change-password request body.
  */
 export const validateChangePassword = (req: Request, res: Response, next: NextFunction): void => {
   const { currentPassword, newPassword } = req.body;
@@ -173,13 +288,13 @@ export const validateChangePassword = (req: Request, res: Response, next: NextFu
 };
 
 /**
- * Validates the first-login change-password request body.
+ * Validates first-login change-password request body.
  */
-export const validateFirstLoginChangePassword = (req: Request, res: Response, next: NextFunction): void => {
+export const validateFirstLoginChangePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email, currentPassword, newPassword } = req.body;
   const errors: FieldError[] = [];
 
-  const emailErr = validateEmail(email);
+  const emailErr = await validateLiveEmail(email);
   if (emailErr) errors.push({ field: 'email', message: emailErr });
 
   if (!currentPassword) errors.push({ field: 'currentPassword', message: 'Temporary password is required.' });
@@ -199,14 +314,13 @@ export const validateFirstLoginChangePassword = (req: Request, res: Response, ne
 };
 
 /**
- * Validates the reset-password request body.
- * Checks: email format, OTP presence, newPassword strength, confirmPassword match.
+ * Validates reset-password request body.
  */
-export const validateResetPassword = (req: Request, res: Response, next: NextFunction): void => {
+export const validateResetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email, otpCode, newPassword, confirmPassword } = req.body;
   const errors: FieldError[] = [];
 
-  const emailErr = validateEmail(email);
+  const emailErr = await validateLiveEmail(email);
   if (emailErr) errors.push({ field: 'email', message: emailErr });
 
   if (!otpCode || String(otpCode).trim().length !== 6 || !/^\d{6}$/.test(String(otpCode).trim())) {
@@ -228,14 +342,13 @@ export const validateResetPassword = (req: Request, res: Response, next: NextFun
 };
 
 /**
- * Validates the forgot-password request body.
- * Checks: email format.
+ * Validates forgot-password request body.
  */
-export const validateForgotPassword = (req: Request, res: Response, next: NextFunction): void => {
+export const validateForgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { email } = req.body;
   const errors: FieldError[] = [];
 
-  const emailErr = validateEmail(email);
+  const emailErr = await validateLiveEmail(email, { mustExistInDb: true });
   if (emailErr) errors.push({ field: 'email', message: emailErr });
 
   if (errors.length > 0) {

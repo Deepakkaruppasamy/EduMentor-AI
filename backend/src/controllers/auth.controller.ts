@@ -12,6 +12,7 @@ import bcrypt from 'bcryptjs';
 import { sendEmail } from '../utils/email';
 import UserSession from '../models/UserSession';
 import { logActivity, hashToken, parseBrowser, parseOS, parseDeviceName } from '../utils/activity-logger';
+import { validateLiveEmail } from '../middleware/validation';
 
 const generateToken = (id: string): string => {
   return jwt.sign({ id }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRE as any });
@@ -918,3 +919,24 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
     message: 'Password has been reset successfully. Please log in with your new password.' 
   });
 });
+
+/**
+ * Controller endpoint to verify if an email address is valid, live, non-disposable, and available.
+ */
+export const checkEmailStatus = asyncHandler(async (req: Request, res: Response) => {
+  const { email, mode } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, isLive: false, message: 'Email parameter is required.' });
+  }
+
+  const checkAlreadyExists = mode === 'register';
+  const mustExistInDb = mode === 'forgot';
+
+  const err = await validateLiveEmail(email, { checkAlreadyExists, mustExistInDb });
+  if (err) {
+    return res.status(422).json({ success: false, isLive: false, message: err });
+  }
+
+  return res.json({ success: true, isLive: true, message: 'Email address is valid and live.' });
+});
+
