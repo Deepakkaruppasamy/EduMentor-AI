@@ -13,7 +13,6 @@ import { getBM25Index } from '../services/rag/bm25-search.service';
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/edumentor';
 
-// Helper for exact IR metric calculation using ground-truth relevance
 function calculateIRMetrics(retrievedChunks: any[], groundTruthSources: any[]) {
   if (!groundTruthSources || groundTruthSources.length === 0) {
     return {
@@ -103,26 +102,29 @@ function calculateIRMetrics(retrievedChunks: any[], groundTruthSources: any[]) {
 }
 
 async function runBenchmark() {
-  console.log('🚀 Starting EduMentor AI Real-Data Retrieval Benchmark Execution...');
+  console.log('===============================================================');
+  console.log('🚀 EduMentor AI Multi-Domain RAG Benchmark & Component Ablation');
+  console.log('===============================================================\n');
+
   await mongoose.connect(MONGO_URI);
-  console.log('Connected to MongoDB.');
+  console.log('Connected to MongoDB database.');
 
   const courses = await Course.find({ isActive: true }).lean();
   const defaultCourse = courses[0];
 
-  // Seed baseline ground-truth benchmark questions if none exist
+  // Seed baseline multi-domain ground-truth benchmark questions
   let benchmarkQuestions = await ResearchBenchmarkQuestion.find().lean();
   if (!benchmarkQuestions.length && defaultCourse) {
-    console.log('Seeding baseline ground-truth benchmark questions...');
+    console.log('Seeding multi-domain benchmark dataset (CS, Biology, History)...');
     await ResearchBenchmarkQuestion.create([
       {
         question: 'What is Third Normal Form (3NF) and functional dependency?',
         referenceAnswer: '3NF requires 2NF and no transitive functional dependencies.',
         course: defaultCourse._id,
-        courseName: defaultCourse.title,
+        courseName: 'CS101 Database Systems',
         topic: 'Normalization',
         difficulty: 'medium',
-        questionType: 'conceptual',
+        questionType: 'definition',
         datasetSplit: 'development',
         validationStatus: 'verified',
         groundTruthSources: [
@@ -133,7 +135,7 @@ async function runBenchmark() {
         question: 'Explain deadlocks in operating systems and prevention techniques.',
         referenceAnswer: 'Deadlocks occur when processes wait indefinitely for resources held by each other.',
         course: defaultCourse._id,
-        courseName: defaultCourse.title,
+        courseName: 'CS202 Operating Systems',
         topic: 'Operating Systems',
         difficulty: 'hard',
         questionType: 'conceptual',
@@ -144,130 +146,121 @@ async function runBenchmark() {
         ],
       },
       {
-        question: 'Explain OSI 7 layer architecture and data link framing.',
-        referenceAnswer: 'The OSI model organizes network communication into 7 layers.',
+        question: 'How does cellular respiration generate ATP in mitochondria?',
+        referenceAnswer: 'Cellular respiration generates ATP via glycolysis, Krebs cycle, and oxidative phosphorylation.',
         course: defaultCourse._id,
-        courseName: defaultCourse.title,
-        topic: 'Networking',
+        courseName: 'BIO101 Cellular Biology',
+        topic: 'Metabolism',
         difficulty: 'medium',
-        questionType: 'factual',
+        questionType: 'conceptual',
         datasetSplit: 'development',
         validationStatus: 'verified',
         groundTruthSources: [
-          { documentName: 'Networking_Basics.pdf', pageNumber: 8, supportingText: 'Data link layer frames raw bitstreams', relevanceGrade: 3 }
+          { documentName: 'Cellular_Biology.pdf', pageNumber: 88, supportingText: 'ATP synthesis via electron transport chain in inner membrane', relevanceGrade: 3 }
+        ],
+      },
+      {
+        question: 'Define the Industrial Revolution and key economic catalysts.',
+        referenceAnswer: 'The transition to new manufacturing processes in Great Britain and Europe.',
+        course: defaultCourse._id,
+        courseName: 'HIST105 World History',
+        topic: 'Modern History',
+        difficulty: 'easy',
+        questionType: 'definition',
+        datasetSplit: 'development',
+        validationStatus: 'verified',
+        groundTruthSources: [
+          { documentName: 'World_History_Vol2.pdf', pageNumber: 120, supportingText: 'Mechanization of textile industries and steam power', relevanceGrade: 3 }
         ],
       },
     ]);
     benchmarkQuestions = await ResearchBenchmarkQuestion.find().lean();
   }
 
-  const configurations = ['HYBRID_RRF', 'VECTOR_ONLY', 'BM25_ONLY', 'LLM_ONLY'];
-  let totalEvaluations = 0;
+  const configurations = [
+    'FULL_ADAPTIVE_HYBRID', // Dynamic RRF + Re-Ranker
+    'STATIC_RRF',            // Equal RRF weights, no Re-Ranker
+    'NO_RERANKER',          // Adaptive RRF without Re-Ranker
+    'VECTOR_ONLY',          // Dense Vector Search
+    'BM25_ONLY',            // Sparse BM25 Search
+  ];
+
+  const resultsSummary: Record<string, { p5: number[]; r5: number[]; mrr: number[]; latency: number[] }> = {};
+  configurations.forEach(c => { resultsSummary[c] = { p5: [], r5: [], mrr: [], latency: [] }; });
 
   for (const bq of benchmarkQuestions) {
     const courseObj = courses.find((c: any) => String(c._id) === String(bq.course)) || defaultCourse;
     const collectionName = courseObj ? courseObj.chromaCollection : 'general';
 
-    console.log(`\n🔍 Benchmarking Query: "${bq.question}"`);
+    console.log(`\n🔍 Evaluating Multi-Domain Query [${bq.questionType.toUpperCase()}]: "${bq.question}"`);
 
     for (const configName of configurations) {
       const t0 = Date.now();
       let chunks: any[] = [];
 
       try {
-        if (configName === 'HYBRID_RRF') {
-          const res = await hybridRetrieve(bq.question, collectionName, 5);
+        if (configName === 'FULL_ADAPTIVE_HYBRID') {
+          const res = await hybridRetrieve(bq.question, collectionName, 5, undefined, undefined, { enableAdaptiveRrf: true, enableReranker: true });
+          chunks = res.chunks;
+        } else if (configName === 'STATIC_RRF') {
+          const res = await hybridRetrieve(bq.question, collectionName, 5, undefined, undefined, { enableAdaptiveRrf: false, enableReranker: false });
+          chunks = res.chunks;
+        } else if (configName === 'NO_RERANKER') {
+          const res = await hybridRetrieve(bq.question, collectionName, 5, undefined, undefined, { enableAdaptiveRrf: true, enableReranker: false });
           chunks = res.chunks;
         } else if (configName === 'VECTOR_ONLY') {
           const raw = await vectorSearch(collectionName, bq.question, 5);
-          chunks = raw.map((v, i) => ({
-            id: v.id,
-            text: v.document,
-            documentName: v.metadata?.documentName || 'Course Document',
-            pageNumber: v.metadata?.pageNumber || 1,
-            finalScore: v.score,
-            rank: i + 1,
-          }));
+          chunks = raw.map((v, i) => ({ id: v.id, text: v.document, documentName: v.metadata?.documentName || 'Doc', pageNumber: v.metadata?.pageNumber || 1, finalScore: v.score, rank: i + 1 }));
         } else if (configName === 'BM25_ONLY') {
           const bm25Index = getBM25Index(collectionName);
           const raw = bm25Index.search(bq.question, 5);
-          chunks = raw.map((b, i) => ({
-            id: b.id,
-            text: b.text,
-            documentName: b.metadata?.documentName || 'Course Document',
-            pageNumber: b.metadata?.pageNumber || 1,
-            finalScore: b.score,
-            rank: i + 1,
-          }));
-        } else if (configName === 'LLM_ONLY') {
-          chunks = [];
+          chunks = raw.map((b, i) => ({ id: b.id, text: b.text, documentName: b.metadata?.documentName || 'Doc', pageNumber: b.metadata?.pageNumber || 1, finalScore: b.score, rank: i + 1 }));
         }
 
         const latencyMs = Date.now() - t0;
         const irMetrics = calculateIRMetrics(chunks, bq.groundTruthSources);
 
-        // Grounding trust score and factual correctness assessment
-        const isHybrid = configName === 'HYBRID_RRF';
-        const isLLM = configName === 'LLM_ONLY';
-        const trustScore = isLLM ? 35 : (isHybrid ? 92 : 84);
-        const correctnessRating = isLLM ? 3 : (isHybrid ? 5 : 4);
+        resultsSummary[configName].p5.push(irMetrics.precisionAt5);
+        resultsSummary[configName].r5.push(irMetrics.recallAt5);
+        resultsSummary[configName].mrr.push(irMetrics.mrr);
+        resultsSummary[configName].latency.push(latencyMs);
 
-        await ExpertReview.create({
-          benchmarkQuestion: bq._id,
-          reviewer: new mongoose.Types.ObjectId(),
-          reviewerRole: 'BENCHMARK_AUTOMATED',
-          evaluationMode: 'CONTROLLED_BENCHMARK',
-          configuration: configName,
-          llmModel: 'openai/gpt-oss-120b',
-          generatedAnswer: `Automated response generated for benchmark query "${bq.question}".`,
-          overallCorrectnessScore: correctnessRating,
-          irMetrics,
-          hallucinationDetection: {
-            trustScore,
-            status: trustScore >= 75 ? 'verified' : (trustScore >= 45 ? 'partially_verified' : 'unverified'),
-            verdict: isLLM ? 'Unverifiable due to missing context' : 'Grounded in course material',
-          },
-          correctnessReviews: [
-            {
-              expertId: new mongoose.Types.ObjectId(),
-              correctnessRating,
-              factuallyCorrect: correctnessRating >= 4,
-              reviewedAt: new Date(),
-            },
-          ],
-          congruencyReviews: [
-            {
-              expertId: new mongoose.Types.ObjectId(),
-              courseCongruencyRating: correctnessRating,
-              supportedByCourseMaterial: !isLLM,
-              containsUnsupportedClaims: isLLM,
-              citationSupportsClaim: !isLLM,
-              reviewedAt: new Date(),
-            },
-          ],
-          performance: {
-            retrievalLatencyMs: isLLM ? 0 : latencyMs,
-            generationLatencyMs: 1200,
-            totalLatencyMs: isLLM ? 1200 : latencyMs + 1200,
-            promptTokens: 450,
-            completionTokens: 210,
-            totalTokens: 660,
-            estimatedCostUSD: 0.00045,
-          },
-          costUSD: 0.00045,
-          status: 'completed',
-          evaluatedAt: new Date(),
-        });
-
-        totalEvaluations++;
-        console.log(`  ✓ ${configName}: P@5=${irMetrics.precisionAt5}, R@5=${irMetrics.recallAt5}, MRR=${irMetrics.mrr} (Latency: ${latencyMs}ms)`);
+        console.log(`  ✓ ${configName.padEnd(20)}: P@5=${irMetrics.precisionAt5.toFixed(2)}, R@5=${irMetrics.recallAt5.toFixed(2)}, MRR=${irMetrics.mrr.toFixed(2)} (${latencyMs}ms)`);
       } catch (err: any) {
         console.warn(`  ⚠️ ${configName} evaluation warning:`, err.message);
       }
     }
   }
 
-  console.log(`\n✅ Real-Data Benchmark Execution Completed! Total ${totalEvaluations} reviews created.`);
+  // Print Publication LaTeX Table
+  console.log('\n===============================================================');
+  console.log('📊 PUBLICATION RESULTS TABLE (LaTeX Format for Paper)');
+  console.log('===============================================================\n');
+
+  console.log('\\begin{table}[h]');
+  console.log('\\centering');
+  console.log('\\caption{Ablation Study of EduMentor AI RAG Architecture Components}');
+  console.log('\\begin{tabular}{lcccc}');
+  console.log('\\toprule');
+  console.log('\\textbf{Architecture Variant} & \\textbf{P@5} & \\textbf{R@5} & \\textbf{MRR} & \\textbf{Latency (ms)} \\\\');
+  console.log('\\midrule');
+
+  const avg = (arr: number[]) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+
+  configurations.forEach(cfg => {
+    const res = resultsSummary[cfg];
+    const meanP5 = avg(res.p5).toFixed(3);
+    const meanR5 = avg(res.r5).toFixed(3);
+    const meanMRR = avg(res.mrr).toFixed(3);
+    const meanLat = Math.round(avg(res.latency));
+    const label = cfg === 'FULL_ADAPTIVE_HYBRID' ? '\\textbf{EduMentor Full (Adaptive + Re-Ranker)}' : cfg;
+    console.log(`${label.padEnd(45)} & ${meanP5} & ${meanR5} & ${meanMRR} & ${meanLat} \\\\`);
+  });
+
+  console.log('\\bottomrule');
+  console.log('\\end{tabular}');
+  console.log('\\end{table}\n');
+
   await mongoose.disconnect();
   process.exit(0);
 }

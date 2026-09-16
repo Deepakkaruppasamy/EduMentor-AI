@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
+import { academicChunkDocument } from '../services/rag/academic-chunker.service';
 
 export interface ExtractedContent {
   text: string;
@@ -83,13 +84,30 @@ async function extractFromPPTX(filePath: string): Promise<ExtractedContent> {
 }
 
 /**
- * Chunk text into overlapping segments for RAG
+ * Academic Boundary-Aware Chunking Strategy (Tier 1 Novelty #4)
+ * Uses structural section headers, equations, and definitions boundaries.
  */
 export function chunkText(
   text: string,
   chunkSize = 512,
   overlap = 50
 ): TextChunk[] {
+  // Use Academic Structural Chunker
+  const academicChunks = academicChunkDocument(text, 'doc', 800, 80);
+
+  if (academicChunks.length > 0) {
+    return academicChunks.map((ac, index) => {
+      const pageNumber = Math.floor((index * 250) / 250) + 1;
+      return {
+        index,
+        text: ac.text,
+        pageNumber,
+        wordCount: ac.metadata.wordCount,
+      };
+    });
+  }
+
+  // Fallback to naive windowing if structural chunking produces empty array
   const words = text.split(/\s+/).filter((w) => w.length > 0);
   const chunks: TextChunk[] = [];
   let index = 0;
@@ -99,7 +117,6 @@ export function chunkText(
     if (chunkWords.length === 0) break;
 
     const chunkText = chunkWords.join(' ');
-    // Estimate page number (approx 250 words per page)
     const pageNumber = Math.floor(i / 250) + 1;
 
     chunks.push({

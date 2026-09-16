@@ -1,6 +1,7 @@
 import { vectorSearch } from '../../utils/chroma';
 import { getBM25Index } from './bm25-search.service';
-import { reciprocalRankFusion, RankedResult } from './rrf.service';
+import { reciprocalRankFusion, classifyQueryIntent, RankedResult, RrfWeightConfig } from './rrf.service';
+import { rerankPassages, RerankedResult } from './reranker.service';
 import { config } from '../../config/env';
 import { expandQueryWithGraph, GraphExpansionResult } from './knowledge-graph.service';
 import { pruneContextChunks, PrunerStats } from './context-pruner.service';
@@ -13,6 +14,7 @@ export interface RetrievedChunk {
   pageNumber?: number;
   vectorScore: number;
   bm25Score: number;
+  rerankScore?: number;
   finalScore: number;
   rank: number;
   metadata?: Record<string, any>;
@@ -22,26 +24,27 @@ export interface HybridRAGResult {
   chunks: RetrievedChunk[];
   context: string;
   retrievalMethod: string;
-  /** Graph-RAG expansion metadata (N2 — Knowledge Graph-Guided Retrieval) */
+  /** Course-Adaptive RRF Weighting metadata (Tier 1 Novelty #1) */
+  adaptiveWeights?: RrfWeightConfig;
+  /** Cross-Encoder Re-Ranker metadata (Tier 1 Novelty #3) */
+  isReranked?: boolean;
+  /** Graph-RAG expansion metadata */
   graphExpansion?: GraphExpansionResult;
-  /** Context pruning statistics (N5 — Semantic Token Pruning) */
+  /** Context pruning statistics */
   prunerStats?: PrunerStats;
 }
 
 /**
- * Hybrid RAG: combines vector similarity search + BM25 keyword search
- * Uses Reciprocal Rank Fusion to merge results
+ * Hybrid RAG with Course-Adaptive RRF Weighting & Cross-Encoder Re-Ranking
  */
 export async function hybridRetrieve(
   query: string,
   collectionName: string,
   topK = config.TOP_K_RESULTS,
   targetDocumentId?: string,
-  courseId?: string
+  courseId?: string,
+  options: { enableAdaptiveRrf?: boolean; enableReranker?: boolean } = { enableAdaptiveRrf: true, enableReranker: true }
 ): Promise<HybridRAGResult> {
-  // ── N2: Graph-RAG Query Expansion ──────────────────────────────────────────
-  // Expand the query with prerequisite concept context from the knowledge graph.
-  // Falls back to the original query if no graph is cached for this course.
   let graphExpansion: GraphExpansionResult | undefined;
   let effectiveQuery = query;
 
@@ -49,19 +52,18 @@ export async function hybridRetrieve(
     try {
       graphExpansion = await expandQueryWithGraph(query, courseId);
       effectiveQuery = graphExpansion.expandedQuery;
-      if (graphExpansion.prerequisiteConcepts.length > 0) {
-        console.log(
-          `[GraphRAG] Expanded query with prerequisites: ${graphExpansion.prerequisiteConcepts.join(', ')}`
-        );
-      }
     } catch (err) {
       console.warn('[GraphRAG] Query expansion failed, using original query:', err);
     }
   }
 
-  const fetchCount = topK * 3; // fetch more, then re-rank
+  // Determine Course-Adaptive RRF Fusion Weights based on query intent classification
+  const adaptiveWeights = options.enableAdaptiveRrf !== false
+    ? classifyQueryIntent(effectiveQuery)
+    : { vectorWeight: 1.0, bm25Weight: 1.0, intent: 'balanced' as const, explanation: 'Static RRF (Equal Weights)' };
 
-  // Run both retrieval methods in parallel using the (graph-expanded) effective query
+  const fetchCount = topK * 3;
+
   const [vectorResults, bm25Results] = await Promise.all([
     vectorSearch(collectionName, effectiveQuery, fetchCount),
     Promise.resolve(getBM25Index(collectionName).search(effectiveQuery, fetchCount)),
@@ -75,7 +77,6 @@ export async function hybridRetrieve(
     filteredBM25 = bm25Results.filter((b) => String(b.metadata?.documentId || '') === String(targetDocumentId));
   }
 
-  // Map vector results to the structure expected by RRF (v.document -> text)
   const mappedVectorResults = filteredVector.map((v) => ({
     id: v.id,
     text: v.document,
@@ -83,29 +84,45 @@ export async function hybridRetrieve(
     score: v.score,
   }));
 
-  // Apply Reciprocal Rank Fusion
-  const fused = reciprocalRankFusion(mappedVectorResults, filteredBM25);
+  // Apply Weighted Reciprocal Rank Fusion (Tier 1 Novelty #1)
+  const fused = reciprocalRankFusion(mappedVectorResults, filteredBM25, 60, {
+    vectorWeight: adaptiveWeights.vectorWeight,
+    bm25Weight: adaptiveWeights.bm25Weight,
+  });
 
+  const candidatePool = fused.slice(0, topK * 2);
 
-  // Take top-K after fusion
-  const topResults = fused.slice(0, topK);
+  // Apply Cross-Encoder Re-Ranker Pass (Tier 1 Novelty #3)
+  let finalTopResults: (RankedResult | RerankedResult)[] = candidatePool.slice(0, topK);
+  let isReranked = false;
 
-  const chunks: RetrievedChunk[] = topResults.map((result: RankedResult) => ({
-    id: result.id,
-    text: result.text,
-    documentId: result.metadata.documentId || '',
-    documentName: result.metadata.documentName || 'Unknown Document',
-    pageNumber: result.metadata.pageNumber,
-    vectorScore: result.vectorScore,
-    bm25Score: result.bm25Score,
-    finalScore: result.rrfScore,
-    rank: result.rank,
-    metadata: result.metadata,
-  }));
+  if (options.enableReranker !== false && candidatePool.length > 0) {
+    try {
+      finalTopResults = await rerankPassages(effectiveQuery, candidatePool, topK);
+      isReranked = true;
+    } catch (err) {
+      console.warn('[ReRanker] Pass failed, falling back to RRF ordering:', err);
+    }
+  }
 
-  // ── N5: Semantic Context Token Pruning ─────────────────────────────────────
-  // Prune low-salience filler sentences from retrieved chunks before LLM injection.
-  // This reduces token usage ~35-45% while increasing effective context density.
+  const chunks: RetrievedChunk[] = finalTopResults.map((result, idx) => {
+    const isRerankedResult = 'crossEncoderScore' in result;
+    return {
+      id: result.id,
+      text: result.text,
+      documentId: result.metadata.documentId || '',
+      documentName: result.metadata.documentName || 'Unknown Document',
+      pageNumber: result.metadata.pageNumber,
+      vectorScore: result.vectorScore,
+      bm25Score: result.bm25Score,
+      rerankScore: isRerankedResult ? (result as RerankedResult).crossEncoderScore : undefined,
+      finalScore: isRerankedResult ? (result as RerankedResult).finalScore : result.rrfScore,
+      rank: idx + 1,
+      metadata: result.metadata,
+    };
+  });
+
+  // Semantic Context Token Pruning
   let context: string;
   let prunerStats: PrunerStats | undefined;
 
@@ -118,13 +135,7 @@ export async function hybridRetrieve(
     const pruned = await pruneContextChunks(prunerInput, query);
     context = pruned.prunedText;
     prunerStats = pruned.stats;
-    console.log(
-      `[ContextPruner] Compressed ${prunerStats.originalSentenceCount} → ${prunerStats.retainedSentenceCount} sentences` +
-      ` (${Math.round(prunerStats.compressionRatio * 100)}% of original tokens)`
-    );
   } catch (err) {
-    // Fallback to raw context if pruner fails
-    console.warn('[ContextPruner] Pruning failed, using raw context:', err);
     context = chunks
       .map(
         (chunk, i) =>
@@ -133,80 +144,31 @@ export async function hybridRetrieve(
       .join('\n\n---\n\n');
   }
 
-  const retrievalMethod = vectorResults.length > 0 && bm25Results.length > 0
-    ? 'Hybrid GraphRAG (Vector + BM25 + RRF + Graph Expansion + Token Pruning)'
-    : vectorResults.length > 0
-    ? 'Vector Only'
-    : bm25Results.length > 0
-    ? 'BM25 Only'
-    : 'No retrieval';
+  const retrievalMethod = `Adaptive Hybrid RAG (Intent: ${adaptiveWeights.intent}, Re-Ranked: ${isReranked ? 'Yes' : 'No'})`;
 
-  return { chunks, context, retrievalMethod, graphExpansion, prunerStats };
+  return { chunks, context, retrievalMethod, adaptiveWeights, isReranked, graphExpansion, prunerStats };
 }
 
-/**
- * Vector-only retrieval for ablation studies
- */
-export async function vectorOnlyRetrieve(
-  query: string,
-  collectionName: string,
-  topK = config.TOP_K_RESULTS
-): Promise<HybridRAGResult> {
+/** Vector-only retrieval for ablation studies */
+export async function vectorOnlyRetrieve(query: string, collectionName: string, topK = config.TOP_K_RESULTS): Promise<HybridRAGResult> {
   const vectorResults = await vectorSearch(collectionName, query, topK);
-
   const chunks: RetrievedChunk[] = vectorResults.map((v, i) => ({
-    id: v.id,
-    text: v.document,
-    documentId: v.metadata.documentId || '',
-    documentName: v.metadata.documentName || 'Unknown Document',
-    pageNumber: v.metadata.pageNumber,
-    vectorScore: v.score,
-    bm25Score: 0,
-    finalScore: v.score,
-    rank: i + 1,
-    metadata: v.metadata,
+    id: v.id, text: v.document, documentId: v.metadata.documentId || '',
+    documentName: v.metadata.documentName || 'Unknown Document', pageNumber: v.metadata.pageNumber,
+    vectorScore: v.score, bm25Score: 0, finalScore: v.score, rank: i + 1, metadata: v.metadata,
   }));
-
-  const context = chunks
-    .map(
-      (chunk, i) =>
-        `[Source ${i + 1}: ${chunk.documentName}${chunk.pageNumber ? `, p.${chunk.pageNumber}` : ''}]\n${chunk.text}`
-    )
-    .join('\n\n---\n\n');
-
+  const context = chunks.map((chunk, i) => `[Source ${i + 1}: ${chunk.documentName}]\n${chunk.text}`).join('\n\n---\n\n');
   return { chunks, context, retrievalMethod: 'Vector Only' };
 }
 
-/**
- * BM25-only retrieval for ablation studies
- */
-export async function bm25OnlyRetrieve(
-  query: string,
-  collectionName: string,
-  topK = config.TOP_K_RESULTS
-): Promise<HybridRAGResult> {
+/** BM25-only retrieval for ablation studies */
+export async function bm25OnlyRetrieve(query: string, collectionName: string, topK = config.TOP_K_RESULTS): Promise<HybridRAGResult> {
   const bm25Results = getBM25Index(collectionName).search(query, topK);
-
   const chunks: RetrievedChunk[] = bm25Results.map((b, i) => ({
-    id: b.id,
-    text: b.text,
-    documentId: b.metadata.documentId || '',
-    documentName: b.metadata.documentName || 'Unknown Document',
-    pageNumber: b.metadata.pageNumber,
-    vectorScore: 0,
-    bm25Score: b.score,
-    finalScore: b.score,
-    rank: i + 1,
-    metadata: b.metadata,
+    id: b.id, text: b.text, documentId: b.metadata.documentId || '',
+    documentName: b.metadata.documentName || 'Unknown Document', pageNumber: b.metadata.pageNumber,
+    vectorScore: 0, bm25Score: b.score, finalScore: b.score, rank: i + 1, metadata: b.metadata,
   }));
-
-  const context = chunks
-    .map(
-      (chunk, i) =>
-        `[Source ${i + 1}: ${chunk.documentName}${chunk.pageNumber ? `, p.${chunk.pageNumber}` : ''}]\n${chunk.text}`
-    )
-    .join('\n\n---\n\n');
-
+  const context = chunks.map((chunk, i) => `[Source ${i + 1}: ${chunk.documentName}]\n${chunk.text}`).join('\n\n---\n\n');
   return { chunks, context, retrievalMethod: 'BM25 Only' };
 }
-
