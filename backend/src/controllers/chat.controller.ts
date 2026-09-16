@@ -77,7 +77,7 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
 
   // 4. Hallucination detection
   const chunkTexts = ragResult.chunks.map((c) => c.text);
-  const hallucinationResult = await detectHallucination(llmResponse.content, chunkTexts);
+  let hallucinationResult = await detectHallucination(llmResponse.content, chunkTexts);
 
   // N3: Self-Correction Refinement Loop
   // If TrustScore < 65%, automatically critique and rewrite low-trust sentences.
@@ -89,6 +89,10 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
     question
   );
   const finalAnswer = correctionResult.correctedResponse;
+
+  if (correctionResult.wasTriggered) {
+    hallucinationResult = await detectHallucination(finalAnswer, chunkTexts);
+  }
 
   // 5. Explainable AI
   const explainableResult = buildExplainableResult(
@@ -119,6 +123,7 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
     trustScore: hallucinationResult.trustScore,
     confidenceScore: explainableResult.overallConfidence,
     hallucinationFlags: hallucinationResult.hallucinatedSentences,
+    atomicClaims: hallucinationResult.atomicClaims,
     conceptGraph,
     timestamp: new Date(),
   });
@@ -164,6 +169,8 @@ export const queryChat = asyncHandler(async (req: AuthRequest, res: Response) =>
       status: hallucinationResult.status,
       verdict: hallucinationResult.verdict,
       flags: hallucinationResult.hallucinatedSentences,
+      atomicClaims: hallucinationResult.atomicClaims,
+      metrics: hallucinationResult.metrics,
     },
     explainability: {
       sources: explainableResult.sources,
@@ -284,6 +291,7 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
       trustScore: hallucinationResult.trustScore,
       confidenceScore: explainableResult.overallConfidence,
       hallucinationFlags: hallucinationResult.hallucinatedSentences,
+      atomicClaims: hallucinationResult.atomicClaims,
       conceptGraph,
       timestamp: new Date(),
     });
@@ -319,6 +327,8 @@ export const queryChatStream = asyncHandler(async (req: AuthRequest, res: Respon
         status: hallucinationResult.status,
         verdict: hallucinationResult.verdict,
         flags: hallucinationResult.hallucinatedSentences,
+        atomicClaims: hallucinationResult.atomicClaims,
+        metrics: hallucinationResult.metrics,
       },
       explainability: {
         sources: explainableResult.sources,

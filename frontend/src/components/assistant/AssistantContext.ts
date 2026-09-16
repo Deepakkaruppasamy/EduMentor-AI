@@ -263,7 +263,7 @@ const PAGE_CONTEXTS: Record<string, Omit<PageContext, 'quickActions'>> = {
   },
   '/ai-evaluation': {
     greeting: 'Monitor AI model performance and quality! 🧪',
-    description: 'Evaluate Llama 3 responses, hallucination rates, and RAG accuracy.',
+    description: 'Evaluate GPT responses, hallucination rates, and RAG accuracy.',
     tips: [
       'High hallucination rates indicate the knowledge base needs more documents.',
       'Low trust scores suggest questions are outside the course material scope.',

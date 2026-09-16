@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/auth.store';
 import { plagiarismService, PlagiarismReport } from '../services/plagiarism.service';
@@ -798,7 +798,7 @@ export const PlagiarismCheckerPage: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginTop: 8 }}>
                   {[
                     { icon: '📤', title: 'Upload Document', desc: 'Drop a PDF, DOCX, or TXT file into the upload zone above.' },
-                    { icon: '🤖', title: 'AI Analysis', desc: 'Llama 3 analyzes your document for similarity, patterns, and citations.' },
+                    { icon: '🤖', title: 'AI Analysis', desc: 'GPT analyzes your document for similarity, patterns, and citations.' },
                     { icon: '📊', title: 'Get Results', desc: 'Receive a detailed report with similarity score, highlights, and suggestions.' },
                     { icon: '⬇️', title: 'Download Report', desc: 'Export a formatted PDF report of your plagiarism analysis.' },
                   ].map(({ icon, title, desc }) => (

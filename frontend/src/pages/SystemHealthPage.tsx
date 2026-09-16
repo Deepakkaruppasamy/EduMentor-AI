@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -411,7 +411,7 @@ export const SystemHealthPage: React.FC = () => {
         : undefined,
     },
     {
-      id: 'groq', name: 'Groq Llama 3 API', icon: '🤖',
+      id: 'groq', name: 'LLM Engine API (GPT)', icon: '🤖',
       status: data.aiServices.groq.status,
       detail: data.aiServices.groq.label,
       hint: data.aiServices.groq.status !== 'healthy' ? 'Set GROQ_API_KEY in your .env file. Get a key at console.groq.com' : undefined,

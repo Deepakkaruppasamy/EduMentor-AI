@@ -161,7 +161,7 @@ export const Sidebar: React.FC<{ onClose?: () => void; collapsed?: boolean; onTo
               className="flex flex-col whitespace-nowrap overflow-hidden"
             >
               <div className="text-sm font-bold text-white">EduMentor AI</div>
-              <div className="text-[10px] text-white/40 font-mono">Powered by Llama 3</div>
+              <div className="text-[10px] text-white/40 font-mono">Powered by GPT</div>
             </motion.div>
           )}
         </AnimatePresence>

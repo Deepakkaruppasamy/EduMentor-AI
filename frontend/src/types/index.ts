@@ -84,11 +84,30 @@ export interface ChatSource {
   confidencePercent: number;
 }
 
+export interface AtomicClaim {
+  claimId: string;
+  claimText: string;
+  parentSentence?: string;
+  entailmentScore: number;
+  nliVerdict: 'entailed' | 'neutral' | 'contradicted';
+  bestMatchChunk?: string;
+  isHallucinated: boolean;
+}
+
 export interface HallucinationInfo {
   trustScore: number;
   status: 'verified' | 'partially_verified' | 'hallucinated';
   verdict: string;
   flags: string[];
+  atomicClaims?: AtomicClaim[];
+  metrics?: {
+    precision: number;
+    recall: number;
+    f1Score: number;
+    totalClaims: number;
+    supportedClaimsCount: number;
+    hallucinatedClaimsCount: number;
+  };
 }
 
 export interface ExplainabilityInfo {

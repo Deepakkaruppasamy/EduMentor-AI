@@ -10,6 +10,8 @@ export interface QueryResponse {
     status: string;
     verdict: string;
     flags: string[];
+    atomicClaims?: any[];
+    metrics?: any;
   };
   explainability: {
     sources: any[];

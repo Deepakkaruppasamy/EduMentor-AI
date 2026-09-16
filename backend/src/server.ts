@@ -169,19 +169,47 @@ const start = async () => {
   try {
     await connectDatabase();
 
-    // Seed default Super Admin if email doesn't exist
-    const adminExists = await User.findOne({ email: 'admin@university.edu' });
-    if (!adminExists) {
-      await User.create({
-        name: 'Super Admin',
-        email: 'admin@university.edu',
-        password: 'AdminPassword123!',
-        role: 'admin',
-        isFirstLogin: true,
-        isActive: true,
-        department: 'Administration',
-      });
-      console.log('✅ Seeded default Super Admin user: admin@university.edu / AdminPassword123!');
+    // Seed / Ensure Super Admin credentials
+    const targetAdminEmail = 'deepakkaruppasamy27@gmail.com';
+    const targetAdminPassword = 'edumentor@123';
+
+    let adminUser = await User.findOne({ email: targetAdminEmail });
+    if (adminUser) {
+      adminUser.password = targetAdminPassword;
+      adminUser.role = 'admin';
+      adminUser.name = 'Super Admin';
+      adminUser.isActive = true;
+      adminUser.isFirstLogin = false;
+      adminUser.loginAttempts = 0;
+      adminUser.lockUntil = undefined;
+      await adminUser.save();
+      console.log(`✅ Super Admin user synchronized: ${targetAdminEmail}`);
+    } else {
+      // Check if legacy admin exists to migrate
+      const legacyAdmin = await User.findOne({ email: 'admin@university.edu' });
+      if (legacyAdmin) {
+        legacyAdmin.email = targetAdminEmail;
+        legacyAdmin.password = targetAdminPassword;
+        legacyAdmin.role = 'admin';
+        legacyAdmin.name = 'Super Admin';
+        legacyAdmin.isActive = true;
+        legacyAdmin.isFirstLogin = false;
+        legacyAdmin.loginAttempts = 0;
+        legacyAdmin.lockUntil = undefined;
+        await legacyAdmin.save();
+        console.log(`✅ Migrated legacy admin to: ${targetAdminEmail}`);
+      } else {
+        await User.create({
+          name: 'Super Admin',
+          email: targetAdminEmail,
+          password: targetAdminPassword,
+          role: 'admin',
+          isFirstLogin: false,
+          isActive: true,
+          department: 'Administration',
+        });
+        console.log(`✅ Seeded default Super Admin user: ${targetAdminEmail}`);
+      }
     }
     
     // Re-index completed documents on startup

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from './Logo';
 
@@ -13,7 +13,7 @@ const LOADING_STEPS = [
   'Ingesting lecture document context...',
   'Calibrating explainability parameters...',
   'Checking hybrid RAG retrieval vectors...',
-  'Initializing Llama 3 tutor engine...',
+  'Initializing GPT tutor engine...',
   'Synthesizing study recommendations...',
 ];
 

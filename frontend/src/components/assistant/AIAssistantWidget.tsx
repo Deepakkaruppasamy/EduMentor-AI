@@ -262,7 +262,7 @@ export const AIAssistantWidget: React.FC = () => {
                   EduMentor Assistant
                 </div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>
-                  Powered by Llama 3
+                  Powered by GPT
                 </div>
               </div>
 

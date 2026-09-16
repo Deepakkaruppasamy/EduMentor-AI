@@ -16,7 +16,7 @@ export const adminDashboardTour: TourStep[] = [
   {
     targetId: 'nav-ai-eval',
     title: 'RAG / AI Evaluation Studio',
-    description: 'Audit AI answer accuracy, groundness, trust scores, and run diagnostics against Groq, Llama, and Embedding pipelines.',
+    description: 'Audit AI answer accuracy, groundness, trust scores, and run diagnostics against Groq, GPT, and Embedding pipelines.',
     placement: 'right'
   },
   {

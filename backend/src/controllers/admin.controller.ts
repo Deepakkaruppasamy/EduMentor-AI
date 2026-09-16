@@ -118,7 +118,7 @@ export const createUser = asyncHandler(async (req: AuthRequest, res: Response) =
 
   await AuditLog.create({
     action: 'USER_CREATED',
-    performedBy: req.user?.email || 'admin@university.edu',
+    performedBy: req.user?.email || 'deepakkaruppasamy27@gmail.com',
     targetUser: email,
     details: `Created new user manually: ${name} (${role})`,
     ipAddress: req.ip || req.socket.remoteAddress,
@@ -243,7 +243,7 @@ export const bulkCreateUsers = asyncHandler(async (req: AuthRequest, res: Respon
 
   await AuditLog.create({
     action: 'USER_BULK_IMPORT',
-    performedBy: req.user?.email || 'admin@university.edu',
+    performedBy: req.user?.email || 'deepakkaruppasamy27@gmail.com',
     details: `Imported ${createdCredentials.length} users successfully. Errors: ${errors.length}`,
     ipAddress: req.ip || req.socket.remoteAddress,
     device: req.headers['user-agent'] || 'Unknown Device',
@@ -283,7 +283,7 @@ export const editUser = asyncHandler(async (req: AuthRequest, res: Response) => 
 
   await AuditLog.create({
     action: 'USER_UPDATED',
-    performedBy: req.user?.email || 'admin@university.edu',
+    performedBy: req.user?.email || 'deepakkaruppasamy27@gmail.com',
     targetUser: oldEmail,
     details: `Updated details for user: ${user.name} (${user.role})`,
     ipAddress: req.ip || req.socket.remoteAddress,
@@ -313,7 +313,7 @@ export const toggleUserStatus = asyncHandler(async (req: AuthRequest, res: Respo
 
   await AuditLog.create({
     action: 'USER_STATUS_CHANGE',
-    performedBy: req.user?.email || 'admin@university.edu',
+    performedBy: req.user?.email || 'deepakkaruppasamy27@gmail.com',
     targetUser: user.email,
     details: `User status set to ${isActive ? 'Enabled' : 'Disabled'}`,
     ipAddress: req.ip || req.socket.remoteAddress,
@@ -342,7 +342,7 @@ export const forceResetPassword = asyncHandler(async (req: AuthRequest, res: Res
 
   await AuditLog.create({
     action: 'PASSWORD_RESET_COMPLETED',
-    performedBy: req.user?.email || 'admin@university.edu',
+    performedBy: req.user?.email || 'deepakkaruppasamy27@gmail.com',
     targetUser: user.email,
     details: `Admin force reset password. Set isFirstLogin=true.`,
     ipAddress: req.ip || req.socket.remoteAddress,
@@ -371,7 +371,7 @@ export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) =
 
   await AuditLog.create({
     action: 'USER_DELETED',
-    performedBy: req.user?.email || 'admin@university.edu',
+    performedBy: req.user?.email || 'deepakkaruppasamy27@gmail.com',
     targetUser: userEmail,
     details: `Deleted user: ${user.name} (${user.role})`,
     ipAddress: req.ip || req.socket.remoteAddress,

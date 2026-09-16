@@ -81,7 +81,7 @@ export const CommandPalette: React.FC = () => {
     // Student links
     ...(user?.role === 'student' ? [
       { id: 'nav-dashboard', icon: '📊', label: 'Dashboard', category: 'Pages', action: () => go('/dashboard'), keywords: ['home', 'overview'] },
-      { id: 'nav-chat', icon: '💬', label: 'AI Chat Tutor', category: 'Pages', action: () => go('/chat'), keywords: ['chat', 'ai', 'tutor', 'ask', 'llama'] },
+      { id: 'nav-chat', icon: '💬', label: 'AI Chat Tutor', category: 'Pages', action: () => go('/chat'), keywords: ['chat', 'ai', 'tutor', 'ask', 'gpt'] },
       { id: 'nav-quiz', icon: '📝', label: 'Quiz Generator', category: 'Pages', action: () => go('/quiz'), keywords: ['quiz', 'test', 'mcq'] },
       { id: 'nav-notes', icon: '📓', label: 'Notes Generator', category: 'Pages', action: () => go('/notes-generator'), keywords: ['notes', 'summary', 'revision'] },
       { id: 'nav-flashcards', icon: '🎴', label: 'Flashcards', category: 'Pages', action: () => go('/flashcards'), keywords: ['flash', 'card', 'memory'] },

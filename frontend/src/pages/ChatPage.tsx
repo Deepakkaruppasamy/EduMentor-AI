@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useChatStore } from '../store/chat.store';
@@ -105,6 +105,7 @@ export const ChatPage: React.FC = () => {
             ? 'Response is partially consistent but may contain unverified statements.' 
             : 'Response contains major inconsistencies with course materials.',
           flags: m.hallucinationFlags || [],
+          atomicClaims: m.atomicClaims || [],
         } : undefined,
       }));
       loadMessages(messages);

@@ -148,7 +148,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chatId, m
           <div className="flex items-center gap-2 flex-wrap px-1">
             {/* Trust Score */}
             {message.trustScore !== undefined && (
-              <TrustScoreBadge score={message.trustScore} />
+              <TrustScoreBadge
+                score={message.trustScore}
+                hasSources={Boolean(message.explainability?.sources && message.explainability.sources.length > 0)}
+              />
             )}
 
             {/* Confidence */}

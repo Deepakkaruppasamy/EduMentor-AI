@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src/**/*.ts",
-    "eval:benchmark": "ts-node src/scripts/run-retrieval-benchmark.ts"
+    "eval:benchmark": "ts-node src/scripts/run-retrieval-benchmark.ts",
+    "seed:admin": "ts-node src/scripts/seed-admin.ts"
   },
 
   "dependencies": {
