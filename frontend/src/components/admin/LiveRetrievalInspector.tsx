@@ -21,14 +21,35 @@ export const LiveRetrievalInspector: React.FC = () => {
   }, []);
 
   const fetchCourses = async () => {
+    const defaultCourses: CourseOption[] = [
+      { _id: 'course_dbms101', title: 'Database Management Systems', code: 'DBMS101' },
+      { _id: 'course_cn301', title: 'Computer Networks', code: 'CN301' },
+      { _id: 'course_os201', title: 'Operating Systems', code: 'OS201' },
+      { _id: 'course_ds401', title: 'Data Structures', code: 'DS401' },
+      { _id: 'course_ml501', title: 'Machine Learning', code: 'ML501' },
+    ];
+
     try {
-      const res = await api.get('/courses');
-      if (res.data.success && res.data.data.length > 0) {
-        setCourses(res.data.data);
-        setSelectedCourseId(res.data.data[0]._id);
+      let rawList: any[] = [];
+      try {
+        const res = await api.get('/courses');
+        rawList = res.data?.courses || res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      } catch {
+        const res = await api.get('/course/all');
+        rawList = res.data?.courses || res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      }
+
+      if (rawList && rawList.length > 0) {
+        setCourses(rawList);
+        setSelectedCourseId(rawList[0]._id);
+      } else {
+        setCourses(defaultCourses);
+        setSelectedCourseId(defaultCourses[0]._id);
       }
     } catch (err) {
-      console.error('Failed to load course list:', err);
+      console.warn('Using default course options for live inspection:', err);
+      setCourses(defaultCourses);
+      setSelectedCourseId(defaultCourses[0]._id);
     }
   };
 

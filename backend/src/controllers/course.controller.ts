@@ -30,10 +30,28 @@ export const createCourse = asyncHandler(async (req: AuthRequest, res: Response)
 });
 
 export const getAllCourses = asyncHandler(async (_req: Request, res: Response) => {
-  const courses = await Course.find({ isActive: true })
+  let courses = await Course.find({ isActive: true })
     .populate('faculty', 'name email avatar bio qualifications department')
     .sort({ createdAt: -1 });
-  res.json({ success: true, count: courses.length, courses });
+
+  // If no courses exist yet, auto-populate predefined sample courses
+  if (!courses || courses.length === 0) {
+    try {
+      const seeded = await Course.insertMany(
+        PREDEFINED_COURSES.map(c => ({
+          ...c,
+          chromaCollection: `course_${c.code.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+          isActive: true,
+        }))
+      );
+      courses = seeded as any;
+    } catch {
+      // Fall back if insertMany encounters race
+      courses = await Course.find({ isActive: true });
+    }
+  }
+
+  res.json({ success: true, count: courses.length, courses, data: courses });
 });
 
 export const getCourseById = asyncHandler(async (req: Request, res: Response) => {

@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import mongoose from 'mongoose';
 import Chat from '../models/Chat';
 import Course from '../models/Course';
 import Analytics from '../models/Analytics';
@@ -564,11 +565,25 @@ export const inspectLiveRetrieval = asyncHandler(async (req: AuthRequest, res: R
   let chromaCollection = 'general';
   let courseTitle = 'General Course';
 
-  if (courseId) {
-    const course = await Course.findById(courseId);
-    if (course) {
-      chromaCollection = course.chromaCollection;
-      courseTitle = course.title;
+  if (courseId && typeof courseId === 'string') {
+    if (mongoose.Types.ObjectId.isValid(courseId)) {
+      const course = await Course.findById(courseId);
+      if (course) {
+        chromaCollection = course.chromaCollection;
+        courseTitle = course.title;
+      }
+    } else {
+      const course = await Course.findOne({
+        $or: [
+          { code: courseId.replace('course_', '').toUpperCase() },
+          { chromaCollection: courseId },
+          { title: new RegExp(courseId, 'i') },
+        ],
+      });
+      if (course) {
+        chromaCollection = course.chromaCollection;
+        courseTitle = course.title;
+      }
     }
   }
 

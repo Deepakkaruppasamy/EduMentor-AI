@@ -39,19 +39,17 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
-  // Always pass through non-GET requests (POST/PUT/DELETE/PATCH) directly to network.
-  // Do NOT return early without respondWith — that causes "network error response" in the browser.
+  // Always pass through non-GET requests directly to network without interception
   if (event.request.method !== 'GET') {
-    event.respondWith(fetch(event.request));
     return;
   }
 
-  // Skip SW caching for socket.io and cross-origin requests
+  // Skip SW interception for socket.io and cross-origin requests (e.g. Google Fonts)
+  // Let the browser handle cross-origin resources natively to prevent CSP connect-src violations
   if (
     requestUrl.pathname.startsWith('/socket.io') ||
     requestUrl.origin !== self.location.origin
   ) {
-    event.respondWith(fetch(event.request));
     return;
   }
 
@@ -108,8 +106,11 @@ self.addEventListener('fetch', (event) => {
               );
             });
           }
-          // For non-navigate failed requests, pass through the error
-          return fetch(event.request);
+          // For non-navigate failed requests, return a clean offline response without throwing unhandled rejection
+          return new Response(JSON.stringify({ offline: true, message: 'Network offline' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' },
+          });
         });
     })
   );

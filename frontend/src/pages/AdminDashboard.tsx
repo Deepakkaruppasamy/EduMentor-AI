@@ -640,59 +640,184 @@ const SuperAdminDashboardView: React.FC = () => {
               <StatCard icon="🔑" label="Password Resets" value={data.securityDashboard.passwordResetRequests} color="#7c6fc2" />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Security devices */}
-              <div className="glass-card p-5 border border-white/5">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Logged-in Devices Breakdown</h3>
-                {data.securityDashboard.loginDevice.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <PieChart>
-                      <Pie data={data.securityDashboard.loginDevice} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70}>
-                        {data.securityDashboard.loginDevice.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ background: 'rgba(26,29,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '11px' }} />
-                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '9px', paddingTop: '12px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[220px] flex items-center justify-center text-xs text-white/30">No device logs yet</div>
-                )}
-              </div>
+            {(() => {
+              const parseFriendlyDevice = (ua: string): string => {
+                if (!ua) return 'Windows (Chrome)';
+                if (ua.length < 30 && ua.includes('(')) return ua;
 
-              {/* Recent Active Logins list */}
-              <div className="glass-card p-5 border border-white/5 md:col-span-2">
-                <h3 className="text-xs md:text-sm font-semibold text-white/80 mb-4">Audit Feed: Recent Successful Logins</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-[11px]">
-                    <thead>
-                      <tr className="text-white/40 border-b border-white/5">
-                        <th className="pb-2">User Email</th>
-                        <th className="pb-2">Time</th>
-                        <th className="pb-2">IP Address</th>
-                        <th className="pb-2">Device</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.03] text-white/70">
-                      {data.securityDashboard.lastLoginTime.map((log: any, idx: number) => (
-                        <tr key={idx}>
-                          <td className="py-2 font-semibold text-white">{log.email}</td>
-                          <td className="py-2">{new Date(log.time).toLocaleTimeString()}</td>
-                          <td className="py-2 font-mono">{log.ip}</td>
-                          <td className="py-2 truncate max-w-[120px]">{log.device.split(' ')[0] || log.device}</td>
-                        </tr>
-                      ))}
-                      {data.securityDashboard.lastLoginTime.length === 0 && (
-                        <tr>
-                          <td colSpan={4} className="py-6 text-center text-white/30">No security login entries logged yet.</td>
-                        </tr>
+                let browser = 'Chrome';
+                if (/Edg\//i.test(ua)) browser = 'Edge';
+                else if (/Firefox\//i.test(ua)) browser = 'Firefox';
+                else if (/OPR|Opera/i.test(ua)) browser = 'Opera';
+                else if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+
+                let os = 'Windows';
+                if (/Windows/i.test(ua)) os = 'Windows';
+                else if (/Android/i.test(ua)) os = 'Android';
+                else if (/iPhone|iPad/i.test(ua)) os = 'iOS';
+                else if (/Mac OS|Macintosh/i.test(ua)) os = 'macOS';
+                else if (/Linux/i.test(ua)) os = 'Linux';
+
+                return `${os} (${browser})`;
+              };
+
+              const rawDevices: any[] = data.securityDashboard.loginDevice || [];
+              const deviceMap: Record<string, number> = {};
+              rawDevices.forEach((d: any) => {
+                const label = parseFriendlyDevice(d.name || d._id);
+                deviceMap[label] = (deviceMap[label] || 0) + (Number(d.value || d.count) || 1);
+              });
+              const cleanDevices = Object.entries(deviceMap).map(([name, value]) => ({ name, value }));
+              const totalLogins = cleanDevices.reduce((acc, curr) => acc + curr.value, 0);
+
+              return (
+                <div className="grid gap-6 md:grid-cols-3">
+                  {/* Security devices */}
+                  <div className="glass-card p-5 border border-white/5 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-xs md:text-sm font-semibold text-white/90">Logged-in Devices Breakdown</h3>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-white/50 border border-white/10">
+                          {totalLogins} total
+                        </span>
+                      </div>
+
+                      {cleanDevices.length > 0 ? (
+                        <div>
+                          <div className="relative h-[180px] w-full flex items-center justify-center">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={cleanDevices}
+                                  dataKey="value"
+                                  nameKey="name"
+                                  cx="50%"
+                                  cy="50%"
+                                  innerRadius={46}
+                                  outerRadius={68}
+                                  paddingAngle={3}
+                                >
+                                  {cleanDevices.map((entry: any, index: number) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                  ))}
+                                </Pie>
+                                <Tooltip
+                                  contentStyle={{
+                                    background: 'rgba(20,23,34,0.95)',
+                                    border: '1px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '8px',
+                                    color: '#fff',
+                                    fontSize: '11px',
+                                    padding: '6px 10px',
+                                  }}
+                                />
+                              </PieChart>
+                            </ResponsiveContainer>
+                            <div className="absolute flex flex-col items-center justify-center pointer-events-none">
+                              <span className="text-lg font-bold text-white leading-tight">{totalLogins}</span>
+                              <span className="text-[9px] uppercase tracking-wider text-white/40">Logins</span>
+                            </div>
+                          </div>
+
+                          {/* Clean, Neat Device Legend */}
+                          <div className="mt-3 space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                            {cleanDevices.map((entry, index) => {
+                              const pct = totalLogins > 0 ? Math.round((entry.value / totalLogins) * 100) : 0;
+                              const isMobile = entry.name.includes('Android') || entry.name.includes('iOS');
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between text-[11px] p-2 rounded-lg bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span
+                                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                      style={{ background: COLORS[index % COLORS.length] }}
+                                    />
+                                    <span className="text-white/80 font-medium truncate flex items-center gap-1.5">
+                                      <span>{isMobile ? '📱' : '💻'}</span>
+                                      <span>{entry.name}</span>
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 font-mono text-[10.5px] flex-shrink-0">
+                                    <span className="text-white font-bold">{entry.value}</span>
+                                    <span className="text-white/40">({pct}%)</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-[220px] flex items-center justify-center text-xs text-white/30">
+                          No device logs yet
+                        </div>
                       )}
-                    </tbody>
-                  </table>
+                    </div>
+                  </div>
+
+                  {/* Recent Active Logins list */}
+                  <div className="glass-card p-5 border border-white/5 md:col-span-2 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs md:text-sm font-semibold text-white/90">
+                          Audit Feed: Recent Successful Logins
+                        </h3>
+                        <span className="text-[10.5px] text-emerald-400 font-semibold flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          Live Security Stream
+                        </span>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-[11px]">
+                          <thead>
+                            <tr className="text-white/40 border-b border-white/10 text-[10.5px] uppercase tracking-wider">
+                              <th className="pb-2.5">User Email</th>
+                              <th className="pb-2.5">Time</th>
+                              <th className="pb-2.5">IP Address</th>
+                              <th className="pb-2.5">Device</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/[0.04] text-white/70">
+                            {data.securityDashboard.lastLoginTime.map((log: any, idx: number) => {
+                              const cleanDev = parseFriendlyDevice(log.device);
+                              const isMobile = cleanDev.includes('Android') || cleanDev.includes('iOS');
+                              return (
+                                <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
+                                  <td className="py-2.5 font-medium text-white/90">{log.email}</td>
+                                  <td className="py-2.5 text-white/50 whitespace-nowrap">
+                                    {new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                  </td>
+                                  <td className="py-2.5 font-mono">
+                                    <span className="px-2 py-0.5 rounded bg-primary-500/10 text-primary-300 border border-primary-500/20 text-[10.5px]">
+                                      {log.ip}
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5">
+                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 text-white/80 text-[10.5px] font-medium">
+                                      <span>{isMobile ? '📱' : '💻'}</span>
+                                      <span>{cleanDev}</span>
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            {data.securityDashboard.lastLoginTime.length === 0 && (
+                              <tr>
+                                <td colSpan={4} className="py-8 text-center text-white/30 italic">
+                                  No security login entries logged yet.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         );
       case 'ai-evaluation':
