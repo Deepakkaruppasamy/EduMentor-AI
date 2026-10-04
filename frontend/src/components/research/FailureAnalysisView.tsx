@@ -40,8 +40,8 @@ export const FailureAnalysisView: React.FC = () => {
       badgeBg: 'bg-amber-500/10 border-amber-500/20 text-amber-300',
     },
     {
-      name: 'BM25 (Sparse Lexical Only)',
-      description: 'Okapi BM25 keyword matching with frequency inverse scoring',
+      name: 'TF-IDF (Sparse Lexical Only)',
+      description: 'TF-IDF keyword matching with term-frequency inverse document frequency scoring',
       retrievalP5: '0.745',
       retrievalR5: '0.755',
       mrr: '0.730',
@@ -101,23 +101,23 @@ export const FailureAnalysisView: React.FC = () => {
       icon: '🟢',
       query: 'What is Third Normal Form (3NF) and how does it prevent transitive functional dependencies?',
       courseDoc: 'CS101 Database Systems · Database_Fundamentals.pdf (Page 42)',
-      retrievalDiagnosis: 'Dense Vector captured the semantic concept of "non-prime attribute isolation", while BM25 matched exact tokens ("3NF", "2NF", "functional dependency"). RRF fused both signals into Rank #1 with 96% confidence.',
+      retrievalDiagnosis: 'Dense Vector captured the semantic concept of "non-prime attribute isolation", while TF-IDF matched exact tokens ("3NF", "2NF", "functional dependency"). RRF fused both signals into Rank #1 with 96% confidence.',
       generatedAnswerExcerpt: 'Third Normal Form (3NF) requires a relation to be in 2NF and have no transitive functional dependencies. Every non-prime attribute must depend strictly on the candidate key directly, preventing update anomalies.',
       trustScoreOutcome: 'Trust: 98% · Verified (4/4 atomic claims verified via NLI entailment against Page 42).',
-      researchTakeaway: 'Demonstrates that neither Vector nor BM25 in isolation achieves optimal precision when queries combine conceptual explanations with technical alphanumeric designations (3NF/2NF).',
+      researchTakeaway: 'Demonstrates that neither Vector nor TF-IDF in isolation achieves optimal precision when queries combine conceptual explanations with technical alphanumeric designations (3NF/2NF).',
     },
     {
       id: 'case_2',
-      title: 'Scenario 2: Retrieval Degraded / BM25 Failed (Vocabulary Mismatch)',
+      title: 'Scenario 2: Retrieval Degraded / TF-IDF Failed (Vocabulary Mismatch)',
       type: 'RETRIEVAL_GAP',
       typeBadge: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
       icon: '🟡',
       query: 'Explain Byzantine fault tolerance in distributed consensus protocols.',
       courseDoc: 'CS202 Distributed Systems · Distributed_Systems_Ch5.pdf (Page 112)',
-      retrievalDiagnosis: 'The lecturer’s lecture slides formulated the concept as "consensus with arbitrary fail-stop and malicious nodes" without mentioning the historical word "Byzantine". BM25 scored 0.0 hits because the query keyword was missing.',
+      retrievalDiagnosis: 'The lecturer’s lecture slides formulated the concept as "consensus with arbitrary fail-stop and malicious nodes" without mentioning the historical word "Byzantine". TF-IDF scored 0.0 hits because the query keyword was missing.',
       generatedAnswerExcerpt: 'Dense Vector search retrieved the passage at Rank #2 based on contextual embeddings of node consensus and adversary failure modes.',
-      trustScoreOutcome: 'Trust: 92% · Verified (Hybrid RRF weighted the Vector signal to recover the correct context despite BM25 lexical failure).',
-      researchTakeaway: 'Validates why sparse lexical retrieval alone (BM25) fails when students use domain synonyms not present in the instructor’s exact verbatim text.',
+      trustScoreOutcome: 'Trust: 92% · Verified (Hybrid RRF weighted the Vector signal to recover the correct context despite TF-IDF lexical failure).',
+      researchTakeaway: 'Validates why sparse lexical retrieval alone (TF-IDF) fails when students use domain synonyms not present in the instructor’s exact verbatim text.',
     },
     {
       id: 'case_3',
@@ -173,7 +173,7 @@ export const FailureAnalysisView: React.FC = () => {
           </span>
         </div>
         <p className="text-xs text-white/50 leading-relaxed max-w-4xl">
-          Comprehensive evaluation of the five core architectural configurations across Course Documents, Dense Vector, BM25, Hybrid RRF, and TrustScore Guardrails, followed by deep qualitative case studies addressing retrieval success, vocabulary gaps, parametric intrusions, and guardrail enforcement.
+          Comprehensive evaluation of the five core architectural configurations across Course Documents, Dense Vector, TF-IDF, Hybrid RRF, and TrustScore Guardrails, followed by deep qualitative case studies addressing retrieval success, vocabulary gaps, parametric intrusions, and guardrail enforcement.
         </p>
       </div>
 

@@ -90,7 +90,7 @@ export const LiveRetrievalInspector: React.FC = () => {
               <h3 className="text-base font-bold text-white">Live Retrieval & Vector Inspector</h3>
             </div>
             <p className="text-xs text-white/40 mt-1">
-              Test student questions live to inspect Cosine Similarity, BM25 scores, RRF merged ranks, and retrieval latency.
+              Test student questions live to inspect Cosine Similarity, TF-IDF scores, RRF merged ranks, and retrieval latency.
             </p>
           </div>
           <button
@@ -185,7 +185,7 @@ export const LiveRetrievalInspector: React.FC = () => {
           {/* Retrieved Chunks Table */}
           <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
             <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <span>📊</span> Multi-Vector & BM25 Scoring Breakdown
+              <span>📊</span> Multi-Vector & TF-IDF Scoring Breakdown
             </h4>
 
             <div className="overflow-x-auto">
@@ -195,7 +195,7 @@ export const LiveRetrievalInspector: React.FC = () => {
                     <th className="py-2">Rank</th>
                     <th className="py-2">Source Document</th>
                     <th className="py-2">Vector Cosine Score</th>
-                    <th className="py-2">BM25 Term Score</th>
+                    <th className="py-2">TF-IDF Term Score</th>
                     <th className="py-2">RRF Final Score</th>
                     <th className="py-2">Excerpt Snippet</th>
                   </tr>

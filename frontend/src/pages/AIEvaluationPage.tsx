@@ -249,10 +249,10 @@ const RAGPanel: React.FC<{ data: any }> = ({ data }) => {
 
   return (
     <div className="space-y-6">
-      <SectionHeader icon="🔍" title="Hybrid RAG Performance" subtitle="Vector + BM25 retrieval accuracy and latency metrics" />
+      <SectionHeader icon="🔍" title="Hybrid RAG Performance" subtitle="Vector + TF-IDF retrieval accuracy and latency metrics" />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <MetricCard icon="🧲" label="Vector Retrieval" value={`${vectorAcc}%`} color="#4f5dc8" />
-        <MetricCard icon="📚" label="BM25 Retrieval" value={`${bm25Acc}%`} color="#7c6fc2" />
+        <MetricCard icon="📚" label="TF-IDF Retrieval" value={`${bm25Acc}%`} color="#7c6fc2" />
         <MetricCard icon="🔀" label="Hybrid Retrieval" value={`${hybridAcc}%`} color="#34a87a" />
         <MetricCard icon="⚡" label="Avg Retrieval Time" value={`${avgTime}s`} color="#c4893a" />
         <MetricCard icon="🎯" label="Top-K Accuracy" value={`${topK}%`} color="#2d9a8a" />
@@ -309,7 +309,7 @@ const RAGPanel: React.FC<{ data: any }> = ({ data }) => {
       <div className="space-y-3 rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <h4 className="text-xs font-bold text-white/50 mb-4">📊 Retrieval Performance Comparison</h4>
         <GaugeBar label="Vector Search Accuracy" value={vectorAcc} color="#4f5dc8" />
-        <GaugeBar label="BM25 Keyword Accuracy" value={bm25Acc} color="#7c6fc2" />
+        <GaugeBar label="TF-IDF Keyword Accuracy" value={bm25Acc} color="#7c6fc2" />
         <GaugeBar label="Hybrid Combined Accuracy" value={hybridAcc} color="#34a87a" />
         <GaugeBar label="Top-K Retrieval" value={topK} color="#2d9a8a" />
         <GaugeBar label="Context Relevance Score" value={contextRel} color="#a78bcd" />
