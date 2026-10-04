@@ -17,13 +17,13 @@ export interface IRetrievedSourceSnapshot {
 }
 
 export interface IResearchChatSample extends Document {
-  sampleSource: SampleSourceType;           // Always 'REAL_AI_CHAT' for chat samples
-  sourceChatId: mongoose.Types.ObjectId;   // Reference to Chat
-  sourceMessageId: string;                 // Reference to Message subdocument _id or index
+  sampleSource: SampleSourceType;          /// Always 'REAL_AI_CHAT' for chat samples
+  sourceChatId: mongoose.Types.ObjectId;   /// Reference to Chat
+  sourceMessageId: string;                 /// Reference to Message subdocument _id or index
 
   // Privacy & Blinding
-  anonymizedStudentId: string;             // Salted Hash of student ObjectId (e.g. 'anon_std_9a8f...')
-  anonymousId: string;                     // UUID for blinded expert review (e.g. 'blind_chat_4k2l...')
+  anonymizedStudentId: string;             /// Salted Hash of student ObjectId (e.g. 'anon_std_9a8f...')
+  anonymousId: string;                     /// UUID for blinded expert review (e.g. 'blind_chat_4k2l...')
 
   // Context & Content
   course: mongoose.Types.ObjectId;
@@ -33,7 +33,7 @@ export interface IResearchChatSample extends Document {
   timestamp: Date;
 
   // Metadata Instrumentation
-  llmModel: string | null;                    // 'openai/gpt-oss-120b' or null if unrecorded
+  llmModel: string | null;                    // 'llama-3.3-70b-versatile' or null if unrecorded
   language: string | null;                 // User preferredLanguage or null
   explanationMode: string | null;          // 'standard', 'simply', 'detail', etc.
 
@@ -100,10 +100,6 @@ const ManualCorrectnessReviewSchema = new Schema<IManualCorrectnessReview>(
     factuallyCorrect: { type: Boolean },
     containsMajorError: { type: Boolean },
     errorCategories: [{ type: String }],
-    relevanceRating: { type: Number, enum: [1, 2, 3, 4, 5] },
-    completenessRating: { type: Number, enum: [1, 2, 3, 4, 5] },
-    clarityRating: { type: Number, enum: [1, 2, 3, 4, 5] },
-    usefulnessRating: { type: Number, enum: [1, 2, 3, 4, 5] },
     comments: { type: String, trim: true },
   },
   { _id: false }

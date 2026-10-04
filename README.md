@@ -198,41 +198,239 @@ Frontend runs on `http://localhost:5173`
 
 ---
 
-## 🤖 Hybrid RAG Architecture
+## 🏛️ System Architecture & Methodology (IEEE Paper)
 
+> **"LLM-Driven Intelligent Educational Platform Using Hybrid RAG for Personalized Learning and Academic Support"**  
+> *Authors: Vanitha P, Deepak K, Deva C (Dept. of Information Technology, Kongu Engineering College)*
+
+### Fig. 1. Overall System Architecture of the Proposed Educational Platform
+
+```mermaid
+flowchart TD
+    Users["STUDENTS / FACULTY / ADMIN"]
+    
+    subgraph PresentationLayer ["PRESENTATION LAYER"]
+        WebUI["Web Application UI (React + Vite)"]
+    end
+    
+    subgraph ApplicationLayer ["APPLICATION LAYER (Express.js Backend)"]
+        direction LR
+        UserMgmt["User / Session\nManagement"]
+        AcademicSupport["Academic Support\nModules"]
+        AdminDashboard["Admin & Evaluation\nDashboard"]
+    end
+    
+    subgraph KnowledgeLayer ["KNOWLEDGE & GENERATION LAYER"]
+        direction TB
+        subgraph DataSources ["Databases & Indices"]
+            MongoStore[("Data Store\n(MongoDB)")]
+            ChromaStore[("Vector Search\n(ChromaDB)")]
+            BM25Store[("Lexical Search\n(BM25)")]
+        end
+        
+        HybridRAGEngine["Hybrid RAG Engine\n(Reciprocal Rank Fusion + Context Construction)"]
+        GenEngine["Generation Engine\n(openai/gpt-oss-120b via Groq / Llama 3)"]
+        
+        ChromaStore --> HybridRAGEngine
+        BM25Store --> HybridRAGEngine
+        HybridRAGEngine --> GenEngine
+    end
+    
+    Users <--> WebUI
+    WebUI <--> ApplicationLayer
+    ApplicationLayer <--> KnowledgeLayer
 ```
-Student Query
-     │
-     ▼
-┌─────────────────────────┐
-│   Query Embedding       │  ← HuggingFace all-MiniLM-L6-v2
-└──────────┬──────────────┘
-           │
-    ┌──────┴──────┐
-    │             │
-    ▼             ▼
-ChromaDB       BM25 Index
-(Vector)      (Keyword)
-    │             │
-    └──────┬──────┘
-           │
-           ▼
-  Reciprocal Rank Fusion
-           │
-           ▼
-    Top-5 Chunks
-           │
-           ▼
-     Llama 3 70B
-    (Context + Query)
-           │
-           ▼
-  Hallucination Detection
-  (Cosine Sim per sentence)
-           │
-           ▼
-   Explainable Response
-   (Sources + Trust Score)
+
+---
+
+### Fig. 2. Knowledge Acquisition and Document Processing Pipeline
+
+```mermaid
+flowchart LR
+    subgraph OfflinePipeline ["OFFLINE INGESTION PIPELINE"]
+        direction TB
+        Sources["COURSE SOURCES\n(PDF, PPT, DOCX)"] --> DocParsing["Document Parsing"]
+        DocParsing --> TextExtract["Text Extraction"]
+        TextExtract --> Preprocess["Preprocessing"]
+        Preprocess --> RecChunk["Recursive Chunking"]
+        
+        RecChunk --> DenseEmb["Dense Embedding\n(all-MiniLM-L6-v2)"]
+        RecChunk --> SparseIdx["Sparse Indexing\n(TF-IDF / Tokenization)"]
+        RecChunk --> ChunkObj["Chunk Object\n(Content + Doc ID + Page Number)"]
+    end
+    
+    subgraph KnowledgeStores ["KNOWLEDGE STORES"]
+        direction TB
+        VectorDB[("Vector Store\n(ChromaDB)")]
+        KeywordIdx[("Keyword Index\n(BM25)")]
+        MetaDB[("Metadata\n(MongoDB)")]
+    end
+    
+    DenseEmb --> VectorDB
+    SparseIdx --> KeywordIdx
+    ChunkObj --> MetaDB
+```
+
+---
+
+### Fig. 3. Hybrid Retrieval-Augmented Generation Architecture
+
+```mermaid
+flowchart TD
+    UserQuery["USER QUERY"] --> Gatekeeper["Query Processing & Gatekeeper\n(qwen3.6-27b relevance check)"]
+    
+    subgraph SemanticBranch ["SEMANTIC RETRIEVAL BRANCH"]
+        QueryEmb["Query Embedding\n(all-MiniLM-L6-v2)"] --> DenseSearch["Dense Vector Search"] --> ChromaDB[("ChromaDB Vector Store")]
+    end
+    
+    subgraph LexicalBranch ["LEXICAL RETRIEVAL BRANCH"]
+        QueryTok["Query Tokenization"] --> KeywordMatch["Exact Keyword Matching"] --> BM25Index[("Okapi BM25 Index")]
+    end
+    
+    Gatekeeper --> QueryEmb
+    Gatekeeper --> QueryTok
+    
+    ChromaDB --> RRF["RECIPROCAL RANK FUSION (RRF)\nRRF(d) = Σ 1 / (k + rank(d)), k=60"]
+    BM25Index --> RRF
+    
+    RRF --> ContextConst["Context Construction\n(Top-K Chunks + Source/Page Metadata)"]
+    ContextConst --> LLMGen["LLM Generation Engine\n(openai/gpt-oss-120b / llama-3.3-70b-versatile via Groq)"]
+```
+
+---
+
+### Fig. 4. Query Processing and Response Generation Workflow
+
+```mermaid
+flowchart TD
+    UserQ["USER QUERY"] --> GatekeeperCheck{"Gatekeeper\nRelevance Check"}
+    
+    GatekeeperCheck -- "Off-Topic / Decline" --> RejectClarify["Reject / Clarify Request"]
+    RejectClarify --> WebUI["WEB APPLICATION UI"]
+    
+    GatekeeperCheck -- "Course-Relevant" --> HybridRAG["Hybrid RAG Pipeline"]
+    
+    subgraph RuntimeGen ["RUNTIME GENERATION AND VALIDATION"]
+        HybridRAG --> ContextConst["Context Construction"]
+        ContextConst --> LLM["LLM (Llama 3 / gpt-oss-120b)"]
+        LLM --> TrustScore{"TrustScore Guardrail\n(n-gram overlap + Cosine Grounding)"}
+        TrustScore -- "Fail (< Threshold)\nRegenerate" --> LLM
+    end
+    
+    TrustScore -- "Pass (Valid)\nTrustScore >= 70%" --> WebUI
+```
+
+---
+
+### Fig. 5. Personalized Learning Architecture
+
+```mermaid
+flowchart LR
+    subgraph Inputs ["STUDENT SIGNALS"]
+        direction TB
+        UserProfile["User Profile"]
+        InteractionLogs["Interaction Logs"]
+        QuizPerf["Quiz Performance"]
+        ExamDates["Exam Dates"]
+    end
+    
+    subgraph PersonalizationLogic ["PERSONALIZATION LOGIC MODULE"]
+        direction TB
+        StudyPlanner["Study Planner"] --> StudySchedule["Study Schedule"]
+        TopicAnalysis["Topic Analysis\n(Weak Area Detection)"] --> TargetedTopics["Targeted Topics"]
+    end
+    
+    UserProfile --> StudyPlanner
+    InteractionLogs --> StudyPlanner
+    QuizPerf --> TopicAnalysis
+    ExamDates --> StudyPlanner
+    
+    StudySchedule --> PromptInject["LLM Prompt Injection\n(Personalized Context Window)"]
+    TargetedTopics --> PromptInject
+    
+    PromptInject --> TailoredResp["Tailored Responses &\nStudent UI"]
+```
+
+---
+
+### Fig. 6. Academic Support Workflow
+
+```mermaid
+flowchart TD
+    UserQuery["USER ACADEMIC QUERY"] --> IntentRouter["Intent Routing Module"]
+    
+    subgraph SupportModes ["ACADEMIC SUPPORT MODES"]
+        ExplainMode["Q&A / Explain Mode\n- Concept Simplification\n- Real-World Examples"]
+        StudyHelp["Study Help\n- Concept Graphs\n- Exam Summaries"]
+        AssignEval["Assignment Evaluator\n- Rubric Grading\n- Constructive Feedback"]
+    end
+    
+    IntentRouter --> ExplainMode
+    IntentRouter --> StudyHelp
+    IntentRouter --> AssignEval
+    
+    ExplainMode --> RAGLayer["Hybrid RAG + LLM Layer"]
+    StudyHelp --> RAGLayer
+    AssignEval --> RAGLayer
+    
+    RAGLayer --> EvidenceResponse["Evidence-Backed Response\n(Verified Citations + Page Numbers)"]
+```
+
+---
+
+### Fig. 7. Administrative and Evaluation Architecture
+
+```mermaid
+flowchart LR
+    subgraph SystemData ["SYSTEM DATA"]
+        direction TB
+        UserInteractions["User Interactions"]
+        APILatency["API Latency"]
+        AIOutputs["AI Outputs"]
+    end
+    
+    subgraph EvalLayer ["EVALUATION LAYER"]
+        direction TB
+        RetAccuracy["Retrieval Accuracy (P@5)"]
+        HallucinationScore["Hallucination TrustScore"]
+        PerfMetrics["Performance Metrics"]
+    end
+    
+    subgraph AdminDashboard ["ADMIN DASHBOARD"]
+        direction TB
+        RealtimeMon["Real-Time Monitoring"]
+        AutoReports["Automated Reports"]
+    end
+    
+    SystemData --> EvalLayer
+    RetAccuracy --> AdminDashboard
+    HallucinationScore --> AdminDashboard
+    PerfMetrics --> AdminDashboard
+```
+
+---
+
+### Fig. 8. End-to-End Methodology of the Proposed Platform
+
+```mermaid
+flowchart TD
+    subgraph Phase1 ["PHASE 1: OFFLINE KNOWLEDGE PREPARATION"]
+        CourseDocs["Course Documents"] --> Parsing["Ingestion & Parsing"]
+        Parsing --> Chunking["Recursive Chunking"]
+        Chunking --> DualEmbedding["Vector + BM25 Embedding"]
+        DualEmbedding --> KnowledgeStores[("Knowledge Stores\n(ChromaDB + BM25 + MongoDB)")]
+    end
+    
+    subgraph Phase2 ["PHASE 2: ONLINE QUERY EXECUTION"]
+        UserQuery["User Query"] --> RelGate["Relevance Gate (Gatekeeper)"]
+        RelGate --> HybridRet["Hybrid Retrieval\n(Vector + BM25 via RRF)"]
+        HybridRet --> ContextAssembly["Context Assembly\n(Top-K + Citations)"]
+        ContextAssembly --> LLMGen["LLM Generation\n(openai/gpt-oss-120b)"]
+        LLMGen --> TrustScoreGuard["TrustScore Guardrail\n(Verification Check)"]
+        TrustScoreGuard --> FinalUI["Final Response UI\n(Student Interface)"]
+    end
+    
+    KnowledgeStores -.-> HybridRet
 ```
 
 ---

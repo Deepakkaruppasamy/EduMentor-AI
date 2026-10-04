@@ -16,8 +16,18 @@ export interface IndexedDocument {
 }
 
 /**
- * BM25 search implementation using TF-IDF from the `natural` library
- * Operates over an in-memory corpus of document chunks for a given course
+ * Sparse keyword retrieval using TF-IDF scoring from the `natural` library.
+ *
+ * NOTE — naming: this class and file are labelled "BM25" for historical reasons
+ * (the UI also shows "Hybrid Vector + BM25"), but the actual scoring is plain
+ * TF-IDF: it sums `tfidf(term, doc)` weights over query tokens with no
+ * term-frequency saturation (k1) and no document-length normalisation (b).
+ * Real Okapi BM25 requires both parameters and is listed as future work.
+ * The benchmark numbers in the accompanying paper were measured with this
+ * TF-IDF implementation, so the scoring should not be changed without
+ * re-running the retrieval benchmark.
+ *
+ * Operates over an in-memory corpus of document chunks for a given course.
  */
 export class BM25Index {
   private tfidf: natural.TfIdf;
@@ -42,7 +52,8 @@ export class BM25Index {
   }
 
   /**
-   * Search the BM25 index for a query
+   * Search the index for a query using TF-IDF scoring.
+   * Each query token's TF-IDF weight is summed to produce a document score.
    */
   search(query: string, nResults = 10): BM25Result[] {
     if (this.documents.length === 0) return [];
