@@ -82,7 +82,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({ explainability, halluc
             <span>📖</span>
             <span className="font-semibold text-white/80">Source Citations &amp; Grounding</span>
           </div>
-          <span className="text-white/40">{explainability.retrievalMethod || 'Hybrid (Vector + BM25)'}</span>
+          <span className="text-white/40">{explainability.retrievalMethod || 'Hybrid (Vector + TF-IDF)'}</span>
         </div>
 
         {/* Hallucination / Trust Score Verdict */}

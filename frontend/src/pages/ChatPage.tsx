@@ -93,7 +93,7 @@ export const ChatPage: React.FC = () => {
             confidencePercent: Math.round(s.score * 100),
           })),
           overallConfidence: m.confidenceScore || 0,
-          retrievalMethod: 'Hybrid (Vector + BM25)',
+          retrievalMethod: 'Hybrid (Vector + TF-IDF)',
           explanationSummary: 'Source passages cited from course documents.',
         } : undefined,
         hallucination: m.trustScore !== undefined ? {

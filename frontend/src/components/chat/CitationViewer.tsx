@@ -130,7 +130,7 @@ export const CitationViewer: React.FC<CitationViewerProps> = ({ citation, onClos
           <span className="text-sm mt-0.5">💡</span>
           <div>
             <span className="font-bold block mb-0.5 text-primary-200">Interactive Research Tip:</span>
-            Matched via Hybrid RAG (Dense Vector + BM25). You can ask: *"Summarize the key points from {citation.documentName} in bullet points."*
+            Matched via Hybrid RAG (Dense Vector + TF-IDF). You can ask: *"Summarize the key points from {citation.documentName} in bullet points."*
           </div>
         </div>
       </div>
