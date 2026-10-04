@@ -75,7 +75,7 @@ export const FailureAnalysisView: React.FC = () => {
     },
     {
       name: 'Hybrid RAG + TrustScore Guardrail',
-      description: 'Full production pipeline: Hybrid RRF + Atomic Claim Decomposition NLI + Self-Correction',
+      description: 'Full production pipeline: Hybrid RRF + Claim Grounding Verification + Self-Correction',
       retrievalP5: '0.958',
       retrievalR5: '0.968',
       mrr: '0.965',
@@ -103,7 +103,7 @@ export const FailureAnalysisView: React.FC = () => {
       courseDoc: 'CS101 Database Systems · Database_Fundamentals.pdf (Page 42)',
       retrievalDiagnosis: 'Dense Vector captured the semantic concept of "non-prime attribute isolation", while TF-IDF matched exact tokens ("3NF", "2NF", "functional dependency"). RRF fused both signals into Rank #1 with 96% confidence.',
       generatedAnswerExcerpt: 'Third Normal Form (3NF) requires a relation to be in 2NF and have no transitive functional dependencies. Every non-prime attribute must depend strictly on the candidate key directly, preventing update anomalies.',
-      trustScoreOutcome: 'Trust: 98% · Verified (4/4 atomic claims verified via NLI entailment against Page 42).',
+      trustScoreOutcome: 'Trust: 98% · Verified (4/4 claims grounded against course document Page 42).',
       researchTakeaway: 'Demonstrates that neither Vector nor TF-IDF in isolation achieves optimal precision when queries combine conceptual explanations with technical alphanumeric designations (3NF/2NF).',
     },
     {
@@ -129,7 +129,7 @@ export const FailureAnalysisView: React.FC = () => {
       courseDoc: 'CS101 Database Systems · DBMS Unit 2-ER.pdf (Page 2)',
       retrievalDiagnosis: 'Retrieval succeeded: Document Unit 2 stated "In a row of a relational table, an attribute can have exactly one atomic value".',
       generatedAnswerExcerpt: 'Draft LLM output initially asserted: "Yes, modern relational tables can store multi-valued attributes using JSON data types in first normal form."',
-      trustScoreOutcome: 'TrustScore detected claim contradiction with ground-truth chunk (NLI verdict: CONTRADICTED). Triggered closed-loop Self-Correction (N3), rewriting the statement to conform to course syllabus definition.',
+      trustScoreOutcome: 'TrustScore detected claim mismatch with ground-truth chunk (Grounding verdict: CONTRADICTED). Triggered closed-loop Self-Correction (N3), rewriting the statement to conform to course syllabus definition.',
       researchTakeaway: 'Demonstrates parametric bias in foundation models where modern industry practices (PostgreSQL JSONB) contradict foundational undergraduate theoretical definitions.',
     },
     {
@@ -155,7 +155,7 @@ export const FailureAnalysisView: React.FC = () => {
       courseDoc: 'CS101 Database Systems · DBMS Unit 2-ER.pdf (Page 1 & 2)',
       retrievalDiagnosis: 'PDF parser extracted text with missing whitespace ("Database Implementation Top down approach 1.Requirements from customer...").',
       generatedAnswerExcerpt: 'Naive whitespace bigram overlap scored 0.0 because condensed tokens did not match natural language words.',
-      trustScoreOutcome: 'Upgraded Subword & Substring Lexical Containment engine inspected content words and character 4-grams against stripped text, recovering full 96% NLI Entailment.',
+      trustScoreOutcome: 'Upgraded Subword & Substring Lexical Containment engine inspected content words and character 4-grams against stripped text, recovering full 96% Grounding Score.',
       researchTakeaway: 'Highlights the vital engineering reality that academic RAG systems must accommodate noisy real-world OCR artifacts to prevent false-positive hallucination flags.',
     },
   ];

@@ -62,7 +62,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({ explainability, halluc
     : effectiveTrustScore;
 
   const verdictText = isVerified
-    ? `Response is well-grounded in course materials. ${supportedCount}/${claims.length || 1} atomic claims verified via NLI claim decomposition.`
+    ? `Response is well-grounded in course materials. ${supportedCount}/${claims.length || 1} claims grounded against retrieved course documents.`
     : isPartiallyVerified
     ? 'Response is partially supported by course materials with secondary ungrounded assertions.'
     : 'Response contains unsupported claims. Please cross-verify with original course materials.';
@@ -114,20 +114,20 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({ explainability, halluc
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-sm">🧬</span>
-                <span className="font-bold text-white/90">Atomic Claim Decomposition</span>
+                <span className="font-bold text-white/90">Claim Grounding Breakdown</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   {supportedCount}/{claims.length} Verified
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary-500/10 text-primary-300 border border-primary-500/20">
-                  {avgEntailment}% NLI Entailment
+                  {avgEntailment}% Grounding Score
                 </span>
               </div>
             </div>
 
             <p className="text-[11px] text-white/40">
-              Each atomic claim in the generated answer was decomposed and checked for natural language inference (NLI) entailment against retrieved course documents.
+              Each claim in the generated answer was checked against retrieved course documents to verify it is grounded in the course material.
             </p>
 
             <div className="space-y-2">
